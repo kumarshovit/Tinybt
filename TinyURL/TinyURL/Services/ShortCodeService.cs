@@ -1,4 +1,4 @@
-﻿namespace TinyUrlApi.Services
+﻿namespace TinyURL.Services
 {
     public class ShortCodeService
     {

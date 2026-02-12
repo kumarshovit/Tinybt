@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TinyUrlApi.Data;
-using TinyUrlApi.Models;
-using TinyUrlApi.Services;
+using TinyURL.Data;
+using TinyURL.Models;
+using TinyURL.Services;
 
-namespace TinyUrlApi.Controllers
+namespace TinyURL.Controllers
 {
     [ApiController]
     [Route("")]
@@ -19,16 +19,24 @@ namespace TinyUrlApi.Controllers
             _shortCodeService = shortCodeService;
         }
 
+        // DTO
+        public class ShortenRequest
+        {
+            public string LongUrl { get; set; }
+        }
+
         // CREATE SHORT URL
         [HttpPost("api/url/shorten")]
-        public async Task<IActionResult> ShortenUrl([FromBody] string longUrl)
+        public async Task<IActionResult> ShortenUrl([FromBody] ShortenRequest request)
         {
-            if (!Uri.IsWellFormedUriString(longUrl, UriKind.Absolute))
-                return BadRequest("Invalid URL");
+            if (request == null || string.IsNullOrWhiteSpace(request.LongUrl))
+                return BadRequest("URL is required.");
 
-            // Check duplicate
+            if (!Uri.IsWellFormedUriString(request.LongUrl, UriKind.Absolute))
+                return BadRequest("Invalid URL format.");
+
             var existing = await _context.UrlMappings
-                .FirstOrDefaultAsync(x => x.LongUrl == longUrl);
+                .FirstOrDefaultAsync(x => x.LongUrl == request.LongUrl);
 
             if (existing != null)
             {
@@ -42,8 +50,10 @@ namespace TinyUrlApi.Controllers
 
             var mapping = new UrlMapping
             {
-                LongUrl = longUrl,
-                ShortCode = shortCode
+                LongUrl = request.LongUrl,
+                ShortCode = shortCode,
+                CreatedAt = DateTime.UtcNow,
+                ClickCount = 0
             };
 
             _context.UrlMappings.Add(mapping);
@@ -55,7 +65,7 @@ namespace TinyUrlApi.Controllers
             });
         }
 
-        // REDIRECT SHORT URL → LONG URL
+        // REDIRECT SHORT URL (ROOT LEVEL)
         [HttpGet("{shortCode}")]
         public async Task<IActionResult> RedirectToLongUrl(string shortCode)
         {
@@ -63,23 +73,32 @@ namespace TinyUrlApi.Controllers
                 .FirstOrDefaultAsync(x => x.ShortCode == shortCode);
 
             if (mapping == null)
-                return NotFound("Invalid short URL");
+                return NotFound("Invalid short URL.");
 
             mapping.ClickCount++;
             await _context.SaveChangesAsync();
 
             return Redirect(mapping.LongUrl);
         }
-        // GET: api/url/all
+
+        // GET ALL URLS
         [HttpGet("api/url/all")]
         public async Task<IActionResult> GetAllUrls()
         {
             var urls = await _context.UrlMappings
                 .OrderByDescending(x => x.CreatedAt)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.LongUrl,
+                    x.ShortCode,
+                    x.ClickCount,
+                    x.CreatedAt,
+                    ShortUrl = $"{Request.Scheme}://{Request.Host}/{x.ShortCode}"
+                })
                 .ToListAsync();
 
             return Ok(urls);
         }
-
     }
 }

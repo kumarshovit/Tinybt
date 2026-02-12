@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace TinyUrlProject.Migrations
+namespace TinyURL.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -17,8 +17,8 @@ namespace TinyUrlProject.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ShortCode = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     LongUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ShortCode = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ClickCount = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },

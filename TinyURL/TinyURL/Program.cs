@@ -1,13 +1,13 @@
 using Microsoft.EntityFrameworkCore;
-using TinyUrlApi.Data;
-using TinyUrlApi.Services;
+using TinyURL.Data;
+using TinyURL.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
+// Add services
 builder.Services.AddControllers();
 
-// Swagger
+// Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -23,7 +23,7 @@ builder.Services.AddScoped<ShortCodeService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
+// Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

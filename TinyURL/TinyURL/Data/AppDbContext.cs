@@ -1,19 +1,22 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.Reflection.Emit;
-using TinyUrlApi.Models;
+using TinyURL.Models;
 
-namespace TinyUrlApi.Data
+namespace TinyURL.Data
 {
     public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options)
-            : base(options) { }
+            : base(options)
+        {
+        }
 
         public DbSet<UrlMapping> UrlMappings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             modelBuilder.Entity<UrlMapping>()
                 .HasIndex(x => x.ShortCode)
                 .IsUnique();
