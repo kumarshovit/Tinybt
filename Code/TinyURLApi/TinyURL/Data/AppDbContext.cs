@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Reflection.Emit;
 using TinyURL.Models;
 
 namespace TinyURL.Data
@@ -13,12 +12,20 @@ namespace TinyURL.Data
 
         public DbSet<UrlMapping> UrlMappings { get; set; }
 
+        // 👇 ADD THIS LINE
+        public DbSet<User> Users { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<UrlMapping>()
                 .HasIndex(x => x.ShortCode)
+                .IsUnique();
+
+            // 👇 Optional but Recommended (Make Email Unique)
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Email)
                 .IsUnique();
         }
     }
