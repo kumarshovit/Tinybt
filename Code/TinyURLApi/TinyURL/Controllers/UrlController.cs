@@ -23,6 +23,7 @@ namespace TinyURL.Controllers
         public class ShortenRequest
         {
             public string LongUrl { get; set; }
+            public string? CustomAlias { get; set; }
         }
 
         // CREATE SHORT URL
@@ -35,18 +36,38 @@ namespace TinyURL.Controllers
             if (!Uri.IsWellFormedUriString(request.LongUrl, UriKind.Absolute))
                 return BadRequest("Invalid URL format.");
 
-            var existing = await _context.UrlMappings
-                .FirstOrDefaultAsync(x => x.LongUrl == request.LongUrl);
+            string shortCode;
 
-            if (existing != null)
+            // 🔥 If Custom Alias Provided
+            if (!string.IsNullOrWhiteSpace(request.CustomAlias))
             {
-                return Ok(new
-                {
-                    shortUrl = $"{Request.Scheme}://{Request.Host}/{existing.ShortCode}"
-                });
-            }
+                shortCode = request.CustomAlias.Trim().ToLower();
 
-            var shortCode = _shortCodeService.GenerateShortCode();
+                // ✅ Alias Format Validation
+                if (!System.Text.RegularExpressions.Regex.IsMatch(shortCode, "^[a-zA-Z0-9-]+$"))
+                    return BadRequest("Alias can contain only letters, numbers and hyphens.");
+
+                // ✅ Restricted Words Validation
+                var restrictedWords = new List<string>
+        {
+            "admin", "login", "signup", "api"
+        };
+
+                if (restrictedWords.Contains(shortCode))
+                    return BadRequest("This alias is restricted.");
+
+                // ✅ Check Alias Uniqueness
+                var aliasExists = await _context.UrlMappings
+                    .AnyAsync(x => x.ShortCode.ToLower() == shortCode);
+
+                if (aliasExists)
+                    return Conflict("Alias already exists.");
+            }
+            else
+            {
+                // 🔁 No alias → generate automatically
+                shortCode = _shortCodeService.GenerateShortCode();
+            }
 
             var mapping = new UrlMapping
             {
@@ -64,6 +85,7 @@ namespace TinyURL.Controllers
                 shortUrl = $"{Request.Scheme}://{Request.Host}/{shortCode}"
             });
         }
+
 
         // REDIRECT SHORT URL (ROOT LEVEL)
         [HttpGet("{shortCode}")]
