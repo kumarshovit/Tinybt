@@ -12,6 +12,10 @@ namespace TinyURL.Data
         }
 
         public DbSet<UrlMapping> UrlMappings { get; set; }
+        public DbSet<Tag> Tags { get; set; }
+        public DbSet<UrlTag> UrlTags { get; set; }
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -20,6 +24,19 @@ namespace TinyURL.Data
             modelBuilder.Entity<UrlMapping>()
                 .HasIndex(x => x.ShortCode)
                 .IsUnique();
+
+            modelBuilder.Entity<UrlTag>()
+    .HasKey(ut => new { ut.UrlMappingId, ut.TagId });
+
+            modelBuilder.Entity<UrlTag>()
+                .HasOne(ut => ut.UrlMapping)
+                .WithMany(u => u.UrlTags)
+                .HasForeignKey(ut => ut.UrlMappingId);
+
+            modelBuilder.Entity<UrlTag>()
+                .HasOne(ut => ut.Tag)
+                .WithMany(t => t.UrlTags)
+                .HasForeignKey(ut => ut.TagId);
         }
     }
 }
