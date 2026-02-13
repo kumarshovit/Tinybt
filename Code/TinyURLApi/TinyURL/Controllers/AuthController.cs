@@ -4,6 +4,10 @@ using TinyURL.Models;
 using TinyURL.DTOs;
 using BCrypt.Net;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace TinyURL.Controllers
 {
@@ -12,10 +16,11 @@ namespace TinyURL.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AppDbContext _context;
-
-        public AuthController(AppDbContext context)
+        private readonly IConfiguration _configuration;
+        public AuthController(AppDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         [HttpPost("register")]
@@ -72,5 +77,77 @@ namespace TinyURL.Controllers
 
             return Ok("Email verified successfully. You can now login.");
         }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginDto request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == request.Email.ToLower());
+
+            if (user == null)
+                return Unauthorized("Invalid credentials.");
+
+            if (!user.IsEmailVerified)
+                return Unauthorized("Please verify your email first.");
+
+            if (user.IsLocked && user.LockoutEnd > DateTime.UtcNow)
+                return Unauthorized("Account locked. Try again later.");
+
+            // Verify password
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+            {
+                user.FailedLoginAttempts++;
+
+                if (user.FailedLoginAttempts >= 5)
+                {
+                    user.IsLocked = true;
+                    user.LockoutEnd = DateTime.UtcNow.AddMinutes(15);
+                }
+
+                await _context.SaveChangesAsync();
+                return Unauthorized("Invalid credentials.");
+            }
+
+            // Reset failed attempts
+            user.FailedLoginAttempts = 0;
+            user.IsLocked = false;
+            user.LockoutEnd = null;
+
+            await _context.SaveChangesAsync();
+
+            // Generate JWT
+            var jwtSettings = _configuration.GetSection("Jwt");
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSettings["Key"]!)
+            );
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Email, user.Email)
+    };
+
+            var token = new JwtSecurityToken(
+                issuer: jwtSettings["Issuer"],
+                audience: jwtSettings["Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(
+                    double.Parse(jwtSettings["DurationInMinutes"]!)
+                ),
+                signingCredentials: creds
+            );
+
+            return Ok(new
+            {
+                token = new JwtSecurityTokenHandler().WriteToken(token),
+                expires = token.ValidTo
+            });
+        }
+
     }
 }

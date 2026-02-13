@@ -18,5 +18,12 @@ namespace TinyURL.Models
         public string? EmailVerificationToken { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public int FailedLoginAttempts { get; set; } = 0;
+
+        public bool IsLocked { get; set; } = false;
+
+        public DateTime? LockoutEnd { get; set; }
+
     }
 }

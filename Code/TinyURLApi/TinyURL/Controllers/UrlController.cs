@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using TinyURL.Data;
 using TinyURL.Models;
 using TinyURL.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace TinyURL.Controllers
 {
@@ -25,7 +27,8 @@ namespace TinyURL.Controllers
             public string LongUrl { get; set; }
         }
 
-        // CREATE SHORT URL
+        // 🔐 CREATE SHORT URL (Protected)
+        [Authorize]
         [HttpPost("api/url/shorten")]
         public async Task<IActionResult> ShortenUrl([FromBody] ShortenRequest request)
         {
@@ -35,8 +38,13 @@ namespace TinyURL.Controllers
             if (!Uri.IsWellFormedUriString(request.LongUrl, UriKind.Absolute))
                 return BadRequest("Invalid URL format.");
 
+            // Get logged-in user ID
+            var userId = int.Parse(
+                User.FindFirst(ClaimTypes.NameIdentifier)!.Value
+            );
+
             var existing = await _context.UrlMappings
-                .FirstOrDefaultAsync(x => x.LongUrl == request.LongUrl);
+                .FirstOrDefaultAsync(x => x.LongUrl == request.LongUrl && x.UserId == userId);
 
             if (existing != null)
             {
@@ -53,7 +61,8 @@ namespace TinyURL.Controllers
                 LongUrl = request.LongUrl,
                 ShortCode = shortCode,
                 CreatedAt = DateTime.UtcNow,
-                ClickCount = 0
+                ClickCount = 0,
+                UserId = userId   // 🔥 Link to logged-in user
             };
 
             _context.UrlMappings.Add(mapping);
@@ -65,7 +74,7 @@ namespace TinyURL.Controllers
             });
         }
 
-        // REDIRECT SHORT URL (ROOT LEVEL)
+        // 🌍 PUBLIC REDIRECT (No Authorize)
         [HttpGet("{shortCode}")]
         public async Task<IActionResult> RedirectToLongUrl(string shortCode)
         {
@@ -81,11 +90,17 @@ namespace TinyURL.Controllers
             return Redirect(mapping.LongUrl);
         }
 
-        // GET ALL URLS
+        // 🔐 GET USER'S URLS ONLY
+        [Authorize]
         [HttpGet("api/url/all")]
         public async Task<IActionResult> GetAllUrls()
         {
+            var userId = int.Parse(
+                User.FindFirst(ClaimTypes.NameIdentifier)!.Value
+            );
+
             var urls = await _context.UrlMappings
+                .Where(x => x.UserId == userId)
                 .OrderByDescending(x => x.CreatedAt)
                 .Select(x => new
                 {
