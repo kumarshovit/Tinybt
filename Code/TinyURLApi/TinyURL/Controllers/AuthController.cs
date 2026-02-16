@@ -313,5 +313,64 @@ namespace TinyURL.Controllers
                 expires = token.ValidTo
             };
         }
+        [Authorize]
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var user = await _context.Users.FindAsync(int.Parse(userId));
+
+            if (user == null)
+                return NotFound();
+
+            return Ok(new
+            {
+                user.Email,
+                user.FullName,
+                user.CreatedAt
+            });
+        }
+        [Authorize]
+        [HttpPut("update-profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto model)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _context.Users.FindAsync(int.Parse(userId));
+
+            if (user == null)
+                return NotFound();
+
+            user.FullName = model.FullName;
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Profile updated successfully.");
+        }
+
+        [Authorize]
+        [HttpPut("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto model)
+        {
+            if (model == null)
+                return BadRequest("Invalid request.");
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _context.Users.FindAsync(int.Parse(userId));
+
+            if (user == null)
+                return NotFound();
+
+            if (!BCrypt.Net.BCrypt.Verify(model.CurrentPassword, user.PasswordHash))
+                return BadRequest("Current password is incorrect.");
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Password changed successfully.");
+        }
+
+
     }
 }

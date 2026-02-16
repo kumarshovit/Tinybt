@@ -4,6 +4,8 @@ namespace TinyURL.Models
 {
     public class User
     {
+        public string? FullName { get; set; }
+
         public int Id { get; set; }
 
         [Required]

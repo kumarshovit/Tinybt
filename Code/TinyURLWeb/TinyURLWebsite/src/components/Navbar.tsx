@@ -34,6 +34,7 @@ const Navbar = () => {
             Admin Panel 🔐
           </Link>
         )}
+        <Link to="/profile">Profile</Link>
 
         <button
           onClick={handleLogout}
