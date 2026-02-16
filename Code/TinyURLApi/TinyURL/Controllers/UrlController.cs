@@ -23,6 +23,8 @@ namespace TinyURL.Controllers
         public class ShortenRequest
         {
             public string LongUrl { get; set; }
+            public string? CustomAlias { get; set; }
+
         }
 
         public class AddTagsRequest
@@ -30,8 +32,6 @@ namespace TinyURL.Controllers
             public List<string> Tags { get; set; }
         }
 
-
-        // CREATE SHORT URL
         [HttpPost("api/url/shorten")]
         public async Task<IActionResult> ShortenUrl([FromBody] ShortenRequest request)
         {
@@ -41,18 +41,31 @@ namespace TinyURL.Controllers
             if (!Uri.IsWellFormedUriString(request.LongUrl, UriKind.Absolute))
                 return BadRequest("Invalid URL format.");
 
-            var existing = await _context.UrlMappings
-                .FirstOrDefaultAsync(x => x.LongUrl == request.LongUrl);
+            string shortCode;
 
-            if (existing != null)
+            // 🔥 CUSTOM ALIAS LOGIC
+            if (!string.IsNullOrWhiteSpace(request.CustomAlias))
             {
-                return Ok(new
-                {
-                    shortUrl = $"{Request.Scheme}://{Request.Host}/{existing.ShortCode}"
-                });
-            }
+                shortCode = request.CustomAlias.Trim().ToLower();
 
-            var shortCode = _shortCodeService.GenerateShortCode();
+                if (!System.Text.RegularExpressions.Regex.IsMatch(shortCode, "^[a-zA-Z0-9-]+$"))
+                    return BadRequest("Alias can contain only letters, numbers and hyphens.");
+
+                var restrictedWords = new List<string> { "admin", "login", "signup", "api" };
+
+                if (restrictedWords.Contains(shortCode))
+                    return BadRequest("This alias is restricted.");
+
+                var aliasExists = await _context.UrlMappings
+                    .AnyAsync(x => x.ShortCode.ToLower() == shortCode);
+
+                if (aliasExists)
+                    return Conflict("Alias already exists.");
+            }
+            else
+            {
+                shortCode = _shortCodeService.GenerateShortCode();
+            }
 
             var mapping = new UrlMapping
             {
@@ -67,9 +80,15 @@ namespace TinyURL.Controllers
 
             return Ok(new
             {
+                id = mapping.Id,
                 shortUrl = $"{Request.Scheme}://{Request.Host}/{shortCode}"
             });
         }
+
+
+
+
+
 
         // REDIRECT SHORT URL (ROOT LEVEL)
         [HttpGet("{shortCode}")]
@@ -87,25 +106,32 @@ namespace TinyURL.Controllers
             return Redirect(mapping.LongUrl);
         }
 
-        // GET ALL URLS
         [HttpGet("api/url/all")]
         public async Task<IActionResult> GetAllUrls()
         {
             var urls = await _context.UrlMappings
+                .Include(u => u.UrlTags)
+                    .ThenInclude(ut => ut.Tag)
                 .OrderByDescending(x => x.CreatedAt)
                 .Select(x => new
                 {
                     x.Id,
-                    x.LongUrl,
                     x.ShortCode,
                     x.ClickCount,
                     x.CreatedAt,
-                    ShortUrl = $"{Request.Scheme}://{Request.Host}/{x.ShortCode}"
+
+                    ShortUrl = $"{Request.Scheme}://{Request.Host}/{x.ShortCode}",
+
+                    Tags = x.UrlTags
+                            .Select(t => t.Tag.Name)
+                            .ToList()
                 })
                 .ToListAsync();
 
             return Ok(urls);
         }
+
+
 
 
         [HttpPost("api/url/{id}/tags")]
@@ -149,13 +175,21 @@ namespace TinyURL.Controllers
 
             return Ok("Tags added successfully.");
         }
-
         [HttpGet("api/url/search")]
         public async Task<IActionResult> SearchByTag(string tag)
         {
-            var result = await _context.UrlTags
-                .Where(ut => ut.Tag.Name == tag.ToLower())
-                .Select(ut => ut.UrlMapping)
+            var result = await _context.UrlMappings
+                .Include(u => u.UrlTags)
+                    .ThenInclude(ut => ut.Tag)
+                .Where(u => u.UrlTags.Any(t => t.Tag.Name == tag.ToLower()))
+                .Select(x => new
+                {
+                    x.Id,
+                    x.ShortCode,
+                    x.ClickCount,
+                    ShortUrl = $"{Request.Scheme}://{Request.Host}/{x.ShortCode}",
+                    Tags = x.UrlTags.Select(t => t.Tag.Name).ToList()
+                })
                 .ToListAsync();
 
             return Ok(result);
