@@ -64,3 +64,21 @@ export const updateAlias = async (id: number, newAlias: string) => {
 
   return res.json();
 };
+
+export const updateDestination = async (id: number, newLongUrl: string) => {
+  const res = await fetch(
+    `https://localhost:7025/api/url/${id}/destination`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ newLongUrl })
+    }
+  );
+
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg);
+  }
+
+  return res.json();
+};

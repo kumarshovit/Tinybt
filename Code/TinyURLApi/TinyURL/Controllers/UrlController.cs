@@ -37,6 +37,10 @@ namespace TinyURL.Controllers
             public string NewAlias { get; set; }
         }
 
+        public class UpdateDestinationRequest
+        {
+            public string NewLongUrl { get; set; }
+        }
 
         [HttpPost("api/url/shorten")]
         public async Task<IActionResult> ShortenUrl([FromBody] ShortenRequest request)
@@ -299,6 +303,31 @@ namespace TinyURL.Controllers
                 ShortUrl = $"{Request.Scheme}://{Request.Host}/{newAlias}"
             });
         }
+
+        [HttpPut("api/url/{id}/destination")]
+        public async Task<IActionResult> UpdateDestination(int id, [FromBody] UpdateDestinationRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.NewLongUrl))
+                return BadRequest("Destination URL is required.");
+
+            if (!Uri.IsWellFormedUriString(request.NewLongUrl, UriKind.Absolute))
+                return BadRequest("Invalid URL format.");
+
+            var mapping = await _context.UrlMappings.FindAsync(id);
+
+            if (mapping == null)
+                return NotFound("Short link not found.");
+
+            mapping.LongUrl = request.NewLongUrl;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Destination updated successfully."
+            });
+        }
+
 
 
 

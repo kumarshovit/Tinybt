@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { addTags, updateTags, removeTag ,updateAlias } from "../api/urlService";
+import { addTags, updateTags, removeTag, updateAlias, updateDestination } from "../api/urlService";
 
 interface Props {
     link: any;
@@ -12,6 +12,9 @@ export default function LinkCard({ link, links, setLinks }: Props) {
     const [editing, setEditing] = useState(false);
     const [editingAlias, setEditingAlias] = useState(false);
     const [newAlias, setNewAlias] = useState("");
+    const [editingDestination, setEditingDestination] = useState(false);
+    const [newDestination, setNewDestination] = useState("");
+
 
     const handleAddTags = async () => {
         const tags = tagInput.split(",").map(t => t.trim());
@@ -83,6 +86,20 @@ export default function LinkCard({ link, links, setLinks }: Props) {
         }
     };
 
+    const handleUpdateDestination = async () => {
+        try {
+            await updateDestination(link.id, newDestination);
+
+            setEditingDestination(false);
+            setNewDestination("");
+
+            alert("Destination updated successfully.");
+
+        } catch (error: any) {
+            alert(error.message);
+        }
+    };
+
 
     return (
         <div className="bg-white shadow-md rounded-xl p-6 flex flex-col gap-3">
@@ -118,6 +135,30 @@ export default function LinkCard({ link, links, setLinks }: Props) {
                     </button>
                 </div>
             )}
+            <button
+                onClick={() => setEditingDestination(true)}
+                className="text-sm text-gray-500 hover:text-blue-600"
+            >
+                Edit Destination
+            </button>
+            {editingDestination && (
+                <div className="flex gap-2 mt-2">
+                    <input
+                        placeholder="Enter new destination URL"
+                        value={newDestination}
+                        onChange={(e) => setNewDestination(e.target.value)}
+                        className="border rounded px-2 py-1 text-sm flex-1"
+                    />
+                    <button
+                        onClick={handleUpdateDestination}
+                        className="bg-blue-600 text-white px-3 py-1 rounded text-sm"
+                    >
+                        Save
+                    </button>
+                </div>
+            )}
+
+
 
             <p className="text-sm text-gray-500">
                 {link.clickCount} clicks
