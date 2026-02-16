@@ -32,6 +32,12 @@ namespace TinyURL.Controllers
             public List<string> Tags { get; set; }
         }
 
+        public class UpdateAliasRequest
+        {
+            public string NewAlias { get; set; }
+        }
+
+
         [HttpPost("api/url/shorten")]
         public async Task<IActionResult> ShortenUrl([FromBody] ShortenRequest request)
         {
@@ -255,6 +261,45 @@ namespace TinyURL.Controllers
 
             return Ok("Tags updated successfully.");
         }
+        [HttpPut("api/url/{id}/alias")]
+        public async Task<IActionResult> UpdateAlias(int id, [FromBody] UpdateAliasRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.NewAlias))
+                return BadRequest("Alias cannot be empty.");
+
+            var newAlias = request.NewAlias.Trim().ToLower();
+
+            // Validate format
+            if (!System.Text.RegularExpressions.Regex.IsMatch(newAlias, "^[a-zA-Z0-9-]+$"))
+                return BadRequest("Alias can contain only letters, numbers and hyphens.");
+
+            // Restricted words
+            var restrictedWords = new List<string> { "admin", "login", "signup", "api" };
+            if (restrictedWords.Contains(newAlias))
+                return BadRequest("This alias is restricted.");
+
+            // Check uniqueness
+            var exists = await _context.UrlMappings
+                .AnyAsync(x => x.ShortCode.ToLower() == newAlias);
+
+            if (exists)
+                return Conflict("Alias already exists.");
+
+            var mapping = await _context.UrlMappings.FindAsync(id);
+
+            if (mapping == null)
+                return NotFound("URL not found.");
+
+            mapping.ShortCode = newAlias;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                ShortUrl = $"{Request.Scheme}://{Request.Host}/{newAlias}"
+            });
+        }
+
 
 
     }

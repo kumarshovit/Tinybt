@@ -2,40 +2,57 @@ import { useState } from "react";
 import { createUrl, addTags } from "../api/urlService";
 
 interface Props {
-  reload: () => void;
+  setLinks: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
-export default function CreateLinkCard({ reload }: Props) {
+export default function CreateLinkCard({ setLinks }: Props) {
   const [longUrl, setLongUrl] = useState("");
   const [alias, setAlias] = useState("");
-  const [createdLink, setCreatedLink] = useState<any>(null);
   const [tagInput, setTagInput] = useState("");
   const [error, setError] = useState("");
+  const [createdLink, setCreatedLink] = useState<any>(null); // 👈 add this back
 
   const handleCreate = async () => {
     try {
       const response = await createUrl(longUrl, alias);
 
-      setCreatedLink(response);   // save created link
+      const newLink = {
+        id: response.id,
+        shortUrl: response.shortUrl,
+        clickCount: 0,
+        tags: []
+      };
+
+      setLinks([newLink]);        // show only this link in dashboard
+      setCreatedLink(newLink);    // show success section
+
       setLongUrl("");
       setAlias("");
       setError("");
-      reload();
     } catch (err: any) {
       setError(err.message);
     }
   };
 
   const handleAddTags = async () => {
-    if (!createdLink) return;
+  if (!createdLink) return;
 
-    const tags = tagInput.split(",").map(t => t.trim());
+  const tags = tagInput.split(",").map(t => t.trim());
 
-    await addTags(createdLink.id, tags);
+  await addTags(createdLink.id, tags);
 
-    setTagInput("");
-    reload();
-  };
+  // Update dashboard state
+  setLinks(prevLinks =>
+    prevLinks.map(link =>
+      link.id === createdLink.id
+        ? { ...link, tags: [...(link.tags || []), ...tags] }
+        : link
+    )
+  );
+
+  setTagInput("");
+};
+
 
   return (
     <div className="bg-white shadow-lg rounded-xl p-6 max-w-3xl mx-auto">

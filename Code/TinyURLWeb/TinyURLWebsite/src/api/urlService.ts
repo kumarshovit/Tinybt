@@ -46,3 +46,21 @@ export const removeTag = async (id: number, tagName: string) => {
     method: "DELETE"
   });
 };
+
+export const updateAlias = async (id: number, newAlias: string) => {
+  const res = await fetch(
+    `https://localhost:7025/api/url/${id}/alias`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ newAlias })
+    }
+  );
+
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg);
+  }
+
+  return res.json();
+};

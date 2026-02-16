@@ -39,7 +39,7 @@ export default function Dashboard() {
 
       {/* CREATE LINK */}
       <div className="px-6">
-        <CreateLinkCard reload={loadLinks} />
+        <CreateLinkCard setLinks={setLinks} />
       </div>
 
       {/* SEARCH */}
