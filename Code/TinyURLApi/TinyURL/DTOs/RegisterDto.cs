@@ -10,8 +10,10 @@ namespace TinyURL.DTOs
 
         [Required]
         [MinLength(8)]
-        [RegularExpression(@"^(?=.*[A-Z])(?=.*\d).+$",
-            ErrorMessage = "Password must contain at least one uppercase letter and one number.")]
+        [RegularExpression(
+            @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$",
+            ErrorMessage = "Password must contain at least 8 characters, including uppercase, lowercase, number, and special character."
+        )]
         public string Password { get; set; }
     }
 }

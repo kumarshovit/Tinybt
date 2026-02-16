@@ -1,13 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TinyURL.Data;
-using TinyURL.Models;
-using TinyURL.DTOs;
-using BCrypt.Net;
+﻿using BCrypt.Net;
+using Google.Apis.Auth;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using TinyURL.Data;
+using TinyURL.DTOs;
+using TinyURL.Models;
+using TinyURL.Services;
+
 
 namespace TinyURL.Controllers
 {
@@ -17,49 +20,66 @@ namespace TinyURL.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
-        public AuthController(AppDbContext context, IConfiguration configuration)
+        private readonly EmailService _emailService;
+
+        public AuthController(
+            AppDbContext context,
+            IConfiguration configuration,
+            EmailService emailService)
         {
             _context = context;
             _configuration = configuration;
+            _emailService = emailService;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto request)
         {
-            // ✅ Validate model
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // ✅ Check duplicate email (case insensitive)
             if (await _context.Users
                 .AnyAsync(u => u.Email.ToLower() == request.Email.ToLower()))
             {
                 return BadRequest("Email already exists.");
             }
 
-            // ✅ Hash password
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
-            // ✅ Generate verification token
             string verificationToken = Guid.NewGuid().ToString();
 
             var user = new User
             {
                 Email = request.Email.ToLower(),
                 PasswordHash = passwordHash,
-                IsEmailVerified = false,
-                EmailVerificationToken = verificationToken
+                IsEmailVerified = false,   // Production requires verification
+                EmailVerificationToken = verificationToken,
+                CreatedAt = DateTime.UtcNow
             };
 
             await _context.Users.AddAsync(user);
             await _context.SaveChangesAsync();
 
-            return Ok(new
-            {
-                message = "User registered successfully. Please verify your email.",
-                verificationToken = verificationToken
-            });
+            // 🔗 Create verification link
+            var verificationLink =
+                $"http://localhost:5173/verify?token={verificationToken}";
+
+            var emailBody = $@"
+        <h3>Verify Your Email</h3>
+        <p>Please click the link below to verify your account:</p>
+        <a href='{verificationLink}'>Verify Email</a>
+    ";
+
+            await _emailService.SendEmailAsync(
+                user.Email,
+                "Verify Your Email - TinyURL",
+                emailBody
+            );
+
+            return Ok("Registration successful. Please check your email to verify.");
         }
+
+
 
         [HttpGet("verify")]
         public async Task<IActionResult> VerifyEmail(string token)
@@ -147,6 +167,79 @@ namespace TinyURL.Controllers
                 token = new JwtSecurityTokenHandler().WriteToken(token),
                 expires = token.ValidTo
             });
+        }
+
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin(GoogleLoginDto request)
+        {
+            if (string.IsNullOrEmpty(request.IdToken))
+                return BadRequest("IdToken is required.");
+
+            try
+            {
+                var payload = await GoogleJsonWebSignature.ValidateAsync(
+                    request.IdToken,
+                    new GoogleJsonWebSignature.ValidationSettings
+                    {
+                        Audience = new[] { _configuration["Google:ClientId"] }
+                    }
+                );
+
+                var email = payload.Email;
+                var googleId = payload.Subject;
+
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email == email);
+
+                if (user == null)
+                {
+                    user = new User
+                    {
+                        Email = email.ToLower(),
+                        GoogleId = googleId,
+                        IsGoogleAccount = true,
+                        IsEmailVerified = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Generate JWT
+                var jwtSettings = _configuration.GetSection("Jwt");
+                var key = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(jwtSettings["Key"]!)
+                );
+
+                var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+                var claims = new[]
+                {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email)
+        };
+
+                var token = new JwtSecurityToken(
+                    issuer: jwtSettings["Issuer"],
+                    audience: jwtSettings["Audience"],
+                    claims: claims,
+                    expires: DateTime.UtcNow.AddMinutes(
+                        double.Parse(jwtSettings["DurationInMinutes"]!)
+                    ),
+                    signingCredentials: creds
+                );
+
+                return Ok(new
+                {
+                    token = new JwtSecurityTokenHandler().WriteToken(token),
+                    expires = token.ValidTo
+                });
+            }
+            catch (InvalidJwtException)
+            {
+                return Unauthorized("Invalid Google token.");
+            }
         }
 
     }

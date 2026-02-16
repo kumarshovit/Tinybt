@@ -24,6 +24,8 @@ namespace TinyURL.Models
         public bool IsLocked { get; set; } = false;
 
         public DateTime? LockoutEnd { get; set; }
+        public string? GoogleId { get; set; }
+        public bool IsGoogleAccount { get; set; }
 
     }
 }
