@@ -27,5 +27,8 @@ namespace TinyURL.Models
         public string? GoogleId { get; set; }
         public bool IsGoogleAccount { get; set; }
 
+        public string? PasswordResetToken { get; set; }
+        public DateTime? ResetTokenExpiry { get; set; }
+
     }
 }

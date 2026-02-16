@@ -7,7 +7,10 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services
+// --------------------
+// Add Services
+// --------------------
+
 builder.Services.AddControllers();
 
 // Swagger
@@ -21,19 +24,23 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     )
 );
 
-// CORS
+// --------------------
+// CORS (DEV SAFE MODE)
+// --------------------
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend",
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:5173")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy
+            .SetIsOriginAllowed(origin => true) // Allow all origins in dev
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
 });
 
+// --------------------
 // JWT Authentication
+// --------------------
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
 
@@ -56,13 +63,18 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Short code generator
+// --------------------
+// Custom Services
+// --------------------
 builder.Services.AddScoped<ShortCodeService>();
 builder.Services.AddScoped<EmailService>();
 
 var app = builder.Build();
 
-// Middleware
+// --------------------
+// Middleware Pipeline
+// --------------------
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -71,7 +83,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// ✅ CORS must come BEFORE authentication
+// CORS must come BEFORE auth
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();

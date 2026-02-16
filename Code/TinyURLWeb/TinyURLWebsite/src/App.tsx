@@ -4,6 +4,9 @@ import Login from "./pages/Login";
 import VerifyEmail from "./pages/Verify";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+
 function App() {
   return (
     <BrowserRouter>
@@ -16,7 +19,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/verify" element={<VerifyEmail />} />
-
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+<Route path="/reset-password" element={<ResetPassword />} />
         {/* Fallback Route (optional but professional) */}
         <Route path="*" element={<Navigate to="/login" />} />
         <Route

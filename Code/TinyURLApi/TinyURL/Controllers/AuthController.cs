@@ -1,5 +1,6 @@
 ﻿using BCrypt.Net;
 using Google.Apis.Auth;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -241,6 +242,72 @@ namespace TinyURL.Controllers
                 return Unauthorized("Invalid Google token.");
             }
         }
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordModel model)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == model.Email.ToLower());
+
+            if (user == null)
+                return Ok("If account exists, reset link sent.");
+
+            // Generate secure token
+            user.PasswordResetToken = Guid.NewGuid().ToString();
+            user.ResetTokenExpiry = DateTime.UtcNow.AddMinutes(15);
+
+            await _context.SaveChangesAsync();
+
+            var resetLink =
+                $"http://localhost:5173/reset-password?email={user.Email}&token={user.PasswordResetToken}";
+
+            var emailBody = $@"
+        <h3>Reset Password</h3>
+        <p>Click below link to reset your password:</p>
+        <a href='{resetLink}'>Reset Password</a>
+    ";
+
+            await _emailService.SendEmailAsync(
+                user.Email,
+                "Reset Password - TinyURL",
+                emailBody
+            );
+
+            return Ok("If account exists, reset link sent.");
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == model.Email.ToLower());
+
+            if (user == null)
+                return BadRequest("Invalid request.");
+
+            Console.WriteLine("DB Token: " + user.PasswordResetToken);
+            Console.WriteLine("Incoming Token: " + model.Token);
+
+            if (user.PasswordResetToken == null ||
+                !user.PasswordResetToken.Equals(model.Token))
+            {
+                return BadRequest("Invalid token.");
+            }
+
+            if (user.ResetTokenExpiry == null ||
+                user.ResetTokenExpiry < DateTime.UtcNow)
+            {
+                return BadRequest("Token expired.");
+            }
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.NewPassword);
+            user.PasswordResetToken = null;
+            user.ResetTokenExpiry = null;
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Password reset successful.");
+        }
+
 
     }
 }

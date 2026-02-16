@@ -76,11 +76,18 @@ const Login = () => {
               required
             />
           </div>
+          {/* Forgot Password Link */}
+          <div className="text-right">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-indigo-600 hover:underline"
+            >
+              Forgot Password?
+            </Link>
+          </div>
 
           {/* Error Message */}
-          {error && (
-            <p className="text-red-500 text-sm text-center">{error}</p>
-          )}
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
           {/* Login Button */}
           <button
