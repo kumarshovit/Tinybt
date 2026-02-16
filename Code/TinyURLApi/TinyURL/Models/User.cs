@@ -29,6 +29,7 @@ namespace TinyURL.Models
 
         public string? PasswordResetToken { get; set; }
         public DateTime? ResetTokenExpiry { get; set; }
+        public string Role { get; set; } = "User";
 
     }
 }

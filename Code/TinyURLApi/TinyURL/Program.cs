@@ -1,9 +1,10 @@
-using Microsoft.EntityFrameworkCore;
-using TinyURL.Data;
-using TinyURL.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using TinyURL.Data;
+using TinyURL.Models;
+using TinyURL.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -62,6 +63,7 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
 });
+builder.Services.AddAuthorization();
 
 // --------------------
 // Custom Services
@@ -70,6 +72,25 @@ builder.Services.AddScoped<ShortCodeService>();
 builder.Services.AddScoped<EmailService>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    if (!context.Users.Any(u => u.Role == "Admin"))
+    {
+        context.Users.Add(new User
+        {
+            Email = "khushiguptajg_ds22@its.edu.in",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+            IsEmailVerified = true,
+            Role = "Admin",
+            CreatedAt = DateTime.UtcNow
+        });
+
+        context.SaveChanges();
+    }
+}
 
 // --------------------
 // Middleware Pipeline

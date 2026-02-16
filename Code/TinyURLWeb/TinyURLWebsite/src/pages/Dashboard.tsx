@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../services/authService";
 import { shortenUrl } from "../services/urlService";
+import Navbar from "../components/Navbar";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -11,11 +12,6 @@ const Dashboard = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
-
-  const handleLogout = () => {
-    logoutUser();
-    navigate("/login");
-  };
 
   const handleGenerate = async () => {
     setError("");
@@ -46,6 +42,9 @@ const Dashboard = () => {
   };
 
   return (
+    <>
+     <Navbar/>
+    
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4">
       <h2 className="text-3xl font-bold mb-6">Welcome to Dashboard 🎉</h2>
 
@@ -101,14 +100,8 @@ const Dashboard = () => {
           </div>
         )}
       </div>
-
-      <button
-        onClick={handleLogout}
-        className="mt-6 text-red-500 hover:underline"
-      >
-        Logout
-      </button>
     </div>
+    </>
   );
 };
 
