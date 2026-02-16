@@ -370,6 +370,31 @@ namespace TinyURL.Controllers
 
             return Ok("Password changed successfully.");
         }
+        [Authorize]
+        [HttpDelete("delete-account")]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == int.Parse(userId));
+
+            if (user == null)
+                return NotFound();
+
+            // Delete user's URLs
+            var userLinks = _context.UrlMappings
+                .Where(u => u.UserId == user.Id);
+
+            _context.UrlMappings.RemoveRange(userLinks);
+
+            // Delete user
+            _context.Users.Remove(user);
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Account deleted successfully.");
+        }
 
 
     }

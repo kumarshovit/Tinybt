@@ -29,16 +29,17 @@ const ProfilePage = () => {
         "https://localhost:7025/api/auth/profile",
         {
           headers: { Authorization: `Bearer ${token}` },
-        },
+        }
       );
 
       setProfile(response.data);
       setFullName(response.data.fullName || "");
-    } catch (err: any) {
+    } catch {
       setError("Failed to load profile.");
     }
   };
 
+  // ---------------- UPDATE NAME ----------------
   const handleUpdateName = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
@@ -48,31 +49,25 @@ const ProfilePage = () => {
     try {
       await axios.put(
         "https://localhost:7025/api/auth/update-profile",
+        { fullName },
         {
-          fullName: fullName,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        },
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
 
       setMessage("Profile updated successfully!");
     } catch (err: any) {
-      if (typeof err.response?.data === "string") {
-        setError(err.response.data);
-      } else if (err.response?.data?.title) {
-        setError(err.response.data.title);
-      } else {
-        setError("Failed to update profile.");
-      }
+      setError(
+        err.response?.data?.title ||
+          err.response?.data ||
+          "Failed to update profile."
+      );
     }
 
     setLoading(false);
   };
 
+  // ---------------- CHANGE PASSWORD ----------------
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
@@ -88,31 +83,48 @@ const ProfilePage = () => {
     try {
       await axios.put(
         "https://localhost:7025/api/auth/change-password",
-        {
-          currentPassword,
-          newPassword,
-        },
+        { currentPassword, newPassword },
         {
           headers: { Authorization: `Bearer ${token}` },
-        },
+        }
       );
 
       setMessage("Password changed successfully!");
-
-      // Clear fields after success
       setCurrentPassword("");
       setNewPassword("");
     } catch (err: any) {
-      if (typeof err.response?.data === "string") {
-        setError(err.response.data);
-      } else if (err.response?.data?.title) {
-        setError(err.response.data.title);
-      } else {
-        setError("Failed to change password.");
-      }
+      setError(
+        err.response?.data?.title ||
+          err.response?.data ||
+          "Failed to change password."
+      );
     }
 
     setLoading(false);
+  };
+
+  // ---------------- DELETE ACCOUNT ----------------
+  const handleDeleteAccount = async () => {
+    const confirmDelete = window.confirm(
+      "Are you sure? This action is permanent and cannot be undone."
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await axios.delete(
+        "https://localhost:7025/api/auth/delete-account",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // Logout after deletion
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    } catch {
+      setError("Failed to delete account.");
+    }
   };
 
   return (
@@ -121,7 +133,9 @@ const ProfilePage = () => {
 
       <div className="min-h-screen bg-gray-50 flex justify-center py-10 px-4">
         <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl">
-          <h1 className="text-3xl font-bold mb-6 text-center">My Profile 👤</h1>
+          <h1 className="text-3xl font-bold mb-6 text-center">
+            My Profile 👤
+          </h1>
 
           {profile && (
             <div className="mb-6 text-sm text-gray-600">
@@ -135,19 +149,23 @@ const ProfilePage = () => {
             </div>
           )}
 
-          {/* Success Message */}
           {message && (
-            <p className="text-green-600 text-sm mb-4 text-center">{message}</p>
+            <p className="text-green-600 text-sm mb-4 text-center">
+              {message}
+            </p>
           )}
 
-          {/* Error Message */}
           {error && (
-            <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
+            <p className="text-red-500 text-sm mb-4 text-center">
+              {error}
+            </p>
           )}
 
-          {/* Update Name Form */}
+          {/* Update Name */}
           <form onSubmit={handleUpdateName} className="mb-6">
-            <label className="block text-sm font-medium mb-1">Full Name</label>
+            <label className="block text-sm font-medium mb-1">
+              Full Name
+            </label>
 
             <input
               type="text"
@@ -165,7 +183,7 @@ const ProfilePage = () => {
             </button>
           </form>
 
-          {/* Change Password Form */}
+          {/* Change Password */}
           <form onSubmit={handleChangePassword}>
             <label className="block text-sm font-medium mb-1">
               Current Password
@@ -197,6 +215,17 @@ const ProfilePage = () => {
               {loading ? "Changing..." : "Change Password"}
             </button>
           </form>
+
+          {/* DELETE ACCOUNT SECTION */}
+          <div className="mt-8 border-t pt-6">
+            <button
+              type="button"
+              onClick={handleDeleteAccount}
+              className="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition"
+            >
+              Delete My Account
+            </button>
+          </div>
         </div>
       </div>
     </>
