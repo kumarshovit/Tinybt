@@ -14,6 +14,8 @@ namespace TinyURL.Data
 
         // 👇 ADD THIS LINE
         public DbSet<User> Users { get; set; }
+        public DbSet<RevokedSession> RevokedTokens { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

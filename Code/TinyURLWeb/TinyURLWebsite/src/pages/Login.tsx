@@ -18,12 +18,10 @@ const Login = () => {
     try {
       await loginUser(email, password);
 
-      // ✅ Token already saved inside authService
       navigate("/dashboard");
     } catch (err: any) {
       console.log(err.response);
 
-      // Backend sends plain string messages
       if (typeof err.response?.data === "string") {
         setError(err.response.data);
       } else if (err.response?.data?.message) {

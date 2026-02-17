@@ -60,8 +60,31 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(key)
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+        ClockSkew = TimeSpan.Zero
+
     };
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = async context =>
+        {
+            var db = context.HttpContext.RequestServices
+                .GetRequiredService<AppDbContext>();
+
+            var token = context.Request.Headers["Authorization"]
+                .ToString()
+                .Replace("Bearer ", "");
+
+            var revoked = await db.RevokedTokens
+                .AnyAsync(t => t.Token == token);
+
+            if (revoked)
+            {
+                context.Fail("Token has been revoked.");
+            }
+        }
+    };
+
 });
 builder.Services.AddAuthorization();
 

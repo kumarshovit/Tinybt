@@ -1,5 +1,5 @@
 import { useState, FormEvent } from "react";
-import axios from "axios";
+import api from "../utils/api";
 import { Link } from "react-router-dom";
 
 const ForgotPassword = () => {
@@ -8,22 +8,23 @@ const ForgotPassword = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
+  e.preventDefault();
+  setLoading(true);
+  setMessage("");
 
-    try {
-      await axios.post("https://localhost:7025/api/auth/forgot-password", {
-        email,
-      });
+  try {
+    const response = await api.post("/auth/forgot-password", {
+      email,
+    });
 
-      setMessage("If account exists, reset link has been sent to your email.");
-    } catch (error) {
-      setMessage("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    setMessage(response.data.message);
+  } catch {
+    setMessage("Something went wrong. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">

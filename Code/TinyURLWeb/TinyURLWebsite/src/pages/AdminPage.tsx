@@ -1,63 +1,58 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../utils/api";
 import Navbar from "../components/Navbar";
 
 interface User {
   id: number;
   email: string;
   role: string;
-  isEmailVerified: boolean;
 }
 
 const AdminPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
-  const token = localStorage.getItem("token");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
+  // ================= FETCH USERS =================
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(
-        "https://localhost:7025/api/auth/all-users",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const response = await api.get("/auth/all-users");
       setUsers(response.data);
-    } catch (error) {
-      console.error("Error fetching users");
+    } catch {
+      setError("Failed to fetch users.");
     }
   };
 
+  // ================= UPDATE ROLE =================
   const updateRole = async (userId: number, newRole: string) => {
-    await axios.put(
-      `https://localhost:7025/api/auth/update-role?userId=${userId}&newRole=${newRole}`,
-      {},
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    fetchUsers();
+    try {
+      await api.put(
+        `/auth/update-role?userId=${userId}&newRole=${newRole}`
+      );
+      fetchUsers();
+    } catch {
+      alert("Failed to update role.");
+    }
   };
 
+  // ================= DELETE USER =================
   const deleteUser = async (userId: number) => {
-    if (!window.confirm("Are you sure you want to delete this user?"))
-      return;
-
-    await axios.delete(
-      `https://localhost:7025/api/auth/delete-user?userId=${userId}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this user?"
     );
 
-    fetchUsers();
+    if (!confirmDelete) return;
+
+    try {
+      await api.delete(`/auth/delete-user/${userId}`);
+      fetchUsers();
+    } catch {
+      alert("Failed to delete user.");
+    }
   };
 
   const filteredUsers = users.filter((user) =>
@@ -72,6 +67,10 @@ const AdminPage = () => {
         <h1 className="text-3xl font-bold mb-6">
           Admin Dashboard 🔐
         </h1>
+
+        {error && (
+          <p className="text-red-500 mb-4">{error}</p>
+        )}
 
         {/* Search */}
         <input
@@ -88,7 +87,6 @@ const AdminPage = () => {
               <tr>
                 <th className="py-2 px-4">Email</th>
                 <th className="py-2 px-4">Role</th>
-                <th className="py-2 px-4">Verified</th>
                 <th className="py-2 px-4">Actions</th>
               </tr>
             </thead>
@@ -98,9 +96,6 @@ const AdminPage = () => {
                 <tr key={user.id} className="text-center border-b">
                   <td className="py-2 px-4">{user.email}</td>
                   <td className="py-2 px-4">{user.role}</td>
-                  <td className="py-2 px-4">
-                    {user.isEmailVerified ? "✅" : "❌"}
-                  </td>
 
                   <td className="py-2 px-4 space-x-2">
                     {user.role === "User" ? (

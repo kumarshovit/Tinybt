@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../utils/api";
 import Navbar from "../components/Navbar";
 
 interface Profile {
@@ -9,8 +9,6 @@ interface Profile {
 }
 
 const ProfilePage = () => {
-  const token = localStorage.getItem("token");
-
   const [profile, setProfile] = useState<Profile | null>(null);
   const [fullName, setFullName] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -23,15 +21,10 @@ const ProfilePage = () => {
     fetchProfile();
   }, []);
 
+  // ================= FETCH PROFILE =================
   const fetchProfile = async () => {
     try {
-      const response = await axios.get(
-        "https://localhost:7025/api/auth/profile",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
+      const response = await api.get("/auth/profile");
       setProfile(response.data);
       setFullName(response.data.fullName || "");
     } catch {
@@ -39,7 +32,7 @@ const ProfilePage = () => {
     }
   };
 
-  // ---------------- UPDATE NAME ----------------
+  // ================= UPDATE NAME =================
   const handleUpdateName = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
@@ -47,27 +40,21 @@ const ProfilePage = () => {
     setLoading(true);
 
     try {
-      await axios.put(
-        "https://localhost:7025/api/auth/update-profile",
-        { fullName },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
+      await api.put("/auth/update-profile", { fullName });
       setMessage("Profile updated successfully!");
+      fetchProfile();
     } catch (err: any) {
       setError(
         err.response?.data?.title ||
-          err.response?.data ||
-          "Failed to update profile."
+        err.response?.data ||
+        "Failed to update profile."
       );
     }
 
     setLoading(false);
   };
 
-  // ---------------- CHANGE PASSWORD ----------------
+  // ================= CHANGE PASSWORD =================
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
@@ -81,13 +68,10 @@ const ProfilePage = () => {
     setLoading(true);
 
     try {
-      await axios.put(
-        "https://localhost:7025/api/auth/change-password",
-        { currentPassword, newPassword },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await api.put("/auth/change-password", {
+        currentPassword,
+        newPassword,
+      });
 
       setMessage("Password changed successfully!");
       setCurrentPassword("");
@@ -95,15 +79,15 @@ const ProfilePage = () => {
     } catch (err: any) {
       setError(
         err.response?.data?.title ||
-          err.response?.data ||
-          "Failed to change password."
+        err.response?.data ||
+        "Failed to change password."
       );
     }
 
     setLoading(false);
   };
 
-  // ---------------- DELETE ACCOUNT ----------------
+  // ================= DELETE ACCOUNT =================
   const handleDeleteAccount = async () => {
     const confirmDelete = window.confirm(
       "Are you sure? This action is permanent and cannot be undone."
@@ -112,14 +96,8 @@ const ProfilePage = () => {
     if (!confirmDelete) return;
 
     try {
-      await axios.delete(
-        "https://localhost:7025/api/auth/delete-account",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await api.delete("/auth/delete-account");
 
-      // Logout after deletion
       localStorage.removeItem("token");
       window.location.href = "/login";
     } catch {
@@ -161,7 +139,7 @@ const ProfilePage = () => {
             </p>
           )}
 
-          {/* Update Name */}
+          {/* UPDATE NAME */}
           <form onSubmit={handleUpdateName} className="mb-6">
             <label className="block text-sm font-medium mb-1">
               Full Name
@@ -183,7 +161,7 @@ const ProfilePage = () => {
             </button>
           </form>
 
-          {/* Change Password */}
+          {/* CHANGE PASSWORD */}
           <form onSubmit={handleChangePassword}>
             <label className="block text-sm font-medium mb-1">
               Current Password
@@ -216,7 +194,7 @@ const ProfilePage = () => {
             </button>
           </form>
 
-          {/* DELETE ACCOUNT SECTION */}
+          {/* DELETE ACCOUNT */}
           <div className="mt-8 border-t pt-6">
             <button
               type="button"

@@ -25,9 +25,6 @@ apiClient.interceptors.response.use(
   (error) => {
     const originalRequest = error.config;
 
-    // 🚨 Only redirect if:
-    // - 401
-    // - NOT login/register/verify endpoint
     if (
       error.response?.status === 401 &&
       !originalRequest.url?.includes("/login") &&
@@ -58,8 +55,18 @@ export const verifyEmail = async (token: string) => {
 export const loginUser = async (email: string, password: string) => {
   const response = await apiClient.post("/login", { email, password });
 
-  // ✅ Save token after successful login
-  localStorage.setItem("token", response.data.token);
+  console.log("LOGIN RESPONSE:", response.data);
+
+  // ✅ Safe token extraction
+  const token =
+    response.data.token ||
+    response.data.accessToken;
+
+  if (!token) {
+    throw new Error("Token not received from backend");
+  }
+
+  localStorage.setItem("token", token);
 
   return response.data;
 };

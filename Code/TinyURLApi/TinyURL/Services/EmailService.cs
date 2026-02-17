@@ -14,29 +14,37 @@ namespace TinyURL.Services
 
         public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
-            var smtp = _configuration.GetSection("Smtp");
-
-            var client = new SmtpClient(smtp["Host"])
+            try
             {
-                Port = int.Parse(smtp["Port"]!),
-                Credentials = new NetworkCredential(
-                    smtp["Username"],
-                    smtp["Password"]
-                ),
-                EnableSsl = true
-            };
+                var host = _configuration["Smtp:Host"];
+                var port = int.Parse(_configuration["Smtp:Port"]);
+                var username = _configuration["Smtp:Username"];
+                var password = _configuration["Smtp:Password"];
+                var from = _configuration["Smtp:From"];
 
-            var message = new MailMessage
+                using (var client = new SmtpClient(host))
+                {
+                    client.Port = port;
+                    client.Credentials = new NetworkCredential(username, password);
+                    client.EnableSsl = true;
+
+                    var mailMessage = new MailMessage
+                    {
+                        From = new MailAddress(from),
+                        Subject = subject,
+                        Body = body,
+                        IsBodyHtml = false
+                    };
+
+                    mailMessage.To.Add(toEmail);
+
+                    await client.SendMailAsync(mailMessage);
+                }
+            }
+            catch (Exception ex)
             {
-                From = new MailAddress(smtp["From"]),
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = true
-            };
-
-            message.To.Add(toEmail);
-
-            await client.SendMailAsync(message);
+                throw new Exception("Email sending failed: " + ex.Message);
+            }
         }
     }
 }

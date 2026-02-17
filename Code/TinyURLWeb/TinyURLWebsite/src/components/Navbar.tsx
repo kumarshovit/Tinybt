@@ -1,11 +1,28 @@
 import { Link, useNavigate } from "react-router-dom";
+import api from "../utils/api"
 import { getUserRole } from "../utils/auth";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const role = getUserRole();
+  const token = localStorage.getItem("token");
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.post(
+        "https://localhost:7025/api/auth/logout",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.log("Logout error:", error);
+    }
+
+    // Remove token regardless
     localStorage.removeItem("token");
     navigate("/login");
   };
@@ -34,7 +51,13 @@ const Navbar = () => {
             Admin Panel 🔐
           </Link>
         )}
-        <Link to="/profile">Profile</Link>
+
+        <Link
+          to="/profile"
+          className="text-gray-700 hover:text-indigo-600 transition"
+        >
+          Profile
+        </Link>
 
         <button
           onClick={handleLogout}
