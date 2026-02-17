@@ -24,7 +24,7 @@ var app = builder.Build();
 await app.UseAppMiddlewareAndSeedDatabase();
 
 app.MapDefaultEndpoints(); // Aspire health checks and metrics
-
+app.UseSwaggerGen();
 app.Run();
 
 // Make the implicit Program.cs class public, so integration tests can reference the correct assembly for host building
