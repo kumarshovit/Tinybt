@@ -12,11 +12,14 @@ namespace TinyURL.Controllers
     {
         private readonly AppDbContext _context;
         private readonly ShortCodeService _shortCodeService;
+        private readonly ILogger<UrlController> _logger;
 
-        public UrlController(AppDbContext context, ShortCodeService shortCodeService)
+
+        public UrlController(AppDbContext context, ShortCodeService shortCodeService, ILogger<UrlController> logger)
         {
             _context = context;
             _shortCodeService = shortCodeService;
+            _logger = logger;
         }
 
         // DTO
@@ -107,8 +110,9 @@ namespace TinyURL.Controllers
             var mapping = await _context.UrlMappings
                 .FirstOrDefaultAsync(x => x.ShortCode == shortCode);
 
-            if (mapping == null)
-                return NotFound("Invalid short URL.");
+
+            if (mapping == null || mapping.IsDeleted)
+                return NotFound("This link has been deleted or does not exist.");
 
             mapping.ClickCount++;
             await _context.SaveChangesAsync();
@@ -120,6 +124,7 @@ namespace TinyURL.Controllers
         public async Task<IActionResult> GetAllUrls()
         {
             var urls = await _context.UrlMappings
+                .Where(x => !x.IsDeleted)   // 🔥 ADD HERE
                 .Include(u => u.UrlTags)
                     .ThenInclude(ut => ut.Tag)
                 .OrderByDescending(x => x.CreatedAt)
@@ -141,7 +146,6 @@ namespace TinyURL.Controllers
 
             return Ok(urls);
         }
-
 
 
 
@@ -355,6 +359,27 @@ namespace TinyURL.Controllers
             return Ok("Tag renamed successfully.");
         }
 
+
+        [HttpDelete("api/url/{id}")]
+        public async Task<IActionResult> DeleteUrl(int id)
+        {
+            var mapping = await _context.UrlMappings.FindAsync(id);
+
+            if (mapping == null)
+                return NotFound("URL not found.");
+
+            if (mapping.IsDeleted)
+                return BadRequest("URL already deleted.");
+
+            mapping.IsDeleted = true;
+            mapping.DeletedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation($"Link {mapping.ShortCode} deleted at {mapping.DeletedAt}");
+
+            return Ok(new { message = "Link deleted successfully." });
+        }
 
 
 

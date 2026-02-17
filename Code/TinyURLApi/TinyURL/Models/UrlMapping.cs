@@ -8,6 +8,9 @@
         public int ClickCount { get; set; }
         public DateTime CreatedAt { get; set; }
 
+        public bool IsDeleted { get; set; } = false;
+        public DateTime? DeletedAt { get; set; }
+
 
         public ICollection<UrlTag> UrlTags { get; set; }
     }

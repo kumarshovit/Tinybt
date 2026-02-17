@@ -103,3 +103,14 @@ export const renameTag = async (
   }
 };
 
+
+export const deleteUrl = async (id: number) => {
+  const res = await fetch(`${BASE_URL}/${id}`, {
+    method: "DELETE"
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg);
+  }
+};

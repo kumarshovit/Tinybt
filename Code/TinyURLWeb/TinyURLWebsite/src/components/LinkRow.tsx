@@ -4,6 +4,8 @@ import {
     updateAlias,
     updateDestination
 } from "../api/urlService";
+import { deleteUrl } from "../api/urlService";
+
 
 export default function LinkRow({ link, setLinks }: any) {
 
@@ -16,45 +18,66 @@ export default function LinkRow({ link, setLinks }: any) {
     const [newDestination, setNewDestination] = useState("");
 
     const handleAliasUpdate = async () => {
-    try {
-        const response = await updateAlias(link.id, newAlias);
-
-        setLinks((prev: any[]) =>
-            prev.map(l =>
-                l.id === link.id
-                    ? { ...l, shortUrl: response.shortUrl }
-                    : l
-            )
-        );
-
-        setEditingAlias(false);
-        setNewAlias("");
-
-    } catch (err: any) {
-        alert(err.message);
-    }
-};
-
-
-    const handleDestinationUpdate = async () => {
         try {
-    await updateDestination(link.id, newDestination);
+            const response = await updateAlias(link.id, newAlias);
 
-    setLinks((prev: any[]) =>
-      prev.map(l =>
-        l.id === link.id
-          ? { ...l, longUrl: newDestination }
-          : l
-      )
-    );
+            setLinks((prev: any[]) =>
+                prev.map(l =>
+                    l.id === link.id
+                        ? { ...l, shortUrl: response.shortUrl }
+                        : l
+                )
+            );
 
-    setEditingDestination(false);
-    setNewDestination("");
+            setEditingAlias(false);
+            setNewAlias("");
 
         } catch (err: any) {
             alert(err.message);
         }
     };
+
+
+    const handleDestinationUpdate = async () => {
+        try {
+            await updateDestination(link.id, newDestination);
+
+            setLinks((prev: any[]) =>
+                prev.map(l =>
+                    l.id === link.id
+                        ? { ...l, longUrl: newDestination }
+                        : l
+                )
+            );
+
+            setEditingDestination(false);
+            setNewDestination("");
+
+        } catch (err: any) {
+            alert(err.message);
+        }
+    };
+
+    const handleDelete = async () => {
+        const confirmDelete = window.confirm(
+            "Are you sure you want to delete this link?"
+        );
+
+        if (!confirmDelete) return;
+
+        try {
+            await deleteUrl(link.id);
+
+            setLinks((prev: any[]) =>
+                prev.filter(l => l.id !== link.id)
+            );
+
+        } catch (error) {
+            console.error(error);
+            alert("Delete failed");
+        }
+    };
+
 
     return (
         <div
@@ -97,6 +120,10 @@ export default function LinkRow({ link, setLinks }: any) {
                     >
                         Manage Tags
                     </button>
+                    <button onClick={handleDelete} style={{ color: "red" }}>
+                        Delete
+                    </button>
+
                 </div>
             </div>
 
