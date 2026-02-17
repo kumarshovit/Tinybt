@@ -82,3 +82,24 @@ export const updateDestination = async (id: number, newLongUrl: string) => {
 
   return res.json();
 };
+
+export const renameTag = async (
+  id: number,
+  oldTag: string,
+  newTag: string
+) => {
+  const res = await fetch(
+    `https://localhost:7025/api/url/${id}/tags/${oldTag}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newTag)
+    }
+  );
+
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg);
+  }
+};
+

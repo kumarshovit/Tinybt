@@ -1,7 +1,14 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
+import TagManagement from "./pages/TagManagement";
 
-function App() {
-  return <Dashboard />;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/tags/:id" element={<TagManagement />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
-
-export default App;

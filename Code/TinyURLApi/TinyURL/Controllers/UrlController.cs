@@ -126,6 +126,7 @@ namespace TinyURL.Controllers
                 .Select(x => new
                 {
                     x.Id,
+                    x.LongUrl,
                     x.ShortCode,
                     x.ClickCount,
                     x.CreatedAt,
@@ -185,25 +186,32 @@ namespace TinyURL.Controllers
 
             return Ok("Tags added successfully.");
         }
+
         [HttpGet("api/url/search")]
         public async Task<IActionResult> SearchByTag(string tag)
         {
-            var result = await _context.UrlMappings
+            if (string.IsNullOrWhiteSpace(tag))
+                return BadRequest("Tag is required.");
+
+            var urls = await _context.UrlMappings
                 .Include(u => u.UrlTags)
                     .ThenInclude(ut => ut.Tag)
-                .Where(u => u.UrlTags.Any(t => t.Tag.Name == tag.ToLower()))
-                .Select(x => new
+                .Where(u => u.UrlTags.Any(ut => ut.Tag.Name == tag.ToLower()))
+                .Select(u => new
                 {
-                    x.Id,
-                    x.ShortCode,
-                    x.ClickCount,
-                    ShortUrl = $"{Request.Scheme}://{Request.Host}/{x.ShortCode}",
-                    Tags = x.UrlTags.Select(t => t.Tag.Name).ToList()
+                    u.Id,
+                    u.LongUrl,
+                    u.ShortCode,
+                    u.ClickCount,
+                    u.CreatedAt,
+                    ShortUrl = $"{Request.Scheme}://{Request.Host}/{u.ShortCode}",
+                    Tags = u.UrlTags.Select(t => t.Tag.Name).ToList()
                 })
                 .ToListAsync();
 
-            return Ok(result);
+            return Ok(urls);
         }
+
 
         [HttpDelete("api/url/{id}/tags/{tagName}")]
         public async Task<IActionResult> RemoveTag(int id, string tagName)
@@ -327,6 +335,27 @@ namespace TinyURL.Controllers
                 message = "Destination updated successfully."
             });
         }
+
+        [HttpPut("api/url/{id}/tags/{oldTagName}")]
+        public async Task<IActionResult> RenameTag(int id, string oldTagName, [FromBody] string newTagName)
+        {
+            if (string.IsNullOrWhiteSpace(newTagName))
+                return BadRequest("New tag name required.");
+
+            var tag = await _context.Tags
+                .FirstOrDefaultAsync(t => t.Name == oldTagName.ToLower());
+
+            if (tag == null)
+                return NotFound("Tag not found.");
+
+            tag.Name = newTagName.Trim().ToLower();
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Tag renamed successfully.");
+        }
+
+
 
 
 

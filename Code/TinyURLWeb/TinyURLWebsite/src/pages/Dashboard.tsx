@@ -1,73 +1,57 @@
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
-import CreateLinkCard from "../components/CreateLinkCard";
-import SearchBar from "../components/SearchBar";
-import LinkCard from "../components/LinkCard";
-import { getAllUrls } from "../api/urlService";
+import HeroSection from "../components/HeroSection";
+import RecentLinks from "../components/RecentLinks";
+import { searchByTag, getAllUrls } from "../api/urlService";
 
 export default function Dashboard() {
-  const [links, setLinks] = useState<any[]>([]);
 
-  const loadLinks = async () => {
-    try {
-      const data = await getAllUrls();
-      setLinks(data);
-    } catch (error) {
-      console.error("Error loading links:", error);
-    }
-  };
+  const [links, setLinks] = useState<any[]>([]);
+  const [searchTag, setSearchTag] = useState("");
 
   useEffect(() => {
-   
+    loadLinks();
   }, []);
 
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        loadLinks();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, []);
+
+  const loadLinks = async () => {
+    const data = await getAllUrls();
+    setLinks(data);
+  };
+  const handleSearch = async () => {
+    if (!searchTag.trim()) return;
+
+    const result = await searchByTag(searchTag);
+    setLinks(result);
+  };
+
+  const handleClear = async () => {
+    setSearchTag("");
+    const data = await getAllUrls();
+    setLinks(data);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
-
-      {/* NAVBAR */}
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
-
-      {/* HERO SECTION */}
-      <div className="text-center py-16 px-6">
-        <h2 className="text-4xl font-bold text-gray-800 mb-4">
-          Shorten & Manage Your Links
-        </h2>
-        <p className="text-gray-500 text-lg">
-          Custom aliases. Smart tagging. Click tracking.
-        </p>
-      </div>
-
-      {/* CREATE LINK */}
-      <div className="px-6">
-        <CreateLinkCard setLinks={setLinks} />
-      </div>
-
-      {/* SEARCH */}
-      <SearchBar setLinks={setLinks} />
-
-      {/* LINKS GRID */}
-    <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto mt-12 pb-20 px-6">
-
-  {links.length === 0 ? (
-    <div className="col-span-2 text-center text-gray-400 text-lg">
-      No links to display.
-      <br />
-      Create a link or search by tag.
-    </div>
-  ) : (
-    links.map((link: any) => (
-      <LinkCard
-        key={link.id}
-        link={link}
-        links={links}
-        setLinks={setLinks}
-      />
-    ))
-  )}
-
-</div>
-
-
+      <HeroSection setLinks={setLinks} />
+      <RecentLinks links={links} searchTag={searchTag}
+        setSearchTag={setSearchTag}
+        handleSearch={handleSearch}
+        handleClear={handleClear}
+         setLinks={setLinks} />
     </div>
   );
 }
