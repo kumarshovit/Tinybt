@@ -5,11 +5,19 @@ export const getAllUrls = async () => {
   return res.json();
 };
 
-export const createUrl = async (longUrl: string, customAlias?: string) => {
+export const createUrl = async (
+  longUrl: string,
+  customAlias?: string,
+  expirationDate?: string
+) => {
   const res = await fetch(`${BASE_URL}/shorten`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ longUrl, customAlias })
+    body: JSON.stringify({
+      longUrl,
+      customAlias,
+      expirationDate
+    })
   });
 
   if (!res.ok) {
@@ -19,6 +27,7 @@ export const createUrl = async (longUrl: string, customAlias?: string) => {
 
   return res.json();
 };
+
 
 export const addTags = async (id: number, tags: string[]) => {
   await fetch(`${BASE_URL}/${id}/tags`, {

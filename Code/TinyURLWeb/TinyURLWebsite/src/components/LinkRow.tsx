@@ -102,6 +102,12 @@ export default function LinkRow({ link, setLinks }: any) {
                     <p className="text-sm text-gray-400">
                         {link.clickCount} clicks
                     </p>
+                    {link.expirationDate && (
+                        <p className="text-sm text-red-500">
+                            Expires on: {new Date(link.expirationDate).toLocaleString()}
+                        </p>
+                    )}
+
                 </div>
 
                 <div className="flex gap-3">

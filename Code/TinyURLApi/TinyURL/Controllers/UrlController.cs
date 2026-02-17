@@ -28,6 +28,9 @@ namespace TinyURL.Controllers
             public string LongUrl { get; set; }
             public string? CustomAlias { get; set; }
 
+            public DateTime? ExpirationDate { get; set; }  
+
+
         }
 
         public class AddTagsRequest
@@ -53,6 +56,12 @@ namespace TinyURL.Controllers
 
             if (!Uri.IsWellFormedUriString(request.LongUrl, UriKind.Absolute))
                 return BadRequest("Invalid URL format.");
+
+            if (request.ExpirationDate.HasValue &&
+    request.ExpirationDate <= DateTime.UtcNow)
+            {
+                return BadRequest("Expiration date must be in the future.");
+            }
 
             string shortCode;
 
@@ -85,7 +94,8 @@ namespace TinyURL.Controllers
                 LongUrl = request.LongUrl,
                 ShortCode = shortCode,
                 CreatedAt = DateTime.UtcNow,
-                ClickCount = 0
+                ClickCount = 0,
+                 ExpirationDate = request.ExpirationDate
             };
 
             _context.UrlMappings.Add(mapping);
@@ -114,6 +124,14 @@ namespace TinyURL.Controllers
             if (mapping == null || mapping.IsDeleted)
                 return NotFound("This link has been deleted or does not exist.");
 
+            if (mapping.ExpirationDate.HasValue &&
+    mapping.ExpirationDate < DateTime.UtcNow)
+            {
+                return NotFound("This link has expired.");
+            }
+
+
+
             mapping.ClickCount++;
             await _context.SaveChangesAsync();
 
@@ -135,7 +153,7 @@ namespace TinyURL.Controllers
                     x.ShortCode,
                     x.ClickCount,
                     x.CreatedAt,
-
+                    x.ExpirationDate,
                     ShortUrl = $"{Request.Scheme}://{Request.Host}/{x.ShortCode}",
 
                     Tags = x.UrlTags

@@ -11,6 +11,7 @@
         public bool IsDeleted { get; set; } = false;
         public DateTime? DeletedAt { get; set; }
 
+        public DateTime? ExpirationDate { get; set; }
 
         public ICollection<UrlTag> UrlTags { get; set; }
     }
