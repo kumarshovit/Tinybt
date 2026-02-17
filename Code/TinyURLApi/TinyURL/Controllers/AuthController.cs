@@ -63,9 +63,43 @@ namespace TinyURL.Controllers
                 .FirstOrDefaultAsync(u =>
                     u.Email.ToLower() == request.Email.ToLower());
 
-            if (user == null ||
-                !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+            if (user == null)
                 return Unauthorized("Invalid credentials.");
+
+            // 🔒 Check if account is locked
+            if (user.LockoutEnd != null && user.LockoutEnd > DateTime.UtcNow)
+            {
+                return Unauthorized(
+                  $"Account locked until {user.LockoutEnd.Value.ToLocalTime():dd-MM-yyyy HH:mm:ss}"
+                 );
+
+            }
+
+            // 🔑 Verify password
+            if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+            {
+                user.FailedLoginAttempts++;
+
+                var maxAttempts = int.Parse(_configuration["AuthSettings:MaxFailedAttempts"]!);
+                var lockoutMinutes = int.Parse(_configuration["AuthSettings:LockoutMinutes"]!);
+
+                if (user.FailedLoginAttempts >= maxAttempts)
+                {
+                    user.LockoutEnd = DateTime.UtcNow.AddMinutes(lockoutMinutes);
+                    user.FailedLoginAttempts = 0; // reset counter
+                }
+
+                await _context.SaveChangesAsync();
+
+                Console.WriteLine($"⚠️ Suspicious login attempt for {user.Email} from IP: {HttpContext.Connection.RemoteIpAddress}");
+
+                return Unauthorized("Invalid credentials.");
+            }
+
+            // ✅ Successful login → reset counters
+            user.FailedLoginAttempts = 0;
+            user.LockoutEnd = null;
+            await _context.SaveChangesAsync();
 
             var (accessToken, expires) = GenerateJwtToken(user);
 
@@ -89,6 +123,7 @@ namespace TinyURL.Controllers
                 expires
             });
         }
+
 
         // ================= REFRESH TOKEN =================
         [HttpPost("refresh-token")]
