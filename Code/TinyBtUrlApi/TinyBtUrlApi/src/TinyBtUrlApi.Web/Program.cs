@@ -1,4 +1,5 @@
-﻿using TinyBtUrlApi.Web.Configurations;
+﻿using Microsoft.AspNetCore.DataProtection.Repositories;
+using TinyBtUrlApi.Web.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ startupLogger.LogInformation("Starting web host");
 
 builder.Services.AddOptionConfigs(builder.Configuration, startupLogger, builder);
 builder.Services.AddServiceConfigs(startupLogger, builder);
+builder.Services.AddScoped<IUrlRepository, UrlRepository>();
 
 builder.Services.AddFastEndpoints()
                 .SwaggerDocument(o =>
