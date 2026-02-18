@@ -55,9 +55,6 @@ export const verifyEmail = async (token: string) => {
 export const loginUser = async (email: string, password: string) => {
   const response = await apiClient.post("/login", { email, password });
 
-  console.log("LOGIN RESPONSE:", response.data);
-
-  // ✅ Safe token extraction
   const token =
     response.data.token ||
     response.data.accessToken;
@@ -67,13 +64,33 @@ export const loginUser = async (email: string, password: string) => {
   }
 
   localStorage.setItem("token", token);
+  localStorage.setItem("refreshToken", response.data.refreshToken);
 
   return response.data;
 };
 
+
 // 🔹 Logout
-export const logoutUser = () => {
+export const logoutUser = async () => {
+  const token = localStorage.getItem("token");
+  const refreshToken = localStorage.getItem("refreshToken");
+
+  try {
+    await apiClient.post(
+      "/logout",
+      { refreshToken },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Logout API error:", error);
+  }
+
   localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
 };
 
 export default apiClient;

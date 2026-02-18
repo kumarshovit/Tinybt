@@ -172,6 +172,10 @@ namespace TinyURL.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] RefreshTokenDto model)
         {
+            // ✅ FIRST validate model
+            if (model == null || string.IsNullOrEmpty(model.RefreshToken))
+                return BadRequest("Refresh token required.");
+
             var accessToken = Request.Headers["Authorization"]
                 .ToString()
                 .Replace("Bearer ", "");
@@ -350,6 +354,80 @@ namespace TinyURL.Controllers
 
             return Ok("Password reset successful.");
         }
+
+        // ================= GOOGLE LOGIN =================
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto model)
+        {
+            try
+            {
+                var googleClientId = _configuration["GoogleAuth:ClientId"];
+
+                var payload = await GoogleJsonWebSignature.ValidateAsync(
+                    model.Token,
+                    new GoogleJsonWebSignature.ValidationSettings
+                    {
+                        Audience = new[] { googleClientId }
+                    });
+
+                var email = payload.Email;
+                var name = payload.Name;
+
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
+
+                if (user == null)
+                {
+                    user = new User
+                    {
+                        Email = email.ToLower(),
+                        FullName = name,
+                        Role = "User",
+                        IsEmailVerified = true,
+                        CreatedAt = DateTime.UtcNow,
+                        LoginProvider = "Google",
+                        PasswordHash = Guid.NewGuid().ToString() // safe fallback
+                    };
+
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+                }
+
+                var (accessToken, expires) = GenerateJwtToken(user);
+
+                var refreshToken = Guid.NewGuid().ToString();
+
+                _context.RefreshTokens.Add(new RefreshToken
+                {
+                    Token = refreshToken,
+                    UserId = user.Id,
+                    ExpiresAt = DateTime.UtcNow.AddDays(7),
+                    IsRevoked = false
+                });
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    accessToken,
+                    refreshToken,
+                    expires
+                });
+            }
+            catch (InvalidJwtException ex)
+            {
+                Console.WriteLine("JWT ERROR: " + ex.Message);
+                return Unauthorized("Invalid Google token.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("GOOGLE LOGIN ERROR:");
+                Console.WriteLine(ex.ToString());
+                return StatusCode(500, "Internal server error.");
+            }
+        }
+
+
 
 
         // ================= JWT GENERATOR =================

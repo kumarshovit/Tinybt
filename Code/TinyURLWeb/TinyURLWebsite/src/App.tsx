@@ -13,36 +13,50 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Default route */}
-        <Route path="/" element={<Navigate to="/login" />} />
 
-        {/* Public Routes */}
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/verify" element={<VerifyEmail />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/profile" element={<ProfilePage />} />
+  <Route path="/" element={<Navigate to="/login" />} />
 
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <AdminPage />
-            </AdminRoute>
-          }
-        />
-        {/* Fallback Route (optional but professional) */}
-        <Route path="*" element={<Navigate to="/login" />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
+  {/* Public */}
+  <Route path="/register" element={<Register />} />
+  <Route path="/login" element={<Login />} />
+  <Route path="/verify" element={<VerifyEmail />} />
+  <Route path="/forgot-password" element={<ForgotPassword />} />
+  <Route path="/reset-password" element={<ResetPassword />} />
+
+  {/* Protected */}
+  <Route
+    path="/dashboard"
+    element={
+      <ProtectedRoute>
+        <Dashboard />
+      </ProtectedRoute>
+    }
+  />
+
+  <Route
+    path="/profile"
+    element={
+      <ProtectedRoute>
+        <ProfilePage />
+      </ProtectedRoute>
+    }
+  />
+
+  {/* Admin */}
+  <Route
+    path="/admin"
+    element={
+      <AdminRoute>
+        <AdminPage />
+      </AdminRoute>
+    }
+  />
+
+  {/* Fallback */}
+  <Route path="*" element={<Navigate to="/login" />} />
+
+</Routes>
+
     </BrowserRouter>
   );
 }

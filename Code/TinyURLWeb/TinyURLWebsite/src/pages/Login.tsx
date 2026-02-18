@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { loginUser } from "../services/authService";
+import GoogleLogin from "../components/auth/GoogleLogin";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -107,6 +108,17 @@ const Login = () => {
             Register
           </Link>
         </p>
+        {/* Divider */}
+        <div className="flex items-center my-4">
+          <hr className="flex-grow border-gray-300" />
+          <span className="mx-2 text-gray-400 text-sm">OR</span>
+          <hr className="flex-grow border-gray-300" />
+        </div>
+
+        {/* Google Login */}
+        <div className="flex justify-center">
+          <GoogleLogin />
+        </div>
       </div>
     </div>
   );
