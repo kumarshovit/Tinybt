@@ -1,0 +1,33 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".template.config/template.json" />
+    <File Path="CleanArchitecture.nuspec" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/TinyBtUrlApi.Core/TinyBtUrlApi.Core.csproj" />
+    <Project Path="src/TinyBtUrlApi.Infrastructure/TinyBtUrlApi.Infrastructure.csproj" />
+    <Project Path="src/TinyBtUrlApi.UseCases/TinyBtUrlApi.UseCases.csproj" />
+    <Project Path="src/TinyBtUrlApi.Web/TinyBtUrlApi.Web.csproj" />
+  </Folder>
+  <Folder Name="/src/_aspire/">
+    <Project Path="src/TinyBtUrlApi.AspireHost/TinyBtUrlApi.AspireHost.csproj" />
+    <Project Path="src/TinyBtUrlApi.ServiceDefaults/TinyBtUrlApi.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TinyBtUrlApi.FunctionalTests/TinyBtUrlApi.FunctionalTests.csproj">
+      <BuildDependency Project="src/TinyBtUrlApi.Web/TinyBtUrlApi.Web.csproj" />
+    </Project>
+    <Project Path="tests/TinyBtUrlApi.IntegrationTests/TinyBtUrlApi.IntegrationTests.csproj">
+      <BuildDependency Project="src/TinyBtUrlApi.Infrastructure/TinyBtUrlApi.Infrastructure.csproj" />
+    </Project>
+    <Project Path="tests/TinyBtUrlApi.UnitTests/TinyBtUrlApi.UnitTests.csproj" />
+  </Folder>
+</Solution>
