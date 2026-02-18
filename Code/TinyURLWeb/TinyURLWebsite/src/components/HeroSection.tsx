@@ -1,6 +1,6 @@
 import ShortenCard from "./ShortenCard";
 
-export default function HeroSection({ setLinks }: any) {
+export default function HeroSection({ onUrlCreated  }: any) {
   return (
     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 py-20">
       <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
@@ -14,7 +14,7 @@ export default function HeroSection({ setLinks }: any) {
           </p>
         </div>
 
-        <ShortenCard setLinks={setLinks} />
+        <ShortenCard onUrlCreated={onUrlCreated}  />
       </div>
     </div>
   );

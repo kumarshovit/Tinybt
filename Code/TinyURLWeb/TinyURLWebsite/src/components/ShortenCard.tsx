@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createUrl } from "../api/urlService";
 
-export default function ShortenCard({ setLinks }: any) {
+export default function ShortenCard({ onUrlCreated }: any) {
 
     const [longUrl, setLongUrl] = useState("");
     const [alias, setAlias] = useState("");
@@ -28,7 +28,8 @@ export default function ShortenCard({ setLinks }: any) {
                 tags: []
             };
 
-            setLinks([newLink]);
+          await onUrlCreated();
+
             setResult(newLink);
             setLongUrl("");
             setAlias("");

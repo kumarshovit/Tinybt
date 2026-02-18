@@ -46,7 +46,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <HeroSection setLinks={setLinks} />
+      <HeroSection onUrlCreated={loadLinks}  />
       <RecentLinks links={links} searchTag={searchTag}
         setSearchTag={setSearchTag}
         handleSearch={handleSearch}
