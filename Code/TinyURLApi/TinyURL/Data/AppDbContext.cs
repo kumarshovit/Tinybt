@@ -14,6 +14,7 @@ namespace TinyURL.Data
         public DbSet<UrlMapping> UrlMappings { get; set; }
         public DbSet<Tag> Tags { get; set; }
         public DbSet<UrlTag> UrlTags { get; set; }
+        public DbSet<RequestLog> RequestLogs { get; set; }
 
 
 

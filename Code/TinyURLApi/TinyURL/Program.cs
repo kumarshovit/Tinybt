@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TinyURL.Data;
+using TinyURL.Middleware;
 using TinyURL.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,6 +41,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");

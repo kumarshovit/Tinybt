@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TinyURL.Data;
 
@@ -11,9 +12,11 @@ using TinyURL.Data;
 namespace TinyURL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260219100948_AddRequestLogs")]
+    partial class AddRequestLogs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,16 +52,8 @@ namespace TinyURL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("QueryString")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RawBody")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("RouteValues")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("ShortCode")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("StatusCode")
@@ -114,16 +109,17 @@ namespace TinyURL.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("LongUrl")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ShortCode")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ShortCode")
-                        .IsUnique()
-                        .HasFilter("[ShortCode] IS NOT NULL");
+                        .IsUnique();
 
                     b.ToTable("UrlMappings");
                 });
