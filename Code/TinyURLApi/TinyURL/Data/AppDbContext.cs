@@ -12,7 +12,7 @@ namespace TinyURL.Data
         }
 
         public DbSet<UrlMapping> UrlMappings { get; set; }
-
+        public DbSet<ClickLog> ClickLogs { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

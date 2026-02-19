@@ -65,6 +65,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Short code generator service
 builder.Services.AddScoped<ShortCodeService>();
 
+// ✅ ADD THIS LINE (Required for Country Detection API)
+builder.Services.AddHttpClient();
+
 // ✅ ADD CORS
 builder.Services.AddCors(options =>
 {
@@ -88,10 +91,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// 🔴 If HTTPS gives issues, comment this temporarily
 app.UseHttpsRedirection();
 
-// ✅ ENABLE CORS (IMPORTANT: before MapControllers)
+// ✅ ENABLE CORS
 app.UseCors("AllowFrontend");
 
 app.UseAuthorization();
@@ -99,3 +101,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
