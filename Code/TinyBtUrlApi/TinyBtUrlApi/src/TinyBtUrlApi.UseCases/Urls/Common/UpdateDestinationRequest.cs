@@ -6,5 +6,5 @@ namespace TinyBtUrlApi.UseCases.Urls.Common;
 
 public class UpdateDestinationRequest
 {
-  public string NewLongUrl { get; set; } = string.Empty;
+  public string NewLongUrl { get; set; } = default!;
 }
