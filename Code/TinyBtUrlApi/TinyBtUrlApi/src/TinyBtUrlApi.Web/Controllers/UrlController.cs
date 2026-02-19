@@ -38,7 +38,6 @@ public class UrlController : ControllerBase
   {
     var result = await _mediator.Send(new RedirectUrlQuery(shortCode));
     if (result == null) return NotFound();
-    return Redirect(result);
     return Redirect(result.LongUrl);
   }
 
