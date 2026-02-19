@@ -4,12 +4,12 @@ using System.Text;
 
 namespace TinyBtUrlApi.Core.Entities;
 
-internal class UrlMapping
+public class UrlMapping
 {
 
   public int Id { get; set; }
-  public string LongUrl { get; set; }
-  public string ShortCode { get; set; }
+  public string LongUrl { get; set; } = string.Empty;
+  public string ShortCode { get; set; } = string.Empty;
   public int ClickCount { get; set; }
   public DateTime CreatedAt { get; set; }
 
@@ -18,5 +18,5 @@ internal class UrlMapping
 
   public DateTime? ExpirationDate { get; set; }
 
-  public ICollection<UrlTag> UrlTags { get; set; }
+  public ICollection<UrlTag> UrlTags { get; set; } = new List<UrlTag>();
 }

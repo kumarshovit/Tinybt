@@ -1,6 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <Compile Remove="Urls\CreateShortUrl\NewFolder\**" />
+    <EmbeddedResource Remove="Urls\CreateShortUrl\NewFolder\**" />
+    <None Remove="Urls\CreateShortUrl\NewFolder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Ardalis.Result" />
   </ItemGroup>
 

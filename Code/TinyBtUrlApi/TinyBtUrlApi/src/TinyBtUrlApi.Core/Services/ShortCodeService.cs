@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TinyBtUrlApi.Core.Services;
 
-internal class ShortCodeService
+public class ShortCodeService
 {
   public string GenerateShortCode(int length = 6)
   {

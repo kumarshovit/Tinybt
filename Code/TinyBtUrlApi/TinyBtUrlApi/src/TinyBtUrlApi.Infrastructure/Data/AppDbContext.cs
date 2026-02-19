@@ -1,45 +1,29 @@
-﻿using System.Xml.Serialization;
-using Azure;
-using Org.BouncyCastle.Asn1.Pkcs;
-using TinyBtUrlApi.Core.ContributorAggregate;
+﻿using Microsoft.EntityFrameworkCore;
 using TinyBtUrlApi.Core.Entities;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using TinyBtUrlApi.Infrastructure.Data;
 
 namespace TinyBtUrlApi.Infrastructure.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options)
-    : DbContext(options)
+public class AppDbContext : DbContext
 {
-  public DbSet<Contributor> Contributors => Set<Contributor>();
+  public AppDbContext(DbContextOptions<AppDbContext> options)
+      : base(options)
+  {
+  }
 
-  // 🔥 ADD THESE
-  public DbSet<UrlMapping> UrlMappings => Set<UrlMapping>();
-  public DbSet<Tag> Tags => Set<Tag>();
-  public DbSet<UrlTag> UrlTags => Set<UrlTag>();
+  public DbSet<UrlMapping> UrlMappings { get; set; }
+  public DbSet<Tag> Tags { get; set; }
+  public DbSet<UrlTag> UrlTags { get; set; }
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     base.OnModelCreating(modelBuilder);
 
-    modelBuilder.ApplyConfigurationsFromAssembly(
-        Assembly.GetExecutingAssembly());
-
-    // 🔥 Move your Fluent API config here
-    modelBuilder.Entity<UrlMapping>()
-        .HasIndex(x => x.ShortCode)
-        .IsUnique();
-
-    modelBuilder.Entity<UrlTag>()
-        .HasKey(ut => new { ut.UrlMappingId, ut.TagId });
-
-    modelBuilder.Entity<UrlTag>()
-        .HasOne(ut => ut.UrlMapping)
-        .WithMany(u => u.UrlTags)
-        .HasForeignKey(ut => ut.UrlMappingId);
-
-    modelBuilder.Entity<UrlTag>()
-        .HasOne(ut => ut.Tag)
-        .WithMany(t => t.UrlTags)
-        .HasForeignKey(ut => ut.TagId);
+    // ⭐ Auto load all IEntityTypeConfiguration
+    modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
   }
 
   public override int SaveChanges() =>

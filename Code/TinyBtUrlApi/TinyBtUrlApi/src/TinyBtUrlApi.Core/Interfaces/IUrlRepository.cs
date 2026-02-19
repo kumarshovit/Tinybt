@@ -5,10 +5,21 @@ using TinyBtUrlApi.Core.Entities;
 
 namespace TinyBtUrlApi.Core.Interfaces;
 
-internal interface IUrlRepository
+public interface IUrlRepository
 {
   Task AddAsync(UrlMapping url);
-  Task<UrlMapping?> GetByShortCodeAsync(string shortCode);
+  Task UpdateAsync(UrlMapping url);
+
   Task<List<UrlMapping>> GetAllAsync();
-  Task SaveChangesAsync();
+  Task<UrlMapping?> GetByIdAsync(int id);
+  Task<UrlMapping?> GetByShortCodeAsync(string shortCode);
+
+  Task<bool> ShortCodeExists(string shortCode);
+
+  // TAGS
+  Task<List<UrlMapping>> SearchByTagAsync(string tag);
+  Task AddTagsAsync(int urlId, List<string> tags);
+  Task UpdateTagsAsync(int urlId, List<string> tags);
+  Task RemoveTagAsync(int urlId, string tag);
+  Task RenameTagAsync(int urlId, string oldTag, string newTag);
 }
