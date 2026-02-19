@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Reflection.Emit;
 using TinyURL.Models;
 
 namespace TinyURL.Data
@@ -13,6 +12,7 @@ namespace TinyURL.Data
 
         public DbSet<UrlMapping> UrlMappings { get; set; }
         public DbSet<ClickLog> ClickLogs { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -20,6 +20,15 @@ namespace TinyURL.Data
             modelBuilder.Entity<UrlMapping>()
                 .HasIndex(x => x.ShortCode)
                 .IsUnique();
+
+            modelBuilder.Entity<ClickLog>()
+                .HasIndex(x => x.ShortCode);
+
+            modelBuilder.Entity<ClickLog>()
+                .HasIndex(x => x.ClickedAt);
+
+            modelBuilder.Entity<ClickLog>()
+                .HasIndex(x => x.VisitorId);
         }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TinyURL.Data;
 
@@ -11,9 +12,11 @@ using TinyURL.Data;
 namespace TinyURL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260219101213_UpgradeClickLogRawStorage")]
+    partial class UpgradeClickLogRawStorage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,7 +25,7 @@ namespace TinyURL.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("ClickLog", b =>
+            modelBuilder.Entity("TinyURL.Models.ClickLog", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -52,7 +55,6 @@ namespace TinyURL.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RawHeaders")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Referrer")
@@ -60,22 +62,16 @@ namespace TinyURL.Migrations
 
                     b.Property<string>("ShortCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserAgent")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("VisitorId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ClickedAt");
-
-                    b.HasIndex("ShortCode");
-
-                    b.HasIndex("VisitorId");
 
                     b.ToTable("ClickLogs");
                 });
