@@ -1,8 +1,6 @@
 ﻿using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Services;
 using TinyBtUrlApi.Infrastructure.Data;
-using TinyBtUrlApi.Infrastructure.Data.Queries;
-using TinyBtUrlApi.UseCases.Contributors.List;
 
 namespace TinyBtUrlApi.Infrastructure;
 public static class InfrastructureServiceExtensions
@@ -43,9 +41,7 @@ public static class InfrastructureServiceExtensions
     });
 
     services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>))
-           .AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>))
-           .AddScoped<IListContributorsQueryService, ListContributorsQueryService>()
-           .AddScoped<IDeleteContributorService, DeleteContributorService>();
+           .AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
 
     logger.LogInformation("{Project} services registered", "Infrastructure");
 

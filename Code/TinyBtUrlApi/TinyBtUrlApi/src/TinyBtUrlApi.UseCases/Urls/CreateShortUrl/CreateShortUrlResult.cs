@@ -7,5 +7,5 @@ namespace TinyBtUrlApi.UseCases.Urls.CreateShortUrl;
 
 public record CreateShortUrlResult(
     int Id,
-    string ShortUrl
+    string ShortCode
 );

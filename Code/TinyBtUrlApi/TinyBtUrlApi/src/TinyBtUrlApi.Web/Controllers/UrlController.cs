@@ -63,7 +63,7 @@ public class UrlController : ControllerBase
   }
 
   [Microsoft.AspNetCore.Mvc.HttpPut("{id}/tags/{oldTag}")]
-  public async Task<IActionResult> RenameTag(int id, string oldTag, [FromBody] string newTag)
+  public async Task<IActionResult> RenameTag(int id, string oldTag, [Microsoft.AspNetCore.Mvc.FromBody] string newTag)
   {
     await _mediator.Send(new RenameTagCommand(id, oldTag, newTag));
     return Ok();
