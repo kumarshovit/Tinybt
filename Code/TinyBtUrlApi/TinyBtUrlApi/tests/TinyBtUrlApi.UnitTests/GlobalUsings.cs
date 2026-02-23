@@ -1,7 +1,5 @@
 ﻿global using System.Runtime.CompilerServices;
 global using Ardalis.SharedKernel;
-global using TinyBtUrlApi.Core.ContributorAggregate;
-global using TinyBtUrlApi.UseCases.Contributors.Create;
 global using Shouldly;
 global using Mediator;
 global using Microsoft.Extensions.Logging;

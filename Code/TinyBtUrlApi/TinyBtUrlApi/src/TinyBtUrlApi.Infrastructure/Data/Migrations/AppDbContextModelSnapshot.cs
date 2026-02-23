@@ -97,49 +97,7 @@ namespace TinyBtUrlApi.Infrastructure.Data.Migrations
 
       SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-      // ================= CONTRIBUTOR (existing clean architecture) =================
-      modelBuilder.Entity("TinyBtUrlApi.Core.ContributorAggregate.Contributor", b =>
-      {
-        b.Property<int>("Id").HasColumnType("int");
-
-        b.Property<string>("Name")
-            .IsRequired()
-            .HasMaxLength(100)
-            .HasColumnType("nvarchar(100)");
-
-        b.Property<int>("Status").HasColumnType("int");
-
-        b.HasKey("Id");
-
-        b.ToTable("Contributors");
-      });
-
-      modelBuilder.Entity("TinyBtUrlApi.Core.ContributorAggregate.Contributor", b =>
-      {
-        b.OwnsOne("TinyBtUrlApi.Core.ContributorAggregate.PhoneNumber", "PhoneNumber", b1 =>
-        {
-          b1.Property<int>("ContributorId").HasColumnType("int");
-
-          b1.Property<string>("CountryCode")
-              .IsRequired()
-              .HasColumnType("nvarchar(max)");
-
-          b1.Property<string>("Extension")
-              .HasColumnType("nvarchar(max)");
-
-          b1.Property<string>("Number")
-              .IsRequired()
-              .HasColumnType("nvarchar(max)");
-
-          b1.HasKey("ContributorId");
-
-          b1.ToTable("Contributors");
-
-          b1.WithOwner().HasForeignKey("ContributorId");
-        });
-
-        b.Navigation("PhoneNumber");
-      });
+      // Contributor aggregate removed — no mapping in snapshot
 
       // ================= TAG =================
       modelBuilder.Entity("TinyBtUrlApi.Core.Entities.Tag", b =>
