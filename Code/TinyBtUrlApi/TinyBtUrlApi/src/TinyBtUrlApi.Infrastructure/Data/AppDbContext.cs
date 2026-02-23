@@ -1,10 +1,11 @@
 ﻿using TinyBtUrlApi.Core.ContributorAggregate;
+using TinyBtUrlApi.Core.Models;
 
 namespace TinyBtUrlApi.Infrastructure.Data;
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
   public DbSet<Contributor> Contributors => Set<Contributor>();
-
+  public DbSet<User> Users => Set<User>();
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     base.OnModelCreating(modelBuilder);
