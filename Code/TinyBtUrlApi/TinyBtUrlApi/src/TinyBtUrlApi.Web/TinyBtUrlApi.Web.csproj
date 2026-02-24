@@ -28,4 +28,8 @@
     <ProjectReference Include="..\TinyBtUrlApi.ServiceDefaults\TinyBtUrlApi.ServiceDefaults.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Endpoints\Urls\NewFolder\" />
+  </ItemGroup>
+
 </Project>

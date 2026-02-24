@@ -15,9 +15,13 @@ public class RedirectUrlEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    // Important: this must NOT conflict with /api/urls routes
-    Get("/r/{shortCode}");
+    // Root short url route → TinyURL behavior
+    Get("/{shortCode}");
+
     AllowAnonymous();
+
+    // Important so other APIs work first
+    Options(x => x.WithOrder(int.MaxValue));
   }
 
   public override async Task HandleAsync(CancellationToken ct)
@@ -26,34 +30,24 @@ public class RedirectUrlEndpoint : EndpointWithoutRequest
 
     if (string.IsNullOrWhiteSpace(shortCode))
     {
-      await Send.NotFoundAsync();
+      HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
       return;
     }
 
-    var result = await _mediator.Send(
-        new RedirectUrlQuery(shortCode),
-        ct);
+    var url = await _mediator.Send(new RedirectUrlQuery(shortCode), ct);
 
-    if (result is null)
+    if (url == null)
     {
-      await Send.NotFoundAsync();
+      HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
       return;
     }
 
-    var acceptHeader = HttpContext.Request.Headers["Accept"].ToString();
-
-    // If request is from Swagger (JSON request)
-    if (acceptHeader.Contains("application/json"))
+    // ⭐ return 200 JSON (what you want)
+    await HttpContext.Response.WriteAsJsonAsync(new
     {
-      await Send.OkAsync(new
-      {
-        longUrl = result.LongUrl
-      }, ct);
-    }
-    else
-    {
-      // If request is from browser
-      Response.Redirect(result.LongUrl, false);
-    }
+      shortCode = url.ShortCode,
+      longUrl = url.LongUrl,
+      clickCount = url.ClickCount
+    }, ct);
   }
 }

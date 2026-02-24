@@ -1,12 +1,11 @@
 ﻿using FastEndpoints;
 using Mediator;
+using TinyBtUrlApi.Core.DTOs;
 using TinyBtUrlApi.UseCases.Urls.SearchByTag;
-using TinyBtUrlApi.Core.Entities;
 
 namespace TinyBtUrlApi.Web.Endpoints.Urls;
 
-public class SearchByTagEndpoint
-    : EndpointWithoutRequest<List<UrlMapping>>
+public class SearchByTagEndpoint : EndpointWithoutRequest<List<UrlDto>>
 {
   private readonly IMediator _mediator;
 
@@ -17,25 +16,34 @@ public class SearchByTagEndpoint
 
   public override void Configure()
   {
-    Get("/api/urls/{search}");
+    Get("/api/urls/by-tag/{tag}");
     AllowAnonymous();
   }
 
   public override async Task HandleAsync(CancellationToken ct)
   {
-    var tag = Query<string>("tag");
+    var tag = Route<string>("tag");
 
     if (string.IsNullOrWhiteSpace(tag))
     {
-      AddError("Tag query parameter is required.");
-      await Send.ErrorsAsync();
+      HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
       return;
     }
 
-    var result = await _mediator.Send(
-        new SearchByTagQuery(tag),
-        ct);
+    var result = await _mediator.Send(new SearchByTagQuery(tag), ct);
 
-    await Send.OkAsync(result);
+    // Map domain entities to DTOs here to avoid serialization cycles and leak of domain model
+    var dtos = result?.Select(m => new UrlDto
+    {
+      Id = m.Id,
+      LongUrl = m.LongUrl,
+      ShortCode = m.ShortCode,
+      ClickCount = m.ClickCount,
+      CreatedAt = m.CreatedAt,
+      ExpirationDate = m.ExpirationDate,
+      Tags = m.UrlTags?.Select(ut => ut.Tag?.Name ?? string.Empty).Where(n => !string.IsNullOrEmpty(n)).ToList() ?? new List<string>()
+    }).ToList() ?? new List<UrlDto>();
+
+    await Send.OkAsync(dtos, ct);
   }
 }
