@@ -1,6 +1,9 @@
-﻿using TinyBtUrlApi.Core.Interfaces;
+﻿using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Infrastructure.Services;
 using TinyBtUrlApi.UseCases.Account.Login;
+using TinyBtUrlApi.UseCases.Account.Logout;
 using TinyBtUrlApi.UseCases.Account.Register;
 using TinyBtUrlApi.Web.Auth.Create;
 using TinyBtUrlApi.Web.Configurations;
@@ -23,12 +26,30 @@ builder.Services.AddFastEndpoints()
                 {
                   o.ShortSchemaNames = true;
                 });
-
+builder.Services
+    .AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+      options.TokenValidationParameters = new TokenValidationParameters
+      {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+              Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+      };
+    });
+builder.Services.AddAuthorization();
 builder.Services.AddScoped<RegisterHandler>();
 builder.Services.AddScoped<LoginHandler>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 builder.Services.AddScoped<GoogleLoginHandler>();
+builder.Services.AddScoped<ITokenRepository, TokenRepository>();
+builder.Services.AddScoped<LogoutHandler>();
 builder.Services.AddCors(options =>
 {
   options.AddPolicy("AllowFrontend",
@@ -47,11 +68,12 @@ app.UseCors("AllowFrontend");
 
 // Middleware first
 await app.UseAppMiddlewareAndSeedDatabase();
-
+app.UseAuthentication();
+app.UseAuthorization();
 // Then map endpoints
 app.MapGoogleLoginEndpoint();
+app.MapLogoutEndpoint();
 app.MapDefaultEndpoints();
-
 app.Run();
 
 public partial class Program { }

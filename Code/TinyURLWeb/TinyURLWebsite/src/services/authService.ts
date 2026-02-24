@@ -84,25 +84,23 @@ export const loginUser = async (email: string, password: string) => {
 
 // 🔹 Logout
 export const logoutUser = async () => {
-  const token = localStorage.getItem("token");
   const refreshToken = localStorage.getItem("refreshToken");
 
+  if (!refreshToken) {
+    console.warn("No refresh token found");
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+    return;
+  }
+
   try {
-    await apiClient.post(
-      "/logout",
-      { refreshToken },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    await apiClient.post("/logout", { refreshToken });
   } catch (error) {
     console.error("Logout API error:", error);
   }
 
   localStorage.removeItem("token");
   localStorage.removeItem("refreshToken");
+  window.location.href = "/login";
 };
-
 export default apiClient;

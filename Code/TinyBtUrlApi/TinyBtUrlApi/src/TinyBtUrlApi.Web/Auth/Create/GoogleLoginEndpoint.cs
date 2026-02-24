@@ -16,20 +16,21 @@ public static class GoogleLoginEndpoint
         return Results.BadRequest("Token is required.");
 
       var result = await handler.Handle(
-          new GoogleLoginQuery(dto.Token));
+              new GoogleLoginQuery(dto.Token));
 
       if (result == null)
         return Results.Unauthorized();
 
-      var (token, expires) = result.Value;
+      var (token, refreshToken, expires) = result.Value;
 
       return Results.Ok(new
       {
         accessToken = token,
+        refreshToken = refreshToken,   // 👈 VERY IMPORTANT
         expires
       });
     })
-     .WithTags("Api")
-.AllowAnonymous();
+    .WithTags("Api")
+    .AllowAnonymous();
   }
 }

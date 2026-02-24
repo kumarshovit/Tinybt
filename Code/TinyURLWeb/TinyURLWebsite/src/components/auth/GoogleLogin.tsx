@@ -49,7 +49,7 @@ const GoogleLogin = () => {
       );
 
       localStorage.setItem("token", res.data.accessToken);
-      //localStorage.setItem("refreshToken", res.data.refreshToken);
+      localStorage.setItem("refreshToken", res.data.refreshToken);
 
       navigate("/dashboard");
     } catch (error) {
