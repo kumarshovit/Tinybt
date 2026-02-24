@@ -9,3 +9,4 @@ public record CreateShortUrlResult(
     int Id,
     string ShortCode
 );
+

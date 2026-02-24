@@ -10,7 +10,7 @@ using TinyBtUrlApi.UseCases.Urls.RemoveTag;
 using TinyBtUrlApi.UseCases.Urls.RenameTag;
 using TinyBtUrlApi.UseCases.Urls.SearchByTag;
 using TinyBtUrlApi.UseCases.Urls.UpdateTags;
-using static TinyBtUrlApi.UseCases.Urls.UpdateTagss.UpdareTagsCommand;
+using static TinyBtUrlApi.UseCases.Urls.UpdateTags.UpdateTagsCommand;
 
 namespace TinyBtUrlApi.Web.Controllers;
 

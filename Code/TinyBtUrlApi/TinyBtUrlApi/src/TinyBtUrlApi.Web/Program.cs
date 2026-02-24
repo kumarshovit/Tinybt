@@ -2,6 +2,7 @@
 using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Services;
 using TinyBtUrlApi.Infrastructure.Data;
+using TinyBtUrlApi.UseCases.Urls.CreateShortUrl;
 using TinyBtUrlApi.Web.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,9 +19,9 @@ builder.Services.AddOptionConfigs(builder.Configuration, startupLogger, builder)
 builder.Services.AddServiceConfigs(startupLogger, builder);
 builder.Services.AddScoped<IUrlRepository, UrlRepository>();
 builder.Services.AddScoped<ShortCodeService>();
-builder.Services.AddMediator(cfg =>
+builder.Services.AddMediator(options =>
 {
-  cfg.ServiceLifetime = ServiceLifetime.Scoped;
+  options.ServiceLifetime = ServiceLifetime.Scoped;
 });
 
 builder.Services.AddFastEndpoints()
