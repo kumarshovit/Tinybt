@@ -2,6 +2,7 @@
 using TinyBtUrlApi.Infrastructure.Services;
 using TinyBtUrlApi.UseCases.Account.Login;
 using TinyBtUrlApi.UseCases.Account.Register;
+using TinyBtUrlApi.Web.Auth.Create;
 using TinyBtUrlApi.Web.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,6 +27,8 @@ builder.Services.AddFastEndpoints()
 builder.Services.AddScoped<RegisterHandler>();
 builder.Services.AddScoped<LoginHandler>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+builder.Services.AddScoped<GoogleLoginHandler>();
 builder.Services.AddCors(options =>
 {
   options.AddPolicy("AllowFrontend",
@@ -42,8 +45,11 @@ var app = builder.Build();
 
 app.UseCors("AllowFrontend");
 
+// Middleware first
 await app.UseAppMiddlewareAndSeedDatabase();
 
+// Then map endpoints
+app.MapGoogleLoginEndpoint();
 app.MapDefaultEndpoints();
 
 app.Run();

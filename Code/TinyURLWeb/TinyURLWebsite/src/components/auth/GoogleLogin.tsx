@@ -44,12 +44,12 @@ const GoogleLogin = () => {
   const handleCredentialResponse = async (response: any) => {
     try {
       const res = await axios.post(
-        "https://localhost:7025/api/auth/google-login",
+        "https://localhost:57679/api/auth/google-login",
         { token: response.credential }
       );
 
       localStorage.setItem("token", res.data.accessToken);
-      localStorage.setItem("refreshToken", res.data.refreshToken);
+      //localStorage.setItem("refreshToken", res.data.refreshToken);
 
       navigate("/dashboard");
     } catch (error) {
