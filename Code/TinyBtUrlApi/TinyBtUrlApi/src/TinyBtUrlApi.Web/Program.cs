@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Claims;
+using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Services;
@@ -10,6 +11,9 @@ using TinyBtUrlApi.UseCases.Account.Logout;
 using TinyBtUrlApi.UseCases.Account.Register;
 using TinyBtUrlApi.UseCases.Account.ResetPassword;
 using TinyBtUrlApi.UseCases.Account.VerifyEmail;
+using TinyBtUrlApi.UseCases.Admin.DeleteUser;
+using TinyBtUrlApi.UseCases.Admin.GetAllUsers;
+using TinyBtUrlApi.UseCases.Admin.UpdateUserRole;
 using TinyBtUrlApi.Web.Auth.Create;
 using TinyBtUrlApi.Web.Configurations;
 
@@ -46,7 +50,8 @@ ValidateIssuerSigningKey = true,
 ValidIssuer = builder.Configuration["Jwt:Issuer"],
 ValidAudience = builder.Configuration["Jwt:Audience"],
 IssuerSigningKey = new SymmetricSecurityKey(
-        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
+RoleClaimType = ClaimTypes.Role
 };
 });
 
@@ -64,7 +69,9 @@ builder.Services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
 builder.Services.AddScoped<ForgotPasswordHandler>();
 builder.Services.AddScoped<ResetPasswordHandler>();
 builder.Services.AddScoped<VerifyEmailHandler>();
-
+builder.Services.AddScoped<GetAllUsersHandler>();
+builder.Services.AddScoped<UpdateUserRoleHandler>();
+builder.Services.AddScoped<DeleteUserHandler>();
 builder.Services.AddCors(options =>
 {
 options.AddPolicy("AllowFrontend",

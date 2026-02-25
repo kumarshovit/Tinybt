@@ -20,22 +20,35 @@ const AdminPage = () => {
   // ================= FETCH USERS =================
   const fetchUsers = async () => {
     try {
-      const response = await api.get("/auth/all-users");
+      const response = await api.get("/admin/all-users"); // ✅ no /api here
       setUsers(response.data);
-    } catch {
-      setError("Failed to fetch users.");
+      setError("");
+    } catch (err: any) {
+      if (err.response?.status === 403) {
+        setError("Access denied. Admin only.");
+      } else if (err.response?.status === 401) {
+        setError("Unauthorized. Please login again.");
+      } else {
+        setError("Failed to fetch users.");
+      }
     }
   };
 
   // ================= UPDATE ROLE =================
   const updateRole = async (userId: number, newRole: string) => {
     try {
-      await api.put(
-        `/auth/update-role?userId=${userId}&newRole=${newRole}`
-      );
+      await api.put("/admin/update-role", {
+        userId,
+        newRole,
+      });
+
       fetchUsers();
-    } catch {
-      alert("Failed to update role.");
+    } catch (err: any) {
+      if (err.response?.status === 403) {
+        alert("Access denied.");
+      } else {
+        alert("Failed to update role.");
+      }
     }
   };
 
@@ -48,10 +61,14 @@ const AdminPage = () => {
     if (!confirmDelete) return;
 
     try {
-      await api.delete(`/auth/delete-user/${userId}`);
+      await api.delete(`/admin/delete-user/${userId}`);
       fetchUsers();
-    } catch {
-      alert("Failed to delete user.");
+    } catch (err: any) {
+      if (err.response?.status === 403) {
+        alert("Access denied.");
+      } else {
+        alert("Failed to delete user.");
+      }
     }
   };
 
@@ -100,18 +117,14 @@ const AdminPage = () => {
                   <td className="py-2 px-4 space-x-2">
                     {user.role === "User" ? (
                       <button
-                        onClick={() =>
-                          updateRole(user.id, "Admin")
-                        }
+                        onClick={() => updateRole(user.id, "Admin")}
                         className="bg-green-500 text-white px-3 py-1 rounded"
                       >
                         Promote
                       </button>
                     ) : (
                       <button
-                        onClick={() =>
-                          updateRole(user.id, "User")
-                        }
+                        onClick={() => updateRole(user.id, "User")}
                         className="bg-yellow-500 text-white px-3 py-1 rounded"
                       >
                         Demote
@@ -127,6 +140,17 @@ const AdminPage = () => {
                   </td>
                 </tr>
               ))}
+
+              {filteredUsers.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={3}
+                    className="py-4 text-gray-500 text-center"
+                  >
+                    No users found.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
