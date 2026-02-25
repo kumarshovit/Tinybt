@@ -1,13 +1,16 @@
 ﻿using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using TinyBtUrlApi.Core.Interfaces;
+using TinyBtUrlApi.Core.Services;
+using TinyBtUrlApi.Infrastructure.Repositories;
 using TinyBtUrlApi.Infrastructure.Services;
 using TinyBtUrlApi.UseCases.Account.Login;
 using TinyBtUrlApi.UseCases.Account.Logout;
 using TinyBtUrlApi.UseCases.Account.Register;
 using TinyBtUrlApi.Web.Auth.Create;
 using TinyBtUrlApi.Web.Configurations;
-
+using TinyBtUrlApi.UseCases.Account.ForgotPassword;
+using TinyBtUrlApi.UseCases.Account.ResetPassword;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults()
@@ -49,7 +52,11 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 builder.Services.AddScoped<GoogleLoginHandler>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
+builder.Services.AddScoped<IEmailSender, EmailService>();
 builder.Services.AddScoped<LogoutHandler>();
+builder.Services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
+builder.Services.AddScoped<ForgotPasswordHandler>();
+builder.Services.AddScoped<ResetPasswordHandler>();
 builder.Services.AddCors(options =>
 {
   options.AddPolicy("AllowFrontend",
@@ -73,6 +80,8 @@ app.UseAuthorization();
 // Then map endpoints
 app.MapGoogleLoginEndpoint();
 app.MapLogoutEndpoint();
+app.MapForgotPasswordEndpoint();
+app.MapResetPasswordEndpoint();
 app.MapDefaultEndpoints();
 app.Run();
 

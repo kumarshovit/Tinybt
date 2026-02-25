@@ -8,6 +8,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
   public DbSet<User> Users => Set<User>();
   public DbSet<RefreshToken> RefreshTokens { get; set; }
   public DbSet<RevokedToken> RevokedTokens { get; set; }
+  public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     base.OnModelCreating(modelBuilder);
