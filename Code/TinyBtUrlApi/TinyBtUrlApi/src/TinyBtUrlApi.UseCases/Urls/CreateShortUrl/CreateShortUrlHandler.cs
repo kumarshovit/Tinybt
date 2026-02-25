@@ -3,6 +3,7 @@ using TinyBtUrlApi.Core.Entities;
 using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Services;
 
+
 namespace TinyBtUrlApi.UseCases.Urls.CreateShortUrl;
 
 public class CreateShortUrlHandler
@@ -15,7 +16,7 @@ public class CreateShortUrlHandler
       IUrlRepository repo,
       ShortCodeService shortCodeService)
   {
-    _repo = repo;s
+    _repo = repo;
     _shortCodeService = shortCodeService;
   }
 
@@ -68,6 +69,9 @@ public class CreateShortUrlHandler
     await _repo.AddAsync(mapping);
 
     // 🔹 Return DTO (never return entity)
-    return new CreateShortUrlResult(mapping.Id, mapping.ShortCode);
+    return new CreateShortUrlResult(mapping.Id, mapping.ShortCode,
+    mapping.LongUrl,
+    mapping.ExpirationDate,
+    mapping.CreatedAt);
   }
 }

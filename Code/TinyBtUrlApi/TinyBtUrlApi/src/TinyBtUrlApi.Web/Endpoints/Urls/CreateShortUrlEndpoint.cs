@@ -5,7 +5,7 @@ using TinyBtUrlApi.UseCases.Urls.CreateShortUrl;
 namespace TinyBtUrlApi.Web.Endpoints.Urls;
 
 public class CreateShortUrlEndpoint
-    : Endpoint<CreateShortUrlCommand, CreateShortUrlResult>
+    : Endpoint<CreateShortUrlCommand>
 {
   private readonly IMediator _mediator;
 
@@ -26,6 +26,20 @@ public class CreateShortUrlEndpoint
   {
     var result = await _mediator.Send(req, ct);
 
-    await Send.OkAsync(result, ct);
+    var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+    var shortUrl = $"{baseUrl}/{result.ShortCode}";
+
+    HttpContext.Response.StatusCode = StatusCodes.Status201Created;
+    HttpContext.Response.Headers.Location = shortUrl;
+
+    await HttpContext.Response.WriteAsJsonAsync(new
+    {
+      result.Id,
+      result.ShortCode,
+      ShortUrl = shortUrl,
+      result.LongUrl,
+      result.ExpirationDate,
+      result.CreatedAt
+    }, ct);
   }
 }

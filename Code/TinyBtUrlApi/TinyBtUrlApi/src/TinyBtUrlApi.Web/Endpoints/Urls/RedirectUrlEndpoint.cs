@@ -43,11 +43,8 @@ public class RedirectUrlEndpoint : EndpointWithoutRequest
     }
 
     // ⭐ return 200 JSON (what you want)
-    await HttpContext.Response.WriteAsJsonAsync(new
-    {
-      shortCode = url.ShortCode,
-      longUrl = url.LongUrl,
-      clickCount = url.ClickCount
-    }, ct);
+    HttpContext.Response.StatusCode = StatusCodes.Status302Found;
+    HttpContext.Response.Headers.Location = url.LongUrl;
+    await HttpContext.Response.CompleteAsync();
   }
-}
+  }
