@@ -25,7 +25,7 @@ public class GetAllUrlsHandler : IRequestHandler<GetAllUrlsQuery, List<UrlDto>>
       ClickCount = u.ClickCount,
       CreatedAt = u.CreatedAt,
       ExpirationDate = u.ExpirationDate,
-      Tags = u.UrlTags.Select(t => t.Tag.Name).ToList()
+      Tags = u.UrlTags?.Select(t => t.Tag.Name).ToList()
     }).ToList();
 
   }

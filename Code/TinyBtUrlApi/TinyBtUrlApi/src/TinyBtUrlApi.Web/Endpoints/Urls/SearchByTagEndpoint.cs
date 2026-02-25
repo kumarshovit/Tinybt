@@ -2,10 +2,11 @@
 using Mediator;
 using TinyBtUrlApi.Core.DTOs;
 using TinyBtUrlApi.UseCases.Urls.SearchByTag;
+using TinyBtUrlApi.Web.Endpoints.Urls.Responses;
 
 namespace TinyBtUrlApi.Web.Endpoints.Urls;
 
-public class SearchByTagEndpoint : EndpointWithoutRequest<List<UrlDto>>
+public class SearchByTagEndpoint : EndpointWithoutRequest<List<UrlResponse>>
 {
   private readonly IMediator _mediator;
 
@@ -32,18 +33,19 @@ public class SearchByTagEndpoint : EndpointWithoutRequest<List<UrlDto>>
 
     var result = await _mediator.Send(new SearchByTagQuery(tag), ct);
 
-    // Map domain entities to DTOs here to avoid serialization cycles and leak of domain model
-    var dtos = result?.Select(m => new UrlDto
+    var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+
+    var response = result?.Select(m => new UrlResponse
     {
       Id = m.Id,
       LongUrl = m.LongUrl,
       ShortCode = m.ShortCode,
-      ClickCount = m.ClickCount,
-      CreatedAt = m.CreatedAt,
+      ShortUrl = $"{baseUrl}/{m.ShortCode}",
       ExpirationDate = m.ExpirationDate,
-      Tags = m.UrlTags?.Select(ut => ut.Tag?.Name ?? string.Empty).Where(n => !string.IsNullOrEmpty(n)).ToList() ?? new List<string>()
-    }).ToList() ?? new List<UrlDto>();
+      Tags = m.Tags,
+      ClickCount = m.ClickCount
+    }).ToList() ?? new List<UrlResponse>();
 
-    await Send.OkAsync(dtos, ct);
+    await Send.OkAsync(response, ct);
   }
 }

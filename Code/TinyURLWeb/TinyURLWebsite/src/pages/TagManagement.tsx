@@ -61,14 +61,12 @@ const handleRename = async (oldTag: string) => {
 
     await renameTag(linkId, oldTag, renamed);
 
-    setTags(prev =>
-      prev.map(tag =>
-        tag === oldTag ? renamed : tag
-      )
-    );
-
+    // 🔥 Reset edit state FIRST
     setEditingTag(null);
     setNewTag("");
+
+    // 🔥 Reload fresh data from backend
+    await loadTags();
 
   } catch (err: any) {
     alert(err.message);
@@ -118,9 +116,9 @@ const handleRename = async (oldTag: string) => {
         ) : (
           <div className="flex flex-col gap-3">
 
-            {tags.map((tag) => (
+            {tags.map((tag,index) => (
               <div
-                key={tag}
+                key={`${tag}-${index}`}
                 className="flex items-center justify-between bg-gray-50 border rounded-lg px-4 py-3 hover:shadow-sm transition"
               >
                 {editingTag === tag ? (

@@ -12,5 +12,5 @@ public class UrlDto
   public int ClickCount { get; set; }
   public DateTime CreatedAt { get; set; }
   public DateTime? ExpirationDate { get; set; }
-  public List<string> Tags { get; set; } = new();
+  public List<string>? Tags { get; set; }
 }

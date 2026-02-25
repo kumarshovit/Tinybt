@@ -19,6 +19,17 @@ builder.Services.AddOptionConfigs(builder.Configuration, startupLogger, builder)
 builder.Services.AddServiceConfigs(startupLogger, builder);
 builder.Services.AddScoped<IUrlRepository, UrlRepository>();
 builder.Services.AddScoped<ShortCodeService>();
+
+builder.Services.AddCors(options =>
+{
+  options.AddPolicy("AllowFrontend",
+    policy =>
+    {
+      policy.WithOrigins("http://localhost:5173") // frontend URL
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 builder.Services.AddMediator(options =>
 {
   options.ServiceLifetime = ServiceLifetime.Scoped;
@@ -33,6 +44,7 @@ builder.Services.AddFastEndpoints()
 var app = builder.Build();
 
 await app.UseAppMiddlewareAndSeedDatabase();
+app.UseCors("AllowFrontend");
 
 app.MapDefaultEndpoints(); // Aspire health checks and metrics
 app.UseSwaggerGen();

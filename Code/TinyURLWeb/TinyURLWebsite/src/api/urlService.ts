@@ -1,7 +1,8 @@
-const BASE_URL = "https://localhost:7025/api/url";
+const BASE_URL = "https://localhost:57679/api/urls";
 
 export const getAllUrls = async () => {
-  const res = await fetch(`${BASE_URL}/all`);
+  const res = await fetch(BASE_URL);
+   if (!res.ok) throw new Error("Failed to fetch URLs");
   return res.json();
 };
 
@@ -10,7 +11,7 @@ export const createUrl = async (
   customAlias?: string,
   expirationDate?: string
 ) => {
-  const res = await fetch(`${BASE_URL}/shorten`, {
+  const res = await fetch(BASE_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -38,12 +39,12 @@ export const addTags = async (id: number, tags: string[]) => {
 };
 
 export const searchByTag = async (tag: string) => {
-  const res = await fetch(`${BASE_URL}/search?tag=${tag}`);
+  const res = await fetch(`${BASE_URL}/by-tag/${tag}`);
   return res.json();
 };
 
 export const updateTags = async (id: number, tags: string[]) => {
-  await fetch(`https://localhost:7025/api/url/${id}/tags`, {
+  await fetch(`${BASE_URL}/${id}/tags`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ tags })
@@ -51,14 +52,14 @@ export const updateTags = async (id: number, tags: string[]) => {
 };
 
 export const removeTag = async (id: number, tagName: string) => {
-  await fetch(`https://localhost:7025/api/url/${id}/tags/${tagName}`, {
+  await fetch(`${BASE_URL}/${id}/tags/${tagName}`, {
     method: "DELETE"
   });
 };
 
 export const updateAlias = async (id: number, newAlias: string) => {
   const res = await fetch(
-    `https://localhost:7025/api/url/${id}/alias`,
+    `${BASE_URL}/${id}/alias`,
     {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -76,7 +77,7 @@ export const updateAlias = async (id: number, newAlias: string) => {
 
 export const updateDestination = async (id: number, newLongUrl: string) => {
   const res = await fetch(
-    `https://localhost:7025/api/url/${id}/destination`,
+    `${BASE_URL}/${id}/destination`,
     {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -98,11 +99,11 @@ export const renameTag = async (
   newTag: string
 ) => {
   const res = await fetch(
-    `https://localhost:7025/api/url/${id}/tags/${oldTag}`,
+    `${BASE_URL}/${id}/tags/${oldTag}`,
     {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newTag)
+      body: JSON.stringify({ newTag })  
     }
   );
 
@@ -112,9 +113,11 @@ export const renameTag = async (
   }
 };
 
+ 
+
 
 export const deleteUrl = async (id: number) => {
-  const res = await fetch(`${BASE_URL}/${id}`, {
+  const res = await fetch(`${BASE_URL}/${id}`,{
     method: "DELETE"
   });
 

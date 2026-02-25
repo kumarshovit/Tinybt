@@ -2,11 +2,12 @@
 using Mediator;
 using TinyBtUrlApi.UseCases.Urls.UpdateAlias;
 using TinyBtUrlApi.Web.Endpoints.Urls.Requests;
+using TinyBtUrlApi.Web.Endpoints.Urls.Responses;
 
 namespace TinyBtUrlApi.Web.Endpoints.Urls;
 
 public class UpdateAliasEndpoint
-    : Endpoint<UpdateAliasRequest, string>
+    : Endpoint<UpdateAliasRequest, UrlResponse>
 {
   private readonly IMediator _mediator;
 
@@ -36,6 +37,18 @@ public class UpdateAliasEndpoint
       return;
     }
 
-    await Send.OkAsync(result, ct);
+    var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+
+    var response = new UrlResponse
+    {
+      Id = result.Id,
+      LongUrl = result.LongUrl,
+      ShortCode = result.ShortCode,
+      ShortUrl = $"{baseUrl}/{result.ShortCode}",
+      ExpirationDate = result.ExpirationDate,
+      ClickCount = result.ClickCount
+    };
+
+    await Send.OkAsync(response, ct);
   }
 }
