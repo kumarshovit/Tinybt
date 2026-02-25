@@ -53,7 +53,9 @@ export const registerUser = async (email: string, password: string) => {
 
 // 🔹 Verify Email
 export const verifyEmail = async (token: string) => {
-  const response = await apiClient.get(`/verify?token=${token}`);
+  const response = await apiClient.get(
+    `/verify-email?token=${token}`
+  );
   return response.data;
 };
 

@@ -40,7 +40,13 @@ public class LoginHandler
         message = "Invalid email or password."
       };
     }
-
+    if (!user.IsEmailVerified)
+    {
+      return new
+      {
+        message = "Please verify your email before logging in."
+      };
+    }
     // 🔐 Generate Access Token
     var jwtResult = _jwtService.Generate(user);
 
