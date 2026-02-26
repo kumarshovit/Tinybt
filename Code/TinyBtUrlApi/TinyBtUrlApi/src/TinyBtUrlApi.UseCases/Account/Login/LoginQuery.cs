@@ -2,4 +2,4 @@
 
 namespace TinyBtUrlApi.UseCases.Account.Login;
 
-public record LoginQuery(LoginDto Dto);
+public record LoginQuery(LoginDto Dto, string IpAddress);

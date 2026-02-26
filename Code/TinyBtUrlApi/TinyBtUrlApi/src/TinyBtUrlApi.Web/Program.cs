@@ -1,9 +1,12 @@
 ﻿using System.Security.Claims;
 using System.Text;
+using Ardalis.SharedKernel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using TinyBtUrlApi.Core.Interfaces;
+using TinyBtUrlApi.Core.Models;
 using TinyBtUrlApi.Core.Services;
+using TinyBtUrlApi.Infrastructure.Data;
 using TinyBtUrlApi.Infrastructure.Repositories;
 using TinyBtUrlApi.Infrastructure.Services;
 using TinyBtUrlApi.UseCases.Account.Delete;
@@ -35,7 +38,7 @@ startupLogger.LogInformation("Starting web host");
 
 builder.Services.AddOptionConfigs(builder.Configuration, startupLogger, builder);
 builder.Services.AddServiceConfigs(startupLogger, builder);
-
+builder.Services.AddScoped<IRepository<IpLoginAttempt>, EfRepository<IpLoginAttempt>>();
 builder.Services
     .AddFastEndpoints()
     .SwaggerDocument(o =>
