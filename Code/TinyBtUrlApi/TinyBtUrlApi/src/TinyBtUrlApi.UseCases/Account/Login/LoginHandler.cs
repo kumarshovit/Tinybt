@@ -48,7 +48,7 @@ public class LoginHandler
       };
     }
     // 🔐 Generate Access Token
-    var jwtResult = _jwtService.Generate(user);
+    var (token, expires) = _jwtService.Generate(user);
 
     // 🔁 Generate Refresh Token
     var refreshTokenValue = Guid.NewGuid().ToString();
@@ -66,9 +66,9 @@ public class LoginHandler
     // 🎯 Return Tokens
     return new
     {
-      accessToken = jwtResult.token,
+      accessToken = token,
       refreshToken = refreshTokenValue,
-      expires = jwtResult.expires
+      expires = expires
     };
   }
 }

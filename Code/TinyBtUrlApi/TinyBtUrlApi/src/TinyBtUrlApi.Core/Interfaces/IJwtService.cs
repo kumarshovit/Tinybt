@@ -4,5 +4,5 @@ using TinyBtUrlApi.Core.Models;
 
 public interface IJwtService
 {
-  (string token, DateTime expires) Generate(User user);
+  (string Token, DateTime Expires) Generate(User user);
 }

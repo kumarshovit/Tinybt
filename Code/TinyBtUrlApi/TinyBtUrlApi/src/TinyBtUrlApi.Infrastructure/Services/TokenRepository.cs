@@ -29,12 +29,19 @@ public class TokenRepository : ITokenRepository
     });
   }
 
-  public async Task SaveChangesAsync()
-  {
-    await _context.SaveChangesAsync();
-  }
   public async Task AddRefreshTokenAsync(RefreshToken token)
   {
     await _context.RefreshTokens.AddAsync(token);
+  }
+
+  public async Task<bool> IsTokenRevoked(string token)
+  {
+    return await _context.RevokedTokens
+        .AnyAsync(r => r.Token == token);
+  }
+
+  public async Task SaveChangesAsync()
+  {
+    await _context.SaveChangesAsync();
   }
 }

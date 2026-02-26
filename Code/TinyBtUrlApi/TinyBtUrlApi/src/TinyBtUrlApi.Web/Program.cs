@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Services;
@@ -58,6 +59,23 @@ IssuerSigningKey = new SymmetricSecurityKey(
         Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)),
 RoleClaimType = ClaimTypes.Role
 };
+  options.Events = new JwtBearerEvents
+  {
+    OnTokenValidated = async context =>
+    {
+      var repo = context.HttpContext.RequestServices
+          .GetRequiredService<ITokenRepository>();
+
+      var jwt = context.SecurityToken as System.IdentityModel.Tokens.Jwt.JwtSecurityToken;
+      var rawToken = jwt?.RawData;
+
+      if (rawToken != null &&
+          await repo.IsTokenRevoked(rawToken))
+      {
+        context.Fail("Token revoked.");
+      }
+    }
+  };
 });
 
 builder.Services.AddAuthorization();

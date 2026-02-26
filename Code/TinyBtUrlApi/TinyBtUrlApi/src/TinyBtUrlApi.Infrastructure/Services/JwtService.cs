@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Text;
 using TinyBtUrlApi.Core.Models;
 using TinyBtUrlApi.Core.Interfaces;
+
 namespace TinyBtUrlApi.Infrastructure.Services;
 
 public class JwtService : IJwtService
@@ -16,19 +17,22 @@ public class JwtService : IJwtService
     _config = config;
   }
 
-  public (string, DateTime) Generate(User user)
+  public (string Token, DateTime Expires) Generate(User user)
   {
     var jwt = _config.GetSection("Jwt");
 
     var key = new SymmetricSecurityKey(
-      Encoding.UTF8.GetBytes(jwt["Key"]!)
+        Encoding.UTF8.GetBytes(jwt["Key"]!)
     );
 
     var creds = new SigningCredentials(
-      key, SecurityAlgorithms.HmacSha256
+        key, SecurityAlgorithms.HmacSha256
     );
 
-    var expires = DateTime.UtcNow.AddMinutes(60);
+    // 🔥 Configurable expiration
+    var accessMinutes = double.Parse(jwt["AccessTokenMinutes"]!);
+
+    var expires = DateTime.UtcNow.AddMinutes(accessMinutes);
 
     var claims = new[]
     {
@@ -45,6 +49,9 @@ public class JwtService : IJwtService
       signingCredentials: creds
     );
 
-    return (new JwtSecurityTokenHandler().WriteToken(token), expires);
+    return (
+      new JwtSecurityTokenHandler().WriteToken(token),
+      expires
+    );
   }
 }
