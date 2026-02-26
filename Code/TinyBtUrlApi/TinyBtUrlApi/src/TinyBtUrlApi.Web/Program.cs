@@ -5,9 +5,11 @@ using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Services;
 using TinyBtUrlApi.Infrastructure.Repositories;
 using TinyBtUrlApi.Infrastructure.Services;
+using TinyBtUrlApi.UseCases.Account.Delete;
 using TinyBtUrlApi.UseCases.Account.ForgotPassword;
 using TinyBtUrlApi.UseCases.Account.Login;
 using TinyBtUrlApi.UseCases.Account.Logout;
+using TinyBtUrlApi.UseCases.Account.Profile;
 using TinyBtUrlApi.UseCases.Account.Register;
 using TinyBtUrlApi.UseCases.Account.ResetPassword;
 using TinyBtUrlApi.UseCases.Account.VerifyEmail;
@@ -16,6 +18,9 @@ using TinyBtUrlApi.UseCases.Admin.GetAllUsers;
 using TinyBtUrlApi.UseCases.Admin.UpdateUserRole;
 using TinyBtUrlApi.Web.Auth.Create;
 using TinyBtUrlApi.Web.Configurations;
+using TinyBtUrlApi.Web.Profile.Delete;
+using TinyBtUrlApi.Web.Profile.Read;
+using TinyBtUrlApi.Web.Profile.Update;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -72,6 +77,10 @@ builder.Services.AddScoped<VerifyEmailHandler>();
 builder.Services.AddScoped<GetAllUsersHandler>();
 builder.Services.AddScoped<UpdateUserRoleHandler>();
 builder.Services.AddScoped<DeleteUserHandler>();
+builder.Services.AddScoped<GetProfileHandler>();
+builder.Services.AddScoped<UpdateProfileHandler>();
+builder.Services.AddScoped<ChangePasswordHandler>();
+builder.Services.AddScoped<DeleteAccountHandler>();
 builder.Services.AddCors(options =>
 {
 options.AddPolicy("AllowFrontend",
@@ -98,6 +107,10 @@ app.MapForgotPasswordEndpoint();
 app.MapLogoutEndpoint();
 app.MapGoogleLoginEndpoint();
 app.MapResetPasswordEndpoint();
+app.MapGetProfileEndpoint();
+app.MapUpdateNameEndpoint();
+app.MapChangePasswordEndpoint();
+app.MapDeleteAccountEndpoint();
 app.UseSwaggerGen();      // ✅ required for swagger
 
 app.Run();

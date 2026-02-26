@@ -23,11 +23,12 @@ const ProfilePage = () => {
 
   // ================= FETCH PROFILE =================
   const fetchProfile = async () => {
+    setError("");
     try {
-      const response = await api.get("/auth/profile");
+      const response = await api.get("/profile");
       setProfile(response.data);
       setFullName(response.data.fullName || "");
-    } catch {
+    } catch (err: any) {
       setError("Failed to load profile.");
     }
   };
@@ -37,16 +38,22 @@ const ProfilePage = () => {
     e.preventDefault();
     setMessage("");
     setError("");
+
+    if (!fullName.trim()) {
+      setError("Full name is required.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await api.put("/auth/update-profile", { fullName });
+      await api.put("/profile/name", { fullName });
       setMessage("Profile updated successfully!");
       fetchProfile();
     } catch (err: any) {
       setError(
+        err.response?.data?.message ||
         err.response?.data?.title ||
-        err.response?.data ||
         "Failed to update profile."
       );
     }
@@ -65,10 +72,15 @@ const ProfilePage = () => {
       return;
     }
 
+    if (newPassword.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await api.put("/auth/change-password", {
+      await api.put("/profile/password", {
         currentPassword,
         newPassword,
       });
@@ -78,8 +90,8 @@ const ProfilePage = () => {
       setNewPassword("");
     } catch (err: any) {
       setError(
+        err.response?.data?.message ||
         err.response?.data?.title ||
-        err.response?.data ||
         "Failed to change password."
       );
     }
@@ -96,11 +108,11 @@ const ProfilePage = () => {
     if (!confirmDelete) return;
 
     try {
-      await api.delete("/auth/delete-account");
+      await api.delete("/profile");
 
       localStorage.removeItem("token");
       window.location.href = "/login";
-    } catch {
+    } catch (err: any) {
       setError("Failed to delete account.");
     }
   };
