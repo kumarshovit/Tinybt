@@ -1,0 +1,18 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TinyBtUrlApi.Core.DTOs;
+
+public class RegisterDto
+{
+  [Required]
+  [EmailAddress]
+  public string Email { get; set; } = string.Empty;
+
+  [Required]
+  [MinLength(8)]
+  [RegularExpression(
+      @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$",
+      ErrorMessage = "Password must contain at least 8 characters, including uppercase, lowercase, number, and special character."
+  )]
+  public string Password { get; set; } = string.Empty;
+}

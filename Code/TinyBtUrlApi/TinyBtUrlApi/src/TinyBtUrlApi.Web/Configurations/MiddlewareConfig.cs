@@ -11,26 +11,25 @@ public static class MiddlewareConfig
     if (app.Environment.IsDevelopment())
     {
       app.UseDeveloperExceptionPage();
-      app.UseShowAllServicesMiddleware(); // see https://github.com/ardalis/AspNetCoreStartupServices
+      app.UseShowAllServicesMiddleware();
     }
     else
-    {   
+    {
       app.UseDefaultExceptionHandler(); // from FastEndpoints
       app.UseHsts();
     }
 
+    // ✅ FastEndpoints
     app.UseFastEndpoints();
 
+    // ✅ FIXED SWAGGER (NO custom path)
     if (app.Environment.IsDevelopment())
     {
-      app.UseSwaggerGen(options =>
-      {
-        options.Path = "/openapi/{documentName}.json";
-      });
+      app.UseSwaggerGen();   // 🔥 Important: no options.Path
       app.MapScalarApiReference();
     }
 
-    app.UseHttpsRedirection(); // Note this will drop Authorization headers
+    app.UseHttpsRedirection();
 
     // Run migrations and seed in Development or when explicitly requested via environment variable
     var shouldMigrate = app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup");
@@ -54,13 +53,16 @@ public static class MiddlewareConfig
     {
       logger.LogInformation("Applying database migrations...");
       var context = services.GetRequiredService<AppDbContext>();
-      await context.Database.MigrateAsync();
+
+      // 🔴 Migration intentionally commented (sir DB drop nahi karne denge)
+      // await context.Database.MigrateAsync();
+
       logger.LogInformation("Database migrations applied successfully");
     }
     catch (Exception ex)
     {
       logger.LogError(ex, "An error occurred migrating the DB. {exceptionMessage}", ex.Message);
-      throw; // Re-throw to make startup fail if migrations fail
+      throw;
     }
   }
 
@@ -81,7 +83,6 @@ public static class MiddlewareConfig
     catch (Exception ex)
     {
       logger.LogError(ex, "An error occurred seeding the DB. {exceptionMessage}", ex.Message);
-      // Don't re-throw for seeding errors - it's not critical
     }
   }
 }

@@ -55,3 +55,16 @@ export default function Dashboard() {
     </div>
   );
 }
+import Navbar from "../components/Navbar";
+
+const Dashboard = () => {
+  return (
+    <>
+      <Navbar />
+
+      
+    </>
+  );
+};
+
+export default Dashboard;

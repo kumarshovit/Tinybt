@@ -7,16 +7,19 @@ using TinyBtUrlApi.Web.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults()    // This sets up OpenTelemetry logging
-       .AddLoggerConfigs();     // This adds Serilog for console formatting
+builder.AddServiceDefaults()
+       .AddLoggerConfigs();
 
 using var loggerFactory = LoggerFactory.Create(config => config.AddConsole());
 var startupLogger = loggerFactory.CreateLogger<Program>();
 
 startupLogger.LogInformation("Starting web host");
 
-builder.Services.AddOptionConfigs(builder.Configuration, startupLogger, builder);
-builder.Services.AddServiceConfigs(startupLogger, builder);
+builder.Services
+       .AddOptionConfigs(builder.Configuration, startupLogger, builder)
+       .AddServiceConfigs(startupLogger, builder)
+       .AddAuthConfigs(builder)
+       .AddCorsConfigs();
 //builder.Services.AddScoped<IUrlRepository, UrlRepository>();
 //builder.Services.AddScoped<ShortCodeService>();
 
@@ -35,23 +38,23 @@ builder.Services.AddMediator(options =>
   options.ServiceLifetime = ServiceLifetime.Scoped;
 });
 
-builder.Services.AddFastEndpoints()
-                .SwaggerDocument(o =>
-                {
-                  o.ShortSchemaNames = true;
-                });
+builder.Services
+       .AddFastEndpoints()
+       .SwaggerDocument(o => o.ShortSchemaNames = true);
 
 var app = builder.Build();
 
 
 
-await app.UseAppMiddlewareAndSeedDatabase();
+app.UseCorsConfigs();
 app.UseCors("AllowFrontend");
 
-app.MapDefaultEndpoints(); // Aspire health checks and metrics
-app.UseSwaggerGen();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseEndpointConfigs();
+
 
 app.Run();
 
-// Make the implicit Program.cs class public, so integration tests can reference the correct assembly for host building
 public partial class Program { }
