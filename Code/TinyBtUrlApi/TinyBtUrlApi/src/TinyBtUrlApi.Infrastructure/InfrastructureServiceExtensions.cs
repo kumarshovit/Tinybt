@@ -43,7 +43,12 @@ public static class InfrastructureServiceExtensions
     services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>))
            .AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
 
+
+    services.AddScoped<IUrlRepository, UrlRepository>();
+    services.AddScoped<ShortCodeService>();
+
     logger.LogInformation("{Project} services registered", "Infrastructure");
+
 
     return services;
   }

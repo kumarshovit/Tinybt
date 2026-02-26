@@ -17,8 +17,8 @@ startupLogger.LogInformation("Starting web host");
 
 builder.Services.AddOptionConfigs(builder.Configuration, startupLogger, builder);
 builder.Services.AddServiceConfigs(startupLogger, builder);
-builder.Services.AddScoped<IUrlRepository, UrlRepository>();
-builder.Services.AddScoped<ShortCodeService>();
+//builder.Services.AddScoped<IUrlRepository, UrlRepository>();
+//builder.Services.AddScoped<ShortCodeService>();
 
 builder.Services.AddCors(options =>
 {
