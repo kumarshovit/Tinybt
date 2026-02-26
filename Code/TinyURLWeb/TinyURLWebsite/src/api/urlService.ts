@@ -2,7 +2,19 @@ const BASE_URL = "https://localhost:57679/api/urls";
 
 export const getAllUrls = async () => {
   const res = await fetch(BASE_URL);
-   if (!res.ok) throw new Error("Failed to fetch URLs");
+  
+  if (!res.ok) {
+  let errorMessage = "Something went wrong";
+
+  try {
+    const error = await res.json();
+    errorMessage = error.message || error.title || errorMessage;
+  } catch {
+    errorMessage = await res.text();
+  }
+
+  throw new Error(errorMessage);
+}
   return res.json();
 };
 
@@ -22,9 +34,17 @@ export const createUrl = async (
   });
 
   if (!res.ok) {
-    const msg = await res.text();
-    throw new Error(msg);
+  let errorMessage = "Something went wrong";
+
+  try {
+    const error = await res.json();
+    errorMessage = error.message || error.title || errorMessage;
+  } catch {
+    errorMessage = await res.text();
   }
+
+  throw new Error(errorMessage);
+}
 
   return res.json();
 };
@@ -68,9 +88,17 @@ export const updateAlias = async (id: number, newAlias: string) => {
   );
 
   if (!res.ok) {
-    const msg = await res.text();
-    throw new Error(msg);
+  let errorMessage = "Something went wrong";
+
+  try {
+    const error = await res.json();
+    errorMessage = error.message || error.title || errorMessage;
+  } catch {
+    errorMessage = await res.text();
   }
+
+  throw new Error(errorMessage);
+}
 
   return res.json();
 };
@@ -84,12 +112,18 @@ export const updateDestination = async (id: number, newLongUrl: string) => {
       body: JSON.stringify({ newLongUrl })
     }
   );
+if (!res.ok) {
+  let errorMessage = "Something went wrong";
 
-  if (!res.ok) {
-    const msg = await res.text();
-    throw new Error(msg);
+  try {
+    const error = await res.json();
+    errorMessage = error.message || error.title || errorMessage;
+  } catch {
+    errorMessage = await res.text();
   }
 
+  throw new Error(errorMessage);
+}
   return res.json();
 };
 
@@ -108,9 +142,17 @@ export const renameTag = async (
   );
 
   if (!res.ok) {
-    const msg = await res.text();
-    throw new Error(msg);
+  let errorMessage = "Something went wrong";
+
+  try {
+    const error = await res.json();
+    errorMessage = error.message || error.title || errorMessage;
+  } catch {
+    errorMessage = await res.text();
   }
+
+  throw new Error(errorMessage);
+}
 };
 
  
