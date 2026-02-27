@@ -5,7 +5,7 @@ using TinyBtUrlApi.UseCases.Urls.DeleteUrl;
 namespace TinyBtUrlApi.Web.Endpoints.Urls;
 
 public class DeleteUrlEndpoint
-    : Endpoint<DeleteUrlCommand, bool>
+    : EndpointWithoutRequest<bool>
 {
   private readonly IMediator _mediator;
 
@@ -20,9 +20,11 @@ public class DeleteUrlEndpoint
     AllowAnonymous();
   }
 
-  public override async Task HandleAsync(DeleteUrlCommand req, CancellationToken ct)
+  public override async Task HandleAsync(CancellationToken ct)
   {
-    var result = await _mediator.Send(req, ct);
+    var id = Route<int>("id");   // read from route
+
+    var result = await _mediator.Send(new DeleteUrlCommand(id), ct);
 
     if (!result)
     {
