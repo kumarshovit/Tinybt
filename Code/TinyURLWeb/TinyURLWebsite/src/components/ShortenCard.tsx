@@ -11,33 +11,63 @@ export default function ShortenCard({ onUrlCreated }: any) {
 
 
     const handleCreate = async () => {
-        try {
-            const res = await createUrl(
-                longUrl,
-                alias,
-                expirationDate
-                    ? new Date(expirationDate).toISOString()
-                    : undefined
-            );
+        // try {
+        //     const res = await createUrl(
+        //         longUrl,
+        //         alias,
+        //         expirationDate
+        //             ? new Date(expirationDate).toISOString()
+        //             : undefined
+        //     );
 
 
-            const newLink = {
-                id: res.id,
-                shortUrl: res.shortUrl,
-                clickCount: 0,
-                tags: []
-            };
+        //     const newLink = {
+        //         id: res.id,
+        //         shortUrl: res.shortUrl,
+        //         clickCount: 0,
+        //         tags: []
+        //     };
 
-          await onUrlCreated();
+        //   await onUrlCreated();
 
-            setResult(newLink);
-            setLongUrl("");
-            setAlias("");
-            setError("");
-            setExpirationDate("");
-        } catch (err: any) {
-            setError(err.message);
+        //     setResult(newLink);
+        //     setLongUrl("");
+        //     setAlias("");
+        //     setError("");
+        //     setExpirationDate("");
+        // } catch (err: any) {
+        //     setError(err.message);
+        // }
+        setError("");
+
+        const result = await createUrl(
+            longUrl,
+            alias,
+            expirationDate
+                ? new Date(expirationDate).toISOString()
+                : undefined
+        );
+
+        if (!result.success) {
+            setError(result.message  || "Something went wrong");
+            return; // 🔥 stop if failed
         }
+
+        const res = result.data;
+
+        const newLink = {
+            id: res.id,
+            shortUrl: res.shortUrl,
+            clickCount: 0,
+            tags: []
+        };
+
+        await onUrlCreated();
+
+        setResult(newLink);
+        setLongUrl("");
+        setAlias("");
+        setExpirationDate("");
     };
 
     return (

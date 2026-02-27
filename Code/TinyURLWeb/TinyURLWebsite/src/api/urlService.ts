@@ -26,10 +26,11 @@ export const getAllUrls = async () => {
 
   if (!res.ok) {
     const msg = await res.text();
-    throw new Error(msg);
+    return { success: false, message: msg };
   }
 
-  return res.json();
+    const data = await res.json();
+  return { success: true, data };
 };
 
 /* ============================= */
@@ -52,11 +53,11 @@ export const createUrl = async (
 
   if (!res.ok) {
     const msg = await res.text();
-    throw new Error(msg);
+ return { success: false, message: msg };
   }
 
-  return res.json();
-};
+const data = await res.json();
+  return { success: true, data };};
 
 /* ============================= */
 /* 🏷 ADD TAGS                   */
@@ -70,8 +71,10 @@ export const addTags = async (id: number, tags: string[]) => {
 
   if (!res.ok) {
     const msg = await res.text();
-    throw new Error(msg);
+    return { success: false, message: msg };
   }
+
+  return { success: true };
 };
 
 /* ============================= */
@@ -82,12 +85,14 @@ export const searchByTag = async (tag: string) => {
     headers: getAuthHeaders(),
   });
 
+ 
   if (!res.ok) {
     const msg = await res.text();
-    throw new Error(msg);
+    return { success: false, message: msg };
   }
 
-  return res.json();
+  const data = await res.json();
+  return { success: true, data };
 };
 
 /* ============================= */
@@ -100,10 +105,13 @@ export const updateTags = async (id: number, tags: string[]) => {
     body: JSON.stringify({ tags }),
   });
 
-  if (!res.ok) {
+ if (!res.ok) {
     const msg = await res.text();
-    throw new Error(msg);
+    return { success: false, message: msg };
   }
+
+  const data = await res.json();
+  return { success: true, data };
 };
 
 /* ============================= */
@@ -115,10 +123,12 @@ export const removeTag = async (id: number, tagName: string) => {
     headers: getAuthHeaders(),
   });
 
-  if (!res.ok) {
+   if (!res.ok) {
     const msg = await res.text();
-    throw new Error(msg);
+    return { success: false, message: msg };
   }
+
+  return { success: true };
 };
 
 /* ============================= */
@@ -131,12 +141,13 @@ export const updateAlias = async (id: number, newAlias: string) => {
     body: JSON.stringify({ newAlias }),
   });
 
-  if (!res.ok) {
+   if (!res.ok) {
     const msg = await res.text();
-    throw new Error(msg);
+    return { success: false, message: msg };
   }
 
-  return res.json();
+  const data = await res.json();
+  return { success: true, data };
 };
 
 /* ============================= */
@@ -152,12 +163,13 @@ export const updateDestination = async (
     body: JSON.stringify({ newLongUrl }),
   });
 
-  if (!res.ok) {
+   if (!res.ok) {
     const msg = await res.text();
-    throw new Error(msg);
+    return { success: false, message: msg };
   }
 
-  return res.json();
+  const data = await res.json();
+  return { success: true, data };
 };
 
 /* ============================= */
@@ -174,10 +186,12 @@ export const renameTag = async (
     body: JSON.stringify({ newTag }),
   });
 
-  if (!res.ok) {
+   if (!res.ok) {
     const msg = await res.text();
-    throw new Error(msg);
+    return { success: false, message: msg };
   }
+
+  return { success: true };
 };
 
 /* ============================= */
@@ -189,8 +203,10 @@ export const deleteUrl = async (id: number) => {
     headers: getAuthHeaders(),
   });
 
-  if (!res.ok) {
+   if (!res.ok) {
     const msg = await res.text();
-    throw new Error(msg);
+    return { success: false, message: msg };
   }
+
+  return { success: true };
 };

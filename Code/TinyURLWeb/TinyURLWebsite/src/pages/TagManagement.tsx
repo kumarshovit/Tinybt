@@ -20,8 +20,14 @@ export default function TagManagement() {
 
   // 🔹 Load tags from backend
   const loadTags = async () => {
-    const allLinks = await getAllUrls();
-    const currentLink = allLinks.find((l: any) => l.id === linkId);
+    const result = await getAllUrls();
+
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
+
+    const currentLink = result.data.find((l: any) => l.id === linkId);
 
     if (currentLink) {
       setTags(currentLink.tags || []);
@@ -41,37 +47,46 @@ export default function TagManagement() {
       .map(t => t.trim())
       .filter(t => t);
 
-    await addTags(linkId, tagList);
+    const result = await addTags(linkId, tagList);
+
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
+
     setTagInput("");
     loadTags();
   };
 
   // 🔹 Remove Tag
   const handleRemoveTag = async (tag: string) => {
-    await removeTag(linkId, tag);
+    const result = await removeTag(linkId, tag);
+
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
+
     loadTags();
   };
 
   // 🔹 Rename Tag
-const handleRename = async (oldTag: string) => {
-  if (!newTag.trim()) return;
+  const handleRename = async (oldTag: string) => {
+    if (!newTag.trim()) return;
 
-  try {
     const renamed = newTag.trim().toLowerCase();
 
-    await renameTag(linkId, oldTag, renamed);
+    const result = await renameTag(linkId, oldTag, renamed);
 
-    // 🔥 Reset edit state FIRST
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
+
     setEditingTag(null);
     setNewTag("");
-
-    // 🔥 Reload fresh data from backend
     await loadTags();
-
-  } catch (err: any) {
-    alert(err.message);
-  }
-};
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-10">
@@ -116,7 +131,7 @@ const handleRename = async (oldTag: string) => {
         ) : (
           <div className="flex flex-col gap-3">
 
-            {tags.map((tag,index) => (
+            {tags.map((tag, index) => (
               <div
                 key={`${tag}-${index}`}
                 className="flex items-center justify-between bg-gray-50 border rounded-lg px-4 py-3 hover:shadow-sm transition"

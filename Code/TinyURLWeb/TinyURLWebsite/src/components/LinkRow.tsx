@@ -18,44 +18,48 @@ export default function LinkRow({ link, setLinks }: any) {
     const [newDestination, setNewDestination] = useState("");
 
     const handleAliasUpdate = async () => {
-        try {
-            const response = await updateAlias(link.id, newAlias);
+        if (!newAlias.trim()) return;
 
-            setLinks((prev: any[]) =>
-                prev.map(l =>
-                    l.id === link.id
-                        ? { ...l, shortUrl: response.shortUrl }
-                        : l
-                )
-            );
+        const result = await updateAlias(link.id, newAlias);
 
-            setEditingAlias(false);
-            setNewAlias("");
-
-        } catch (err: any) {
-            alert(err.message);
+        if (!result.success) {
+            alert(result.message);
+            return; // 🔥 stop if failed
         }
+
+        setLinks((prev: any[]) =>
+            prev.map(l =>
+                l.id === link.id
+                    ? { ...l, shortUrl: `${window.location.origin}/${result.data.shortCode}`}
+                    : l
+            )
+        );
+
+        setEditingAlias(false);
+        setNewAlias("");
     };
 
 
     const handleDestinationUpdate = async () => {
-        try {
-            await updateDestination(link.id, newDestination);
+        if (!newDestination.trim()) return;
 
-            setLinks((prev: any[]) =>
-                prev.map(l =>
-                    l.id === link.id
-                        ? { ...l, longUrl: newDestination }
-                        : l
-                )
-            );
+        const result = await updateDestination(link.id, newDestination);
 
-            setEditingDestination(false);
-            setNewDestination("");
-
-        } catch (err: any) {
-            alert(err.message);
+        if (!result.success) {
+            alert(result.message);
+            return;
         }
+
+        setLinks((prev: any[]) =>
+            prev.map(l =>
+                l.id === link.id
+                    ? { ...l, longUrl: newDestination }
+                    : l
+            )
+        );
+
+        setEditingDestination(false);
+        setNewDestination("");
     };
 
     const handleDelete = async () => {
@@ -65,17 +69,16 @@ export default function LinkRow({ link, setLinks }: any) {
 
         if (!confirmDelete) return;
 
-        try {
-            await deleteUrl(link.id);
+        const result = await deleteUrl(link.id);
 
-            setLinks((prev: any[]) =>
-                prev.filter(l => l.id !== link.id)
-            );
-
-        } catch (error) {
-            console.error(error);
-            alert("Delete failed");
+        if (!result.success) {
+            alert(result.message);
+            return;
         }
+
+        setLinks((prev: any[]) =>
+            prev.filter(l => l.id !== link.id)
+        );
     };
 
 

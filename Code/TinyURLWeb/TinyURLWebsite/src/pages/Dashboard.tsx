@@ -27,20 +27,41 @@ export default function Dashboard() {
   }, []);
 
   const loadLinks = async () => {
-    const data = await getAllUrls();
-    setLinks(data);
+     const result = await getAllUrls();
+
+  if (!result.success) {
+    alert(result.message);
+    return;
+  }
+
+  setLinks(result.data);
   };
+
+
   const handleSearch = async () => {
     if (!searchTag.trim()) return;
 
-    const result = await searchByTag(searchTag);
-    setLinks(result);
+  const result = await searchByTag(searchTag);
+
+  if (!result.success) {
+    alert(result.message);
+    return;
+  }
+
+  setLinks(result.data);
   };
 
   const handleClear = async () => {
     setSearchTag("");
-    const data = await getAllUrls();
-    setLinks(data);
+
+  const result = await getAllUrls();
+
+  if (!result.success) {
+    alert(result.message);
+    return;
+  }
+
+  setLinks(result.data);
   };
 
   return (
