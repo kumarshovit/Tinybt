@@ -1,4 +1,8 @@
-﻿using TinyBtUrlApi.Web.Configurations;
+﻿using TinyBtUrlApi.Web.Auth.Create;
+using TinyBtUrlApi.Web.Configurations;
+using TinyBtUrlApi.Web.Profile.Delete;
+using TinyBtUrlApi.Web.Profile.Read;
+using TinyBtUrlApi.Web.Profile.Update;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,7 +65,14 @@ app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.MapGetProfileEndpoint();
+app.MapChangePasswordEndpoint();
+app.MapUpdateNameEndpoint();
+app.MapDeleteAccountEndpoint();
+app.MapGoogleLoginEndpoint();
+app.MapForgotPasswordEndpoint();
+app.MapLogoutEndpoint();
+app.MapResetPasswordEndpoint();
 // ⚠️ IMPORTANT: Chain these
 app.UseFastEndpoints()
    .UseSwaggerGen();
