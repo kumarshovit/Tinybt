@@ -41,6 +41,10 @@ public static class ServiceConfigs
     services.AddScoped<DeleteUserHandler>();
     services.AddScoped<GetAllUsersHandler>();
     services.AddScoped<UpdateUserRoleHandler>();
+    services.AddScoped<GoogleLoginHandler>();
+    services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+    services.AddScoped<ChangePasswordHandler>();
+    services.AddScoped<DeleteAccountHandler>();
     // Email
     services.AddScoped<IEmailSender, EmailService>();
   

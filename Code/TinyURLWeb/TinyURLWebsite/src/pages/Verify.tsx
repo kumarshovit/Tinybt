@@ -37,7 +37,6 @@ const VerifyEmail = () => {
     <div style={{ textAlign: "center", marginTop: "50px" }}>
       <h2>Email Verification</h2>
       {message && <p style={{ color: "green" }}>{message}</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
 };
