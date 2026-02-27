@@ -1,6 +1,7 @@
 ﻿using FastEndpoints;
 using Mediator;
 using TinyBtUrlApi.UseCases.Urls.CreateShortUrl;
+using System.Security.Claims;
 
 namespace TinyBtUrlApi.Web.Endpoints.Urls;
 
@@ -17,15 +18,41 @@ public class CreateShortUrlEndpoint
   public override void Configure()
   {
     Post("/api/urls");
-    AllowAnonymous();
+    Roles("User", "Admin");
   }
 
   public override async Task HandleAsync(
       CreateShortUrlCommand req,
       CancellationToken ct)
   {
-    var result = await _mediator.Send(req, ct);
+    var userId = int.Parse(
+        HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)!
+    );
 
+    var result = await _mediator.Send(
+        new CreateShortUrlCommand(
+            req.LongUrl,
+            req.CustomAlias,
+            req.ExpirationDate,
+            userId
+        ),
+        ct
+    );
+
+    // 🔴 Validation fail case
+    if (!result.Success)
+    {
+      HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+
+      await HttpContext.Response.WriteAsJsonAsync(new
+      {
+        message = result.Message
+      }, ct);
+
+      return;
+    }
+
+    // ✅ Success case
     var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
     var shortUrl = $"{baseUrl}/{result.ShortCode}";
 

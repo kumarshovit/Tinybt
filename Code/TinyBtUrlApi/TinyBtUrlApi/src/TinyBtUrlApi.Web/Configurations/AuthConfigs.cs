@@ -13,9 +13,9 @@ public static class AuthConfigs
       WebApplicationBuilder builder)
   {
     services
-        .AddAuthentication("Bearer")
-        .AddJwtBearer("Bearer", options =>
-        {
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+    {
           options.TokenValidationParameters = new TokenValidationParameters
           {
             ValidateIssuer = true,

@@ -15,7 +15,11 @@ public class GetAllUrlsHandler : IRequestHandler<GetAllUrlsQuery, List<UrlDto>>
 
   public async ValueTask<List<UrlDto>> Handle(GetAllUrlsQuery request, CancellationToken ct)
   {
-    var urls = await _repo.GetAllAsync();
+    var allUrls = await _repo.GetAllAsync();
+
+    var urls = allUrls
+        .Where(u => u.UserId == request.UserId)
+        .ToList();
 
     return urls.Select(u => new UrlDto
     {
@@ -27,6 +31,5 @@ public class GetAllUrlsHandler : IRequestHandler<GetAllUrlsQuery, List<UrlDto>>
       ExpirationDate = u.ExpirationDate,
       Tags = u.UrlTags?.Select(t => t.Tag.Name).ToList()
     }).ToList();
-
   }
 }

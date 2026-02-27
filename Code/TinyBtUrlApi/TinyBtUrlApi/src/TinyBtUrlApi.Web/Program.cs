@@ -1,4 +1,5 @@
-﻿using TinyBtUrlApi.Web.Auth.Create;
+﻿using Microsoft.AspNetCore.Diagnostics;
+using TinyBtUrlApi.Web.Auth.Create;
 using TinyBtUrlApi.Web.Configurations;
 using TinyBtUrlApi.Web.Profile.Delete;
 using TinyBtUrlApi.Web.Profile.Read;
@@ -60,11 +61,30 @@ var app = builder.Build();
 // ---------------------------
 // Middleware Pipeline
 // ---------------------------
+app.UseExceptionHandler(errorApp =>
+{
+  errorApp.Run(async context =>
+  {
+    context.Response.StatusCode = 400;
+    context.Response.ContentType = "application/json";
+
+    var error = context.Features.Get<IExceptionHandlerFeature>();
+    if (error != null)
+    {
+      await context.Response.WriteAsJsonAsync(new
+      {
+        message = error.Error.Message
+      });
+    }
+  });
+});
 app.UseCorsConfigs();
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseFastEndpoints()
+   .UseSwaggerGen();
 app.MapGetProfileEndpoint();
 app.MapChangePasswordEndpoint();
 app.MapUpdateNameEndpoint();
@@ -74,8 +94,7 @@ app.MapForgotPasswordEndpoint();
 app.MapLogoutEndpoint();
 app.MapResetPasswordEndpoint();
 // ⚠️ IMPORTANT: Chain these
-app.UseFastEndpoints()
-   .UseSwaggerGen();
+
 
 app.Run();
 

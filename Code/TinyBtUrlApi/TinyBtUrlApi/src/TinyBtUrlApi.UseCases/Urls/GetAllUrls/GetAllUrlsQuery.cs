@@ -8,5 +8,5 @@ using TinyBtUrlApi.Core.Entities;
 
 namespace TinyBtUrlApi.UseCases.Urls.GetAllUrls;
 
-public record GetAllUrlsQuery() : IRequest<List<UrlDto>>;
+public record GetAllUrlsQuery(int UserId) : IRequest<List<UrlDto>>;
 

@@ -1,13 +1,13 @@
 ﻿using Mediator;
+using System.Text.RegularExpressions;
 using TinyBtUrlApi.Core.Entities;
 using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Services;
 
-
 namespace TinyBtUrlApi.UseCases.Urls.CreateShortUrl;
 
 public class CreateShortUrlHandler
-  : IRequestHandler<CreateShortUrlCommand, CreateShortUrlResult>
+    : IRequestHandler<CreateShortUrlCommand, CreateShortUrlResult>
 {
   private readonly IUrlRepository _repo;
   private readonly ShortCodeService _shortCodeService;
@@ -24,37 +24,60 @@ public class CreateShortUrlHandler
       CreateShortUrlCommand request,
       CancellationToken ct)
   {
-    // 🔹 Basic Validation
+    // 🔹 1. Basic Validation
+
     if (string.IsNullOrWhiteSpace(request.LongUrl))
-      throw new ArgumentException("URL is required.");
+      return new CreateShortUrlResult
+      {
+        Success = false,
+        Message = "URL is required."
+      };
 
     if (!Uri.IsWellFormedUriString(request.LongUrl, UriKind.Absolute))
-      throw new ArgumentException("Invalid URL format.");
+      return new CreateShortUrlResult
+      {
+        Success = false,
+        Message = "Invalid URL format."
+      };
 
     if (request.ExpirationDate.HasValue &&
         request.ExpirationDate <= DateTime.UtcNow)
-      throw new ArgumentException("Expiration date must be in the future.");
+      return new CreateShortUrlResult
+      {
+        Success = false,
+        Message = "Expiration date must be in the future."
+      };
 
     string shortCode;
 
-    // 🔹 Custom Alias Logic
+    // 🔹 2. Custom Alias Logic
+
     if (!string.IsNullOrWhiteSpace(request.CustomAlias))
     {
       shortCode = request.CustomAlias.Trim().ToLower();
 
-      if (!System.Text.RegularExpressions.Regex.IsMatch(shortCode, "^[a-zA-Z0-9-]+$"))
-        throw new ArgumentException("Alias can contain only letters, numbers and hyphens.");
+      if (!Regex.IsMatch(shortCode, "^[a-zA-Z0-9-]+$"))
+        return new CreateShortUrlResult
+        {
+          Success = false,
+          Message = "Alias can contain only letters, numbers and hyphens."
+        };
 
       var exists = await _repo.ShortCodeExists(shortCode);
       if (exists)
-        throw new InvalidOperationException("Alias already exists.");
+        return new CreateShortUrlResult
+        {
+          Success = false,
+          Message = "Alias already exists."
+        };
     }
     else
     {
       shortCode = _shortCodeService.GenerateShortCode();
     }
 
-    // 🔹 Create Entity
+    // 🔹 3. Create Entity
+
     var mapping = new UrlMapping
     {
       LongUrl = request.LongUrl,
@@ -62,16 +85,23 @@ public class CreateShortUrlHandler
       CreatedAt = DateTime.UtcNow,
       ClickCount = 0,
       ExpirationDate = request.ExpirationDate,
-      IsDeleted = false
+      IsDeleted = false,
+      UserId = request.UserId
     };
 
-    // 🔹 Save to Database
+    // 🔹 4. Save to DB
     await _repo.AddAsync(mapping);
 
-    // 🔹 Return DTO (never return entity)
-    return new CreateShortUrlResult(mapping.Id, mapping.ShortCode,
-    mapping.LongUrl,
-    mapping.ExpirationDate,
-    mapping.CreatedAt);
+    // 🔹 5. Return Success Result
+
+    return new CreateShortUrlResult
+    {
+      Success = true,
+      Id = mapping.Id,
+      ShortCode = mapping.ShortCode,
+      LongUrl = mapping.LongUrl,
+      ExpirationDate = mapping.ExpirationDate,
+      CreatedAt = mapping.CreatedAt
+    };
   }
 }

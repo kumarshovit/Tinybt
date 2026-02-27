@@ -8,5 +8,6 @@ namespace TinyBtUrlApi.UseCases.Urls.CreateShortUrl;
 public record CreateShortUrlCommand(
     string LongUrl,
     string? CustomAlias,
-    DateTime? ExpirationDate
+    DateTime? ExpirationDate,
+    int UserId
 ) : IRequest<CreateShortUrlResult>;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TinyBtUrlApi.Core.Models;
 
 namespace TinyBtUrlApi.Core.Entities;
 
@@ -18,5 +19,7 @@ public class UrlMapping
 
   public DateTime? ExpirationDate { get; set; }
 
+  public int? UserId { get; set; }              // 👈 ADD THIS
+  public User User { get; set; } = null!;
   public ICollection<UrlTag> UrlTags { get; set; } = new List<UrlTag>();
 }

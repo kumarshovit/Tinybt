@@ -52,8 +52,8 @@ export const createUrl = async (
   });
 
   if (!res.ok) {
-    const msg = await res.text();
- return { success: false, message: msg };
+    const err = await res.json();
+ return { success: false, message: err.message };
   }
 
 const data = await res.json();
