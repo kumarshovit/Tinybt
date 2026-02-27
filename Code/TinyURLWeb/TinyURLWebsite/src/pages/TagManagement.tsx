@@ -85,7 +85,7 @@ const handleRename = async (oldTag: string) => {
           </h2>
 
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard")}
             className="text-sm text-blue-600 hover:underline"
           >
             ← Back to Dashboard

@@ -28,7 +28,26 @@ public static class ServiceConfigs
       WebApplicationBuilder builder)
   {
     services.AddInfrastructureServices(builder.Configuration, logger);
-
+    services.AddScoped<LoginHandler>();
+    services.AddScoped<IJwtService, JwtService>();
+    services.AddScoped<RegisterHandler>();
+    services.AddScoped<LogoutHandler>();
+    services.AddScoped<ForgotPasswordHandler>();
+    services.AddScoped<ResetPasswordHandler>();
+    services.AddScoped<VerifyEmailHandler>();
+    services.AddScoped<DeleteAccountHandler>();
+    services.AddScoped<GetProfileHandler>();
+    services.AddScoped<UpdateProfileHandler>();
+    services.AddScoped<DeleteUserHandler>();
+    services.AddScoped<GetAllUsersHandler>();
+    services.AddScoped<UpdateUserRoleHandler>();
+    // Email
+    services.AddScoped<IEmailSender, EmailService>();
+  
+    // Token Repository
+    services.AddScoped<ITokenRepository, TokenRepository>();
+    // Password Reset Repository
+    services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
     logger.LogInformation("{Project} services registered", "Infrastructure");
 
     return services;

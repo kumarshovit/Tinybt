@@ -1,12 +1,10 @@
-﻿using Microsoft.AspNetCore.DataProtection.Repositories;
-using TinyBtUrlApi.Core.Interfaces;
-using TinyBtUrlApi.Core.Services;
-using TinyBtUrlApi.Infrastructure.Data;
-using TinyBtUrlApi.UseCases.Urls.CreateShortUrl;
-using TinyBtUrlApi.Web.Configurations;
+﻿using TinyBtUrlApi.Web.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ---------------------------
+// Logging & Defaults
+// ---------------------------
 builder.AddServiceDefaults()
        .AddLoggerConfigs();
 
@@ -15,45 +13,58 @@ var startupLogger = loggerFactory.CreateLogger<Program>();
 
 startupLogger.LogInformation("Starting web host");
 
+// ---------------------------
+// Service Registrations
+// ---------------------------
 builder.Services
        .AddOptionConfigs(builder.Configuration, startupLogger, builder)
        .AddServiceConfigs(startupLogger, builder)
        .AddAuthConfigs(builder)
        .AddCorsConfigs();
-//builder.Services.AddScoped<IUrlRepository, UrlRepository>();
-//builder.Services.AddScoped<ShortCodeService>();
 
+// Custom CORS policy
 builder.Services.AddCors(options =>
 {
   options.AddPolicy("AllowFrontend",
-    policy =>
-    {
-      policy.WithOrigins("http://localhost:5173") // frontend URL
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
+      policy =>
+      {
+        policy.WithOrigins("http://localhost:5173")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+      });
 });
+
+// Mediator
 builder.Services.AddMediator(options =>
 {
   options.ServiceLifetime = ServiceLifetime.Scoped;
 });
 
+// FastEndpoints + Swagger
 builder.Services
        .AddFastEndpoints()
-       .SwaggerDocument(o => o.ShortSchemaNames = true);
+       .SwaggerDocument(o =>
+       {
+         o.ShortSchemaNames = true;
+       });
 
+// ---------------------------
+// Build App
+// ---------------------------
 var app = builder.Build();
 
-
-
+// ---------------------------
+// Middleware Pipeline
+// ---------------------------
 app.UseCorsConfigs();
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseEndpointConfigs();
-
+// ⚠️ IMPORTANT: Chain these
+app.UseFastEndpoints()
+   .UseSwaggerGen();
 
 app.Run();
 

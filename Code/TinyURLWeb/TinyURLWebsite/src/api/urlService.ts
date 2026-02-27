@@ -1,23 +1,40 @@
 const BASE_URL = "https://localhost:57679/api/urls";
 
-export const getAllUrls = async () => {
-  const res = await fetch(BASE_URL);
-  
-  if (!res.ok) {
-  let errorMessage = "Something went wrong";
+/* ============================= */
+/* 🔐 AUTH HEADER HELPER         */
+/* ============================= */
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
 
-  try {
-    const error = await res.json();
-    errorMessage = error.message || error.title || errorMessage;
-  } catch {
-    errorMessage = await res.text();
+  if (!token) {
+    throw new Error("User not authenticated");
   }
 
-  throw new Error(errorMessage);
-}
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  };
+};
+
+/* ============================= */
+/* 📌 GET ALL URLS              */
+/* ============================= */
+export const getAllUrls = async () => {
+  const res = await fetch(BASE_URL, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg);
+  }
+
   return res.json();
 };
 
+/* ============================= */
+/* ➕ CREATE URL                 */
+/* ============================= */
 export const createUrl = async (
   longUrl: string,
   customAlias?: string,
@@ -25,142 +42,151 @@ export const createUrl = async (
 ) => {
   const res = await fetch(BASE_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify({
       longUrl,
       customAlias,
-      expirationDate
-    })
+      expirationDate,
+    }),
   });
 
   if (!res.ok) {
-  let errorMessage = "Something went wrong";
-
-  try {
-    const error = await res.json();
-    errorMessage = error.message || error.title || errorMessage;
-  } catch {
-    errorMessage = await res.text();
+    const msg = await res.text();
+    throw new Error(msg);
   }
-
-  throw new Error(errorMessage);
-}
 
   return res.json();
 };
 
-
+/* ============================= */
+/* 🏷 ADD TAGS                   */
+/* ============================= */
 export const addTags = async (id: number, tags: string[]) => {
-  await fetch(`${BASE_URL}/${id}/tags`, {
+  const res = await fetch(`${BASE_URL}/${id}/tags`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ tags })
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ tags }),
   });
-};
-
-export const searchByTag = async (tag: string) => {
-  const res = await fetch(`${BASE_URL}/by-tag/${tag}`);
-  return res.json();
-};
-
-export const updateTags = async (id: number, tags: string[]) => {
-  await fetch(`${BASE_URL}/${id}/tags`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ tags })
-  });
-};
-
-export const removeTag = async (id: number, tagName: string) => {
-  await fetch(`${BASE_URL}/${id}/tags/${tagName}`, {
-    method: "DELETE"
-  });
-};
-
-export const updateAlias = async (id: number, newAlias: string) => {
-  const res = await fetch(
-    `${BASE_URL}/${id}/alias`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ newAlias })
-    }
-  );
 
   if (!res.ok) {
-  let errorMessage = "Something went wrong";
-
-  try {
-    const error = await res.json();
-    errorMessage = error.message || error.title || errorMessage;
-  } catch {
-    errorMessage = await res.text();
+    const msg = await res.text();
+    throw new Error(msg);
   }
+};
 
-  throw new Error(errorMessage);
-}
+/* ============================= */
+/* 🔎 SEARCH BY TAG              */
+/* ============================= */
+export const searchByTag = async (tag: string) => {
+  const res = await fetch(`${BASE_URL}/by-tag/${tag}`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg);
+  }
 
   return res.json();
 };
 
-export const updateDestination = async (id: number, newLongUrl: string) => {
-  const res = await fetch(
-    `${BASE_URL}/${id}/destination`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ newLongUrl })
-    }
-  );
-if (!res.ok) {
-  let errorMessage = "Something went wrong";
+/* ============================= */
+/* ✏ UPDATE TAGS                */
+/* ============================= */
+export const updateTags = async (id: number, tags: string[]) => {
+  const res = await fetch(`${BASE_URL}/${id}/tags`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ tags }),
+  });
 
-  try {
-    const error = await res.json();
-    errorMessage = error.message || error.title || errorMessage;
-  } catch {
-    errorMessage = await res.text();
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg);
+  }
+};
+
+/* ============================= */
+/* ❌ REMOVE TAG                 */
+/* ============================= */
+export const removeTag = async (id: number, tagName: string) => {
+  const res = await fetch(`${BASE_URL}/${id}/tags/${tagName}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg);
+  }
+};
+
+/* ============================= */
+/* 🔁 UPDATE ALIAS               */
+/* ============================= */
+export const updateAlias = async (id: number, newAlias: string) => {
+  const res = await fetch(`${BASE_URL}/${id}/alias`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ newAlias }),
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg);
   }
 
-  throw new Error(errorMessage);
-}
   return res.json();
 };
 
+/* ============================= */
+/* 🔁 UPDATE DESTINATION         */
+/* ============================= */
+export const updateDestination = async (
+  id: number,
+  newLongUrl: string
+) => {
+  const res = await fetch(`${BASE_URL}/${id}/destination`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ newLongUrl }),
+  });
+
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg);
+  }
+
+  return res.json();
+};
+
+/* ============================= */
+/* ✏ RENAME TAG                 */
+/* ============================= */
 export const renameTag = async (
   id: number,
   oldTag: string,
   newTag: string
 ) => {
-  const res = await fetch(
-    `${BASE_URL}/${id}/tags/${oldTag}`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ newTag })  
-    }
-  );
+  const res = await fetch(`${BASE_URL}/${id}/tags/${oldTag}`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ newTag }),
+  });
 
   if (!res.ok) {
-  let errorMessage = "Something went wrong";
-
-  try {
-    const error = await res.json();
-    errorMessage = error.message || error.title || errorMessage;
-  } catch {
-    errorMessage = await res.text();
+    const msg = await res.text();
+    throw new Error(msg);
   }
-
-  throw new Error(errorMessage);
-}
 };
 
- 
-
-
+/* ============================= */
+/* 🗑 DELETE URL                 */
+/* ============================= */
 export const deleteUrl = async (id: number) => {
-  const res = await fetch(`${BASE_URL}/${id}`,{
-    method: "DELETE"
+  const res = await fetch(`${BASE_URL}/${id}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
   });
 
   if (!res.ok) {
