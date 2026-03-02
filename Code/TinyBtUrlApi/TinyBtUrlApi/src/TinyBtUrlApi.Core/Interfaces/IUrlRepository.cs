@@ -51,5 +51,14 @@ public interface IUrlRepository
   Task<List<ClicksByOsDto>> GetClicksByOsAsync(
     CancellationToken cancellationToken);
 
+  Task<List<ClicksByDeviceTypeDto>> GetClicksByDeviceTypeAsync(
+    DateTime? startDate,
+    DateTime? endDate,
+    CancellationToken cancellationToken);
+
+  Task<List<ClickLog>> GetClickLogsByShortCodeAsync(
+    string shortCode,
+    CancellationToken ct);
+
   Task LogClickAsync(ClickLog clickLog, CancellationToken cancellationToken);
 }

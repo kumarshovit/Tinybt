@@ -274,4 +274,39 @@ public class UrlRepository : IUrlRepository
     _context.ClickLogs.Add(clickLog);
     await _context.SaveChangesAsync(cancellationToken);
   }
+
+  public async Task<List<ClicksByDeviceTypeDto>> GetClicksByDeviceTypeAsync(
+    DateTime? startDate,
+    DateTime? endDate,
+    CancellationToken cancellationToken)
+  {
+    var query = _context.ClickLogs.AsQueryable();
+
+    if (startDate.HasValue)
+      query = query.Where(c => c.ClickedAt >= startDate.Value);
+
+    if (endDate.HasValue)
+      query = query.Where(c => c.ClickedAt <= endDate.Value);
+
+    return await query
+        .GroupBy(c => string.IsNullOrEmpty(c.DeviceType)
+            ? "Unknown"
+            : c.DeviceType)
+        .Select(g => new ClicksByDeviceTypeDto
+        {
+          DeviceType = g.Key,
+          Clicks = g.Count()
+        })
+        .OrderByDescending(x => x.Clicks)
+        .ToListAsync(cancellationToken);
+  }
+
+  public async Task<List<ClickLog>> GetClickLogsByShortCodeAsync(
+    string shortCode,
+    CancellationToken ct)
+  {
+    return await _context.ClickLogs
+        .Where(x => x.ShortCode == shortCode)
+        .ToListAsync(ct);
+  }
 }
