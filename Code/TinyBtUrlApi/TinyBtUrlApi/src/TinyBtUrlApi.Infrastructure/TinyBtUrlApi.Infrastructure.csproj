@@ -30,4 +30,9 @@
     <ProjectReference Include="..\TinyBtUrlApi.Core\TinyBtUrlApi.Core.csproj" />
     <ProjectReference Include="..\TinyBtUrlApi.UseCases\TinyBtUrlApi.UseCases.csproj" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Data\Queries\" />
+    <Folder Include="Email\" />
+  </ItemGroup>
 </Project>

@@ -52,7 +52,8 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
         db.Database.Migrate();
         
         // Seed the database with test data.
-        SeedData.PopulateTestDataAsync(db).Wait();
+        // SeedData helper was removed from the project; skipping test data population.
+        // If you need to populate test data, reintroduce a SeedData helper in Infrastructure.Data.
       }
       catch (Exception ex)
       {

@@ -4,7 +4,6 @@ using TinyBtUrlApi.Core.Models;
 using TinyBtUrlApi.Core.Services;
 using TinyBtUrlApi.Infrastructure;
 using TinyBtUrlApi.Infrastructure.Data;
-using TinyBtUrlApi.Infrastructure.Email;
 using TinyBtUrlApi.Infrastructure.Repositories;
 using TinyBtUrlApi.Infrastructure.Services;
 using TinyBtUrlApi.UseCases.Account.Delete;
@@ -28,55 +27,32 @@ public static class ServiceConfigs
       Microsoft.Extensions.Logging.ILogger logger,
       WebApplicationBuilder builder)
   {
-    services.AddInfrastructureServices(builder.Configuration, logger)
-            .AddMediatorSourceGen(logger);
-
-    // =====================
-    // Repositories
-    // =====================
-    services.AddScoped<IRepository<IpLoginAttempt>, EfRepository<IpLoginAttempt>>();
-    services.AddScoped<ITokenRepository, TokenRepository>();
-    services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
-
-    // =====================
-    // Core Services
-    // =====================
-    services.AddScoped<IJwtService, JwtService>();
-    services.AddScoped<IGoogleAuthService, GoogleAuthService>();
-
-    // =====================
-    // Email
-    // =====================
-    if (builder.Environment.IsDevelopment())
-    {
-      services.AddScoped<IEmailSender, MimeKitEmailSender>();
-    }
-    else
-    {
-      services.AddScoped<IEmailSender, MimeKitEmailSender>();
-    }
-
-    // =====================
-    // Handlers
-    // =====================
-    services.AddScoped<RegisterHandler>();
+    services.AddInfrastructureServices(builder.Configuration, logger);
     services.AddScoped<LoginHandler>();
+    services.AddScoped<IJwtService, JwtService>();
+    services.AddScoped<RegisterHandler>();
     services.AddScoped<LogoutHandler>();
     services.AddScoped<ForgotPasswordHandler>();
     services.AddScoped<ResetPasswordHandler>();
     services.AddScoped<VerifyEmailHandler>();
+    services.AddScoped<DeleteAccountHandler>();
     services.AddScoped<GetProfileHandler>();
     services.AddScoped<UpdateProfileHandler>();
-    services.AddScoped<ChangePasswordHandler>();
-    services.AddScoped<DeleteAccountHandler>();
+    services.AddScoped<DeleteUserHandler>();
     services.AddScoped<GetAllUsersHandler>();
     services.AddScoped<UpdateUserRoleHandler>();
-    services.AddScoped<DeleteUserHandler>();
     services.AddScoped<GoogleLoginHandler>();
-    logger.LogInformation(
-        "{Project} services registered for {Environment}",
-        "TinyBtUrlApi",
-        builder.Environment.EnvironmentName);
+    services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+    services.AddScoped<ChangePasswordHandler>();
+    services.AddScoped<DeleteAccountHandler>();
+    // Email
+    services.AddScoped<IEmailSender, EmailService>();
+  
+    // Token Repository
+    services.AddScoped<ITokenRepository, TokenRepository>();
+    // Password Reset Repository
+    services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
+    logger.LogInformation("{Project} services registered", "Infrastructure");
 
     return services;
   }

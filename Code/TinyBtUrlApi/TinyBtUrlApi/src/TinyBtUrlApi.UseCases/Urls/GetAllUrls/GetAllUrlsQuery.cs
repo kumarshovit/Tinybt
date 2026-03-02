@@ -1,0 +1,12 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Mediator;
+using TinyBtUrlApi.Core.DTOs;
+using TinyBtUrlApi.Core.Entities;
+
+
+namespace TinyBtUrlApi.UseCases.Urls.GetAllUrls;
+
+public record GetAllUrlsQuery(int UserId) : IRequest<List<UrlDto>>;
+

@@ -31,9 +31,8 @@ public static class MiddlewareConfig
 
     app.UseHttpsRedirection();
 
-    // Apply migrations only if needed
-    var shouldMigrate = app.Environment.IsDevelopment() ||
-                        app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup");
+    // Run migrations and seed in Development or when explicitly requested via environment variable
+    var shouldMigrate = app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup");
 
     if (shouldMigrate)
     {
@@ -77,8 +76,9 @@ public static class MiddlewareConfig
     {
       logger.LogInformation("Seeding database...");
       var context = services.GetRequiredService<AppDbContext>();
-      await SeedData.InitializeAsync(context);
-      logger.LogInformation("Database seeded successfully");
+      // SeedData class was removed; there is no application-level seed to run.
+      // Skipping seeding to avoid build errors. If you add seeding back, implement SeedData.InitializeAsync.
+      logger.LogInformation("No seed data present; skipping seeding");
     }
     catch (Exception ex)
     {

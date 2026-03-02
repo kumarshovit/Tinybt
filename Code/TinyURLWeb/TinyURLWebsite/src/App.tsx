@@ -9,56 +9,63 @@ import ResetPassword from "./pages/ResetPassword";
 import AdminRoute from "./components/auth/AdminRoute";
 import AdminPage from "./pages/AdminPage";
 import ProfilePage from "./pages/ProfilePage";
-function App() {
+import TagManagement from "./pages/TagManagement";
+
+export default function App() {
   return (
     <BrowserRouter>
       <Routes>
 
-  <Route path="/" element={<Navigate to="/login" />} />
+        {/* Public */}
+        <Route path="/" element={<Navigate to="/login" />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
-  {/* Public */}
-  <Route path="/register" element={<Register />} />
-  <Route path="/login" element={<Login />} />
-  <Route path="/verify-email" element={<VerifyEmail />} />
-  <Route path="/forgot-password" element={<ForgotPassword />} />
-  <Route path="/reset-password" element={<ResetPassword />} />
+        {/* Protected */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
 
-  {/* Protected */}
-  <Route
-    path="/dashboard"
-    element={
-      <ProtectedRoute>
-        <Dashboard />
-      </ProtectedRoute>
-    }
-  />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
 
-  <Route
-    path="/profile"
-    element={
-      <ProtectedRoute>
-        <ProfilePage />
-      </ProtectedRoute>
-    }
-  />
+        <Route
+          path="/tags/:id"
+          element={
+            <ProtectedRoute>
+              <TagManagement />
+            </ProtectedRoute>
+          }
+        />
 
-  {/* Admin */}
-  <Route
-    path="/admin"
-    element={
-      <AdminRoute>
-        <AdminPage />
-      </AdminRoute>
-    }
-  />
+        {/* Admin */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminPage />
+            </AdminRoute>
+          }
+        />
 
-  {/* Fallback */}
-  <Route path="*" element={<Navigate to="/login" />} />
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/login" />} />
 
-</Routes>
-
+      </Routes>
     </BrowserRouter>
   );
 }
-
-export default App;

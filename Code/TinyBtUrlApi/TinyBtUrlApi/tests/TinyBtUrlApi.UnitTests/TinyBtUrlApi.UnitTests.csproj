@@ -35,7 +35,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Core\ContributorAggregate\" />
     <Folder Include="Core\Services\" />
+    <Folder Include="UseCases\Contributors\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -22,22 +22,80 @@ namespace TinyBtUrlApi.Infrastructure.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("TinyBtUrlApi.Core.ContributorAggregate.Contributor", b =>
+            modelBuilder.Entity("TinyBtUrlApi.Core.Entities.Tag", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Status")
+                    b.HasKey("Id");
+
+                    b.ToTable("Tags");
+                });
+
+            modelBuilder.Entity("TinyBtUrlApi.Core.Entities.UrlMapping", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ClickCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpirationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LongUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShortCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Contributors");
+                    b.HasIndex("ShortCode")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UrlMappings");
+                });
+
+            modelBuilder.Entity("TinyBtUrlApi.Core.Entities.UrlTag", b =>
+                {
+                    b.Property<int>("UrlMappingId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TagId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UrlMappingId", "TagId");
+
+                    b.HasIndex("TagId");
+
+                    b.ToTable("UrlTags");
                 });
 
             modelBuilder.Entity("TinyBtUrlApi.Core.Models.IpLoginAttempt", b =>
@@ -199,33 +257,32 @@ namespace TinyBtUrlApi.Infrastructure.Data.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("TinyBtUrlApi.Core.ContributorAggregate.Contributor", b =>
+            modelBuilder.Entity("TinyBtUrlApi.Core.Entities.UrlMapping", b =>
                 {
-                    b.OwnsOne("TinyBtUrlApi.Core.ContributorAggregate.PhoneNumber", "PhoneNumber", b1 =>
-                        {
-                            b1.Property<int>("ContributorId")
-                                .HasColumnType("int");
+                    b.HasOne("TinyBtUrlApi.Core.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
 
-                            b1.Property<string>("CountryCode")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                    b.Navigation("User");
+                });
 
-                            b1.Property<string>("Extension")
-                                .HasColumnType("nvarchar(max)");
+            modelBuilder.Entity("TinyBtUrlApi.Core.Entities.UrlTag", b =>
+                {
+                    b.HasOne("TinyBtUrlApi.Core.Entities.Tag", "Tag")
+                        .WithMany("UrlTags")
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                            b1.Property<string>("Number")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)");
+                    b.HasOne("TinyBtUrlApi.Core.Entities.UrlMapping", "UrlMapping")
+                        .WithMany("UrlTags")
+                        .HasForeignKey("UrlMappingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                            b1.HasKey("ContributorId");
+                    b.Navigation("Tag");
 
-                            b1.ToTable("Contributors");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ContributorId");
-                        });
-
-                    b.Navigation("PhoneNumber");
+                    b.Navigation("UrlMapping");
                 });
 
             modelBuilder.Entity("TinyBtUrlApi.Core.Models.RefreshToken", b =>
@@ -237,6 +294,16 @@ namespace TinyBtUrlApi.Infrastructure.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TinyBtUrlApi.Core.Entities.Tag", b =>
+                {
+                    b.Navigation("UrlTags");
+                });
+
+            modelBuilder.Entity("TinyBtUrlApi.Core.Entities.UrlMapping", b =>
+                {
+                    b.Navigation("UrlTags");
                 });
 #pragma warning restore 612, 618
         }

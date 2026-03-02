@@ -34,6 +34,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Endpoints\Urls\NewFolder\" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Auth\Delete\" />
     <Folder Include="Auth\Update\" />
     <Folder Include="Auth\Read\" />
