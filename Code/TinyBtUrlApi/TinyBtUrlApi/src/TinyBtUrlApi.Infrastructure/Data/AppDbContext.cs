@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TinyBtUrlApi.Core.Entities;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -23,6 +23,7 @@ public class AppDbContext : DbContext
   public DbSet<RevokedToken> RevokedTokens { get; set; }
   public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
   public DbSet<IpLoginAttempt> IpLoginAttempts { get; set; }
+  public DbSet<ClickLog> ClickLogs { get; set; }
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     base.OnModelCreating(modelBuilder);
