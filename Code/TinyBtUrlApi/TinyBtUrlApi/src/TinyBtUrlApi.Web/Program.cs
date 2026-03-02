@@ -24,30 +24,23 @@ startupLogger.LogInformation("Starting web host");
 builder.Services
        .AddOptionConfigs(builder.Configuration, startupLogger, builder)
        .AddServiceConfigs(startupLogger, builder)
-       .AddAuthConfigs(builder)
-       .AddCorsConfigs();
+       .AddAuthConfigs(builder);
 
-// Custom CORS policy
+// ✅ Environment-based CORS
 builder.Services.AddCors(options =>
 {
-  options.AddPolicy("AllowFrontend",
-      policy =>
-      {
-        policy.WithOrigins("http://164.52.216.107:9007")
-                .AllowAnyHeader()
-                .AllowAnyMethod();
-      });
+  options.AddPolicy("AllowFrontend", policy =>
+  {
+    var allowedOrigins = builder.Configuration
+        .GetSection("AllowedOrigins")
+        .Get<string[]>();
+
+    policy.WithOrigins(allowedOrigins!)
+          .AllowAnyHeader()
+          .AllowAnyMethod()
+          .AllowCredentials();
+  });
 });
-//builder.Services.AddCors(options =>
-//{
-//  options.AddPolicy("AllowFrontend",
-//      policy =>
-//      {
-//        policy.WithOrigins("http://localhost:5174")
-//                .AllowAnyHeader()
-//                .AllowAnyMethod();
-//      });
-//});
 
 // Mediator
 builder.Services.AddMediator(options =>
@@ -88,13 +81,16 @@ app.UseExceptionHandler(errorApp =>
     }
   });
 });
-app.UseCorsConfigs();
+
+// ✅ CORS before Authentication
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.UseFastEndpoints()
    .UseSwaggerGen();
+
 app.MapGetProfileEndpoint();
 app.MapChangePasswordEndpoint();
 app.MapUpdateNameEndpoint();
@@ -103,8 +99,6 @@ app.MapGoogleLoginEndpoint();
 app.MapForgotPasswordEndpoint();
 app.MapLogoutEndpoint();
 app.MapResetPasswordEndpoint();
-// ⚠️ IMPORTANT: Chain these
-
 
 app.Run();
 

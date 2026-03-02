@@ -1,4 +1,4 @@
-const BASE_URL = "http://164.52.216.107:9008/api/urls";
+const BASE_URL = `${import.meta.env.VITE_API_URL}/api/urls`;
 
 /* ============================= */
 /* 🔐 AUTH HEADER HELPER         */
