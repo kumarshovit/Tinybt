@@ -33,11 +33,21 @@ builder.Services.AddCors(options =>
   options.AddPolicy("AllowFrontend",
       policy =>
       {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("http://164.52.216.107:9007")
                 .AllowAnyHeader()
                 .AllowAnyMethod();
       });
 });
+//builder.Services.AddCors(options =>
+//{
+//  options.AddPolicy("AllowFrontend",
+//      policy =>
+//      {
+//        policy.WithOrigins("http://localhost:5174")
+//                .AllowAnyHeader()
+//                .AllowAnyMethod();
+//      });
+//});
 
 // Mediator
 builder.Services.AddMediator(options =>

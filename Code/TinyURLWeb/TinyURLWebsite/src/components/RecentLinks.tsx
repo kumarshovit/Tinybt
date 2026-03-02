@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import LinkRow from "./LinkRow";
 
 interface Props {
@@ -19,8 +18,6 @@ export default function RecentLinks({
     handleSearch,
     handleClear
 }: Props) {
-
-    const navigate = useNavigate();
 
     return (
         <section className="max-w-6xl mx-auto mt-16 px-6">

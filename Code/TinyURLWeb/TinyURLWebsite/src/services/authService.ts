@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // 🔹 Base API URL
-const API = "https://localhost:57679/api/auth";
+const API = "http://164.52.216.107:9008/api/auth";
 
 // 🔹 Create axios instance
 const apiClient = axios.create({

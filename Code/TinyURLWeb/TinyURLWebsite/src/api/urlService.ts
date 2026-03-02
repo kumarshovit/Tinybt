@@ -1,4 +1,4 @@
-const BASE_URL = "https://localhost:57679/api/urls";
+const BASE_URL = "http://164.52.216.107:9008/api/urls";
 
 /* ============================= */
 /* 🔐 AUTH HEADER HELPER         */
