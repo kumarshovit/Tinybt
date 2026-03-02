@@ -11,13 +11,16 @@ public class CreateShortUrlHandler
 {
   private readonly IUrlRepository _repo;
   private readonly ShortCodeService _shortCodeService;
+  private readonly ISettingsRepository _settingsRepo;
 
   public CreateShortUrlHandler(
       IUrlRepository repo,
-      ShortCodeService shortCodeService)
+      ShortCodeService shortCodeService,
+     ISettingsRepository settingsRepo)
   {
     _repo = repo;
     _shortCodeService = shortCodeService;
+    _settingsRepo = settingsRepo;
   }
 
   public async ValueTask<CreateShortUrlResult> Handle(
@@ -76,7 +79,22 @@ public class CreateShortUrlHandler
       shortCode = _shortCodeService.GenerateShortCode();
     }
 
-    // 🔹 3. Create Entity
+    // 🔹 3.
+    // Create Entity
+
+    DateTime? expirationDate = request.ExpirationDate;
+
+    // If user did NOT provide expiration
+    if (!expirationDate.HasValue)
+    {
+      var settings = await _settingsRepo.GetAsync();
+
+      if (settings?.DefaultExpirationDays is int days)
+      {
+        expirationDate = DateTime.UtcNow.AddDays(days);
+      }
+    }
+
 
     var mapping = new UrlMapping
     {
@@ -84,7 +102,7 @@ public class CreateShortUrlHandler
       ShortCode = shortCode,
       CreatedAt = DateTime.UtcNow,
       ClickCount = 0,
-      ExpirationDate = request.ExpirationDate,
+      ExpirationDate = expirationDate,
       IsDeleted = false,
       UserId = request.UserId
     };

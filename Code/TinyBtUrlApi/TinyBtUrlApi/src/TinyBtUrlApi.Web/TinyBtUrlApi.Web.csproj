@@ -34,6 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Admin\Update\NewFolder\" />
     <Folder Include="Endpoints\Urls\NewFolder\" />
   </ItemGroup>
 

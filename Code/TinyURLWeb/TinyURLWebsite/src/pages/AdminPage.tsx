@@ -12,9 +12,12 @@ const AdminPage = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
+  const [defaultExpiration, setDefaultExpiration] = useState<number | "">("");
+  const [settingLoading, setSettingLoading] = useState(false);
 
   useEffect(() => {
     fetchUsers();
+    fetchDefaultExpiration();
   }, []);
 
   // ================= FETCH USERS =================
@@ -34,6 +37,32 @@ const AdminPage = () => {
     }
   };
 
+  const fetchDefaultExpiration = async () => {
+    try {
+      const res = await api.get("/admin/settings/expiration");
+      setDefaultExpiration(res.data.defaultExpirationDays ?? "");
+    } catch {
+      console.log("Failed to fetch expiration setting");
+    }
+  };
+
+  const updateDefaultExpiration = async () => {
+    if (!defaultExpiration) return alert("Enter valid days");
+
+    try {
+      setSettingLoading(true);
+
+      await api.put("/admin/settings/expiration", {
+        defaultExpirationDays: Number(defaultExpiration),
+      });
+
+      alert("Default expiration updated successfully!");
+    } catch {
+      alert("Failed to update expiration.");
+    } finally {
+      setSettingLoading(false);
+    }
+  };
   // ================= UPDATE ROLE =================
   const updateRole = async (userId: number, newRole: string) => {
     try {
@@ -85,9 +114,40 @@ const AdminPage = () => {
           Admin Dashboard 🔐
         </h1>
 
+
         {error && (
           <p className="text-red-500 mb-4">{error}</p>
         )}
+
+
+        {/* ================= SYSTEM SETTINGS ================= */}
+        <div className="bg-white shadow rounded-lg p-6 mb-8">
+          <h2 className="text-xl font-semibold mb-4">
+            System Settings ⚙️
+          
+          </h2>
+
+          <div className="flex items-center gap-4">
+            <p>Default expiration link</p>
+            <input
+              type="number"
+              min={1}
+              max={365}
+              placeholder="Default expiration (days)"
+              className="px-4 py-2 border rounded-lg w-60"
+              value={defaultExpiration}
+              onChange={(e) => setDefaultExpiration(Number(e.target.value))}
+            />
+
+            <button
+              onClick={updateDefaultExpiration}
+              disabled={settingLoading}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+            >
+              {settingLoading ? "Saving..." : "Save"}
+            </button>
+          </div>
+        </div>
 
         {/* Search */}
         <input

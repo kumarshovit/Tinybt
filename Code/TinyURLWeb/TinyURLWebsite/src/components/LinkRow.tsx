@@ -84,7 +84,7 @@ export default function LinkRow({ link, setLinks }: any) {
 
     return (
         <div
-            className="bg-white shadow rounded-lg p-5 transition hover:shadow-lg relative"
+            className="bg-white shadow rounded-lg p-5 m-4 transition hover:shadow-lg relative"
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >

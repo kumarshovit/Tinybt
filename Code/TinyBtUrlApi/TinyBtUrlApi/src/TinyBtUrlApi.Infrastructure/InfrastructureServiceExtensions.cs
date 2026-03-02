@@ -1,6 +1,8 @@
 ﻿using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Services;
 using TinyBtUrlApi.Infrastructure.Data;
+using TinyBtUrlApi.Infrastructure.Repositories;
+
 
 namespace TinyBtUrlApi.Infrastructure;
 public static class InfrastructureServiceExtensions
@@ -21,6 +23,8 @@ public static class InfrastructureServiceExtensions
 
     services.AddScoped<EventDispatchInterceptor>();
     services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();
+    services.AddScoped<ISettingsRepository, SettingsRepository>();
+
 
     services.AddDbContext<AppDbContext>((provider, options) =>
     {
