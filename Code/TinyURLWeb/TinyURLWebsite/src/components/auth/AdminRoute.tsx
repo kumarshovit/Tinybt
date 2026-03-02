@@ -1,7 +1,8 @@
 import { Navigate } from "react-router-dom";
 import { getUserRole } from "../../utils/auth";
+import type { ReactNode } from "react";
 
-const AdminRoute = ({ children }: { children: JSX.Element }) => {
+const AdminRoute = ({ children }: { children: ReactNode }) => {
   const role = getUserRole();
 
   if (role !== "Admin") {

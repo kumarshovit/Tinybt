@@ -1,4 +1,5 @@
-import { useState, FormEvent } from "react";
+import { useState } from "react";
+import type { FormEvent } from "react";
 import api from "../utils/api";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 

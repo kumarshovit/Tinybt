@@ -1,4 +1,4 @@
-const BASE_URL = "https://localhost:57679/api/urls";
+const BASE_URL = `${import.meta.env.VITE_API_URL}/api/urls`;
 
 /* ============================= */
 /* 🔐 AUTH HEADER HELPER         */

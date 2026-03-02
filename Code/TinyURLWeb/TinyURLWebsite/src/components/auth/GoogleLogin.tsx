@@ -44,7 +44,7 @@ const GoogleLogin = () => {
   const handleCredentialResponse = async (response: any) => {
     try {
       const res = await axios.post(
-        "https://localhost:57679/api/auth/google-login",
+        "http://164.52.216.107:9008/api/auth/google-login",
         { token: response.credential }
       );
 
