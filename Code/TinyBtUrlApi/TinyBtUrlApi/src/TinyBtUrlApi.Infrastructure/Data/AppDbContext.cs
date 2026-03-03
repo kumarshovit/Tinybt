@@ -23,7 +23,10 @@ public class AppDbContext : DbContext
   public DbSet<RevokedToken> RevokedTokens { get; set; }
   public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
   public DbSet<IpLoginAttempt> IpLoginAttempts { get; set; }
+
   public DbSet<SystemSettings> SystemSettings { get; set; }
+
+  public DbSet<ClickLog> ClickLogs { get; set; }
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     base.OnModelCreating(modelBuilder);

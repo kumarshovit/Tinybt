@@ -29,17 +29,13 @@ builder.Services
 // ✅ Environment-based CORS
 builder.Services.AddCors(options =>
 {
-  options.AddPolicy("AllowFrontend", policy =>
-  {
-    var allowedOrigins = builder.Configuration
-        .GetSection("AllowedOrigins")
-        .Get<string[]>();
-
-    policy.WithOrigins(allowedOrigins!)
-          .AllowAnyHeader()
-          .AllowAnyMethod()
-          .AllowCredentials();
-  });
+  options.AddPolicy("AllowFrontend",
+      policy =>
+      {
+        policy.WithOrigins("http://localhost:5173")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+      });
 });
 
 // Mediator
@@ -90,7 +86,6 @@ app.UseAuthorization();
 
 app.UseFastEndpoints()
    .UseSwaggerGen();
-
 app.MapGetProfileEndpoint();
 app.MapChangePasswordEndpoint();
 app.MapUpdateNameEndpoint();

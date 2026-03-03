@@ -10,7 +10,8 @@ import AdminRoute from "./components/auth/AdminRoute";
 import AdminPage from "./pages/AdminPage";
 import ProfilePage from "./pages/ProfilePage";
 import TagManagement from "./pages/TagManagement";
-
+import MyAnalytics from "./pages/MyAnalytics";
+import AnalysisPage from "./pages/AnalysisPage";
 export default function App() {
   return (
     <BrowserRouter>
@@ -33,6 +34,15 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+  path="/analysis"
+  element={
+    <ProtectedRoute>
+      <AnalysisPage />
+    </ProtectedRoute>
+  }
+/>
 
         <Route
           path="/profile"
@@ -61,10 +71,10 @@ export default function App() {
             </AdminRoute>
           }
         />
-
+        <Route path="/my-analytics" element={<MyAnalytics />} />
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/login" />} />
-
+        
       </Routes>
     </BrowserRouter>
   );

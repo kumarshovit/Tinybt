@@ -3,7 +3,6 @@ using TinyBtUrlApi.Core.Services;
 using TinyBtUrlApi.Infrastructure.Data;
 using TinyBtUrlApi.Infrastructure.Repositories;
 
-
 namespace TinyBtUrlApi.Infrastructure;
 public static class InfrastructureServiceExtensions
 {
@@ -50,6 +49,7 @@ public static class InfrastructureServiceExtensions
 
     services.AddScoped<IUrlRepository, UrlRepository>();
     services.AddScoped<ShortCodeService>();
+    services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
 
     logger.LogInformation("{Project} services registered", "Infrastructure");
 

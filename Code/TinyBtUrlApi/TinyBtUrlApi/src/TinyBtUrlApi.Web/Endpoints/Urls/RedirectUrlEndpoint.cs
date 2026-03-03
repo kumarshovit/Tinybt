@@ -15,12 +15,8 @@ public class RedirectUrlEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    // Root short url route → TinyURL behavior
     Get("/{shortCode}");
-
     AllowAnonymous();
-
-    // Important so other APIs work first
     Options(x => x.WithOrder(int.MaxValue));
   }
 
@@ -34,7 +30,21 @@ public class RedirectUrlEndpoint : EndpointWithoutRequest
       return;
     }
 
-    var url = await _mediator.Send(new RedirectUrlQuery(shortCode), ct);
+    var headers = HttpContext.Request.Headers;
+
+    var query = new RedirectUrlQuery(
+        shortCode,
+        headers["User-Agent"].ToString(),               // Browser
+        headers["sec-ch-ua-platform"].ToString(),       // OS
+        headers["CF-IPCountry"].ToString(),             // Country (if behind proxy)
+        headers["Accept-Language"].ToString(),          // Language
+        headers["Referer"].ToString(),                  // Referrer
+        headers["sec-ch-ua-mobile"].ToString(),         // DeviceType
+        HttpContext.Connection.RemoteIpAddress?.ToString(), // IP
+        headers.ToString()                              // RawHeaders
+    );
+
+    var url = await _mediator.Send(query, ct);
 
     if (url == null)
     {
@@ -42,9 +52,8 @@ public class RedirectUrlEndpoint : EndpointWithoutRequest
       return;
     }
 
-    // ⭐ return 200 JSON (what you want)
     HttpContext.Response.StatusCode = StatusCodes.Status302Found;
     HttpContext.Response.Headers.Location = url.LongUrl;
     await HttpContext.Response.CompleteAsync();
   }
-  }
+}
