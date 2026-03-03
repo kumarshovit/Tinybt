@@ -309,4 +309,84 @@ public class UrlRepository : IUrlRepository
         .Where(x => x.ShortCode == shortCode)
         .ToListAsync(ct);
   }
+
+  public async Task<List<ClickOverTimeDto>> GetLinkClicksOverTimeAsync(
+    string shortCode,
+    DateTime startDate,
+    DateTime endDate,
+    string viewType,
+    CancellationToken cancellationToken)
+  {
+    var query = _context.ClickLogs
+        .Where(x =>
+            x.ShortCode == shortCode &&
+            x.ClickedAt >= startDate &&
+            x.ClickedAt < endDate.AddDays(1));
+
+    if (viewType == "Monthly")
+    {
+      var data = await query
+          .GroupBy(x => new { x.ClickedAt.Year, x.ClickedAt.Month })
+          .Select(g => new
+          {
+            g.Key.Year,
+            g.Key.Month,
+            Clicks = g.Count()
+          })
+          .OrderBy(x => x.Year)
+          .ThenBy(x => x.Month)
+          .ToListAsync(cancellationToken);
+
+      return data.Select(x => new ClickOverTimeDto
+      {
+        Period = $"{x.Year}-{x.Month:D2}",
+        Clicks = x.Clicks
+      }).ToList();
+    }
+
+    if (viewType == "Weekly")
+    {
+      var data = await query
+          .GroupBy(x => EF.Functions.DateDiffWeek(startDate, x.ClickedAt))
+          .Select(g => new
+          {
+            Week = g.Key,
+            Clicks = g.Count()
+          })
+          .OrderBy(x => x.Week)
+          .ToListAsync(cancellationToken);
+
+      return data.Select(x => new ClickOverTimeDto
+      {
+        Period = $"Week {x.Week}",
+        Clicks = x.Clicks
+      }).ToList();
+    }
+
+    // ✅ Default Daily
+    var dailyData = await query
+        .GroupBy(x => new
+        {
+          x.ClickedAt.Year,
+          x.ClickedAt.Month,
+          x.ClickedAt.Day
+        })
+        .Select(g => new
+        {
+          g.Key.Year,
+          g.Key.Month,
+          g.Key.Day,
+          Clicks = g.Count()
+        })
+        .OrderBy(x => x.Year)
+        .ThenBy(x => x.Month)
+        .ThenBy(x => x.Day)
+        .ToListAsync(cancellationToken);
+
+    return dailyData.Select(x => new ClickOverTimeDto
+    {
+      Period = $"{x.Year}-{x.Month:D2}-{x.Day:D2}",
+      Clicks = x.Clicks
+    }).ToList();
+  }
 }

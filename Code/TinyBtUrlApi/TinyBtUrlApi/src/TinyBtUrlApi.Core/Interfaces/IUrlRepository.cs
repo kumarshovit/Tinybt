@@ -61,4 +61,11 @@ public interface IUrlRepository
     CancellationToken ct);
 
   Task LogClickAsync(ClickLog clickLog, CancellationToken cancellationToken);
+
+  Task<List<ClickOverTimeDto>> GetLinkClicksOverTimeAsync(
+    string shortCode,
+    DateTime startDate,
+    DateTime endDate,
+    string viewType,
+    CancellationToken cancellationToken);
 }
