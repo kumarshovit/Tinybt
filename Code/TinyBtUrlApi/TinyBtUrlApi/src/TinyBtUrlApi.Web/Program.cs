@@ -35,7 +35,8 @@ builder.Services.AddCors(options =>
       {
         policy.WithOrigins("http://localhost:5173")
                 .AllowAnyHeader()
-                .AllowAnyMethod();
+                .AllowAnyMethod()
+                .AllowCredentials();
       });
 });
 
@@ -84,7 +85,7 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseFastEndpoints()
-   .UseSwaggerGen();
+.UseSwaggerGen();
 app.MapGetProfileEndpoint();
 app.MapChangePasswordEndpoint();
 app.MapUpdateNameEndpoint();

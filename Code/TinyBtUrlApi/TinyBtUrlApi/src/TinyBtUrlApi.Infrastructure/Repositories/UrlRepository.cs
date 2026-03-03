@@ -252,6 +252,29 @@ public class UrlRepository : IUrlRepository
         .ToListAsync(cancellationToken);
   }
 
+  public async Task<int> GetActiveLinksAsync(CancellationToken cancellationToken)
+  {
+    var now = DateTime.UtcNow;
+
+    return await _context.UrlMappings
+        .Where(x =>
+            !x.IsDeleted &&
+            (x.ExpirationDate == null || x.ExpirationDate > now))
+        .CountAsync(cancellationToken);
+  }
+
+  public async Task<int> GetExpiredLinksAsync(CancellationToken cancellationToken)
+  {
+    var now = DateTime.UtcNow;
+
+    return await _context.UrlMappings
+        .Where(x =>
+            !x.IsDeleted &&
+            x.ExpirationDate != null &&
+            x.ExpirationDate <= now)
+        .CountAsync(cancellationToken);
+  }
+
   public async Task<List<ClicksByOsDto>> GetClicksByOsAsync(
     CancellationToken cancellationToken)
   {

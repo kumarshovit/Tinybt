@@ -11,6 +11,9 @@ public class DashboardOverviewDto
   public int TotalUrls { get; set; }
   public int TotalTags { get; set; }
 
+  public int ActiveLinks { get; set; }
+  public int ExpiredLinks { get; set; }
+
   public DateTime From { get; set; }
   public DateTime To { get; set; }
 }

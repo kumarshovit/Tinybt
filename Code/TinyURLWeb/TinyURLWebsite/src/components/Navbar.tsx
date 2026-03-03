@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { logoutUser } from "../services/authService";
 import { getUserRole } from "../utils/auth";
-
+import { BarChart3 } from "lucide-react";
 const Navbar = () => {
   const navigate = useNavigate();
   const role = getUserRole();
@@ -17,7 +17,18 @@ const Navbar = () => {
       <h1 className="text-xl font-bold text-indigo-600">TinyURL 🚀</h1>
 
       {/* Links */}
+     
       <div className="flex items-center gap-6">
+          {role === "Admin" && (
+         <Link
+        to="/analysis"
+        className="flex items-center gap-1 hover:text-blue-600"
+>
+          <BarChart3 size={18} />
+          Analysis
+      </Link>
+          )}
+
         <Link
           to="/dashboard"
           className="text-gray-700 hover:text-indigo-600 transition"
