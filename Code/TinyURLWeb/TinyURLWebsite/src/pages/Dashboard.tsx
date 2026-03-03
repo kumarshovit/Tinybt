@@ -9,6 +9,12 @@ export default function Dashboard() {
   const [links, setLinks] = useState<any[]>([]);
   const [searchTag, setSearchTag] = useState("");
 
+
+  const [activeEdit, setActiveEdit] = useState<{
+    id: string;
+    type: "alias" | "destination";
+  } | null>(null);
+
   useEffect(() => {
     loadLinks();
   }, []);
@@ -27,52 +33,56 @@ export default function Dashboard() {
   }, []);
 
   const loadLinks = async () => {
-     const result = await getAllUrls();
+    const result = await getAllUrls();
 
-  if (!result.success) {
-    alert(result.message);
-    return;
-  }
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
 
-  setLinks(result.data);
+    setLinks(result.data);
   };
 
 
   const handleSearch = async () => {
     if (!searchTag.trim()) return;
 
-  const result = await searchByTag(searchTag);
+    const result = await searchByTag(searchTag);
 
-  if (!result.success) {
-    alert(result.message);
-    return;
-  }
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
 
-  setLinks(result.data);
+    setLinks(result.data);
   };
 
   const handleClear = async () => {
     setSearchTag("");
 
-  const result = await getAllUrls();
+    const result = await getAllUrls();
 
-  if (!result.success) {
-    alert(result.message);
-    return;
-  }
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
 
-  setLinks(result.data);
+    setLinks(result.data);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <HeroSection onUrlCreated={loadLinks}  />
-      <RecentLinks links={links} searchTag={searchTag}
+      <HeroSection onUrlCreated={loadLinks} />
+      <RecentLinks
+       links={links} 
+       searchTag={searchTag}
         setSearchTag={setSearchTag}
         handleSearch={handleSearch}
         handleClear={handleClear}
-         setLinks={setLinks} />
+        setLinks={setLinks}
+        activeEdit={activeEdit}
+        setActiveEdit={setActiveEdit} />
     </div>
   );
 }

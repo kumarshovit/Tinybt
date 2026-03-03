@@ -3,6 +3,19 @@ import LinkRow from "./LinkRow";
 interface Props {
     links: any[];
     setLinks: React.Dispatch<React.SetStateAction<any[]>>;
+
+    activeEdit: {
+        id: string;
+        type: "alias" | "destination";
+    } | null;
+
+    setActiveEdit: React.Dispatch<
+        React.SetStateAction<{
+            id: string;
+            type: "alias" | "destination";
+        } | null>
+    >;
+
     searchTag: string;
     setSearchTag: React.Dispatch<React.SetStateAction<string>>;
     handleSearch: () => void;
@@ -13,6 +26,8 @@ interface Props {
 export default function RecentLinks({
     links,
     setLinks,
+    activeEdit,
+    setActiveEdit,
     searchTag,
     setSearchTag,
     handleSearch,
@@ -73,6 +88,8 @@ export default function RecentLinks({
                             key={link.id}
                             link={link}
                             setLinks={setLinks}
+                            activeEdit={activeEdit}
+                            setActiveEdit={setActiveEdit}
                         />
                     ))
 

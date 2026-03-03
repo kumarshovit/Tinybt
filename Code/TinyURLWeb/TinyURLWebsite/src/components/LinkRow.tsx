@@ -1,96 +1,117 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import useClickOutside from "../hooks/useClickOutside";
 import {
     updateAlias,
-    updateDestination
+    updateDestination,
+    deleteUrl,
 } from "../api/urlService";
-import { deleteUrl } from "../api/urlService";
 
+interface Props {
+    link: any;
+    setLinks: React.Dispatch<React.SetStateAction<any[]>>;
+    activeEdit: {
+        id: string;
+        type: "alias" | "destination";
+    } | null;
+    setActiveEdit: React.Dispatch<
+        React.SetStateAction<{
+            id: string;
+            type: "alias" | "destination";
+        } | null>
+    >;
+}
 
-export default function LinkRow({ link, setLinks }: any) {
-
+export default function LinkRow({
+    link,
+    setLinks,
+    activeEdit,
+    setActiveEdit,
+}: Props) {
     const navigate = useNavigate();
 
     const [hovered, setHovered] = useState(false);
-    const [editingAlias, setEditingAlias] = useState(false);
-    const [editingDestination, setEditingDestination] = useState(false);
     const [newAlias, setNewAlias] = useState("");
     const [newDestination, setNewDestination] = useState("");
+
+    const cardRef = useRef<HTMLDivElement>(null);
+
+    const isEditingAlias =
+        activeEdit?.id === link.id && activeEdit?.type === "alias";
+
+    const isEditingDestination =
+        activeEdit?.id === link.id && activeEdit?.type === "destination";
+
+    useClickOutside(cardRef, () => {
+        setActiveEdit(null);
+    });
 
     const handleAliasUpdate = async () => {
         if (!newAlias.trim()) return;
 
         const result = await updateAlias(link.id, newAlias);
-
-        if (!result.success) {
-            alert(result.message);
-            return; // 🔥 stop if failed
-        }
-
-        setLinks((prev: any[]) =>
-            prev.map(l =>
-                l.id === link.id
-                    ? { ...l, shortUrl: `${window.location.origin}/${result.data.shortCode}`}
-                    : l
-            )
-        );
-
-        setEditingAlias(false);
-        setNewAlias("");
-    };
-
-
-    const handleDestinationUpdate = async () => {
-        if (!newDestination.trim()) return;
-
-        const result = await updateDestination(link.id, newDestination);
-
         if (!result.success) {
             alert(result.message);
             return;
         }
 
         setLinks((prev: any[]) =>
-            prev.map(l =>
+            prev.map((l) =>
                 l.id === link.id
-                    ? { ...l, longUrl: newDestination }
+                    ? {
+                        ...l,
+                        shortUrl: `${window.location.origin}/${result.data.shortCode}`,
+                    }
                     : l
             )
         );
 
-        setEditingDestination(false);
-        setNewDestination("");
+        setActiveEdit(null);
+    };
+
+    const handleDestinationUpdate = async () => {
+        if (!newDestination.trim()) return;
+
+        const result = await updateDestination(link.id, newDestination);
+        if (!result.success) {
+            alert(result.message);
+            return;
+        }
+
+        setLinks((prev: any[]) =>
+            prev.map((l) =>
+                l.id === link.id ? { ...l, longUrl: newDestination } : l
+            )
+        );
+
+        setActiveEdit(null);
     };
 
     const handleDelete = async () => {
         const confirmDelete = window.confirm(
             "Are you sure you want to delete this link?"
         );
-
         if (!confirmDelete) return;
 
         const result = await deleteUrl(link.id);
-
         if (!result.success) {
             alert(result.message);
             return;
         }
 
         setLinks((prev: any[]) =>
-            prev.filter(l => l.id !== link.id)
+            prev.filter((l) => l.id !== link.id)
         );
     };
 
-
     return (
         <div
-            className="bg-white shadow rounded-lg p-5 m-4 transition hover:shadow-lg relative"
+            ref={cardRef}
+            className="bg-white shadow rounded-lg p-5 m-4 relative"
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >
-
             <div className="flex justify-between items-center">
-
                 <div>
                     <a
                         href={link.shortUrl}
@@ -99,18 +120,19 @@ export default function LinkRow({ link, setLinks }: any) {
                     >
                         {link.shortUrl}
                     </a>
-                    <p className="text-sm text-gray-500 mt-1 truncate max-w-md">
+
+                    <p className="text-sm text-gray-500 mt-1">
                         {link.longUrl}
                     </p>
                     <p className="text-sm text-gray-400">
                         {link.clickCount} clicks
                     </p>
+
                     {link.expirationDate && (
                         <p className="text-sm text-red-500">
                             Expires on: {new Date(link.expirationDate).toLocaleString()}
                         </p>
                     )}
-
                 </div>
 
                 <div className="flex gap-3">
@@ -129,37 +151,70 @@ export default function LinkRow({ link, setLinks }: any) {
                     >
                         Manage Tags
                     </button>
-                    <button onClick={handleDelete} style={{ color: "red" }}>
+
+                    <button
+                        onClick={handleDelete}
+                        className="text-red-600"
+                    >
                         Delete
                     </button>
-
                 </div>
             </div>
 
-            {/* Hover Buttons */}
-            {hovered && !editingAlias && !editingDestination && (
+            {/* {hovered && !isEditingAlias && !isEditingDestination && (
                 <div className="flex gap-4 mt-4 text-sm text-gray-500">
                     <button
-                        onClick={() => setEditingAlias(true)}
-                        className="hover:text-blue-600"
+                        onClick={() => {
+                            setNewAlias(link.shortUrl.split("/").pop() || "");
+                            setActiveEdit({ id: link.id, type: "alias" });
+                        }}
                     >
                         Edit Alias
                     </button>
 
                     <button
-                        onClick={() => setEditingDestination(true)}
-                        className="hover:text-blue-600"
+                        onClick={() => {
+                            setNewDestination(link.longUrl);
+                            setActiveEdit({ id: link.id, type: "destination" });
+                        }}
                     >
                         Edit Destination
                     </button>
                 </div>
-            )}
+            )} */}
 
-            {/* Edit Alias */}
-            {editingAlias && (
+            <div
+                className={`
+        flex gap-4 mt-4 text-sm text-gray-500
+        transition-all duration-300 ease-in-out
+        ${hovered && !isEditingAlias && !isEditingDestination
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 -translate-y-2 pointer-events-none"}
+    `}
+            >
+                <button
+                    onClick={() => {
+                        setNewAlias(link.shortUrl.split("/").pop() || "");
+                        setActiveEdit({ id: link.id, type: "alias" });
+                    }}
+                >
+                    Edit Alias
+                </button>
+
+                <button
+                    onClick={() => {
+                        setNewDestination(link.longUrl);
+                        setActiveEdit({ id: link.id, type: "destination" });
+                    }}
+                >
+                    Edit Destination
+                </button>
+            </div>
+
+
+            {isEditingAlias && (
                 <div className="flex gap-2 mt-4">
                     <input
-                        placeholder="New alias"
                         value={newAlias}
                         onChange={(e) => setNewAlias(e.target.value)}
                         className="border px-3 py-1 rounded flex-1"
@@ -173,13 +228,13 @@ export default function LinkRow({ link, setLinks }: any) {
                 </div>
             )}
 
-            {/* Edit Destination */}
-            {editingDestination && (
+            {isEditingDestination && (
                 <div className="flex gap-2 mt-4">
                     <input
-                        placeholder="New destination URL"
                         value={newDestination}
-                        onChange={(e) => setNewDestination(e.target.value)}
+                        onChange={(e) =>
+                            setNewDestination(e.target.value)
+                        }
                         className="border px-3 py-1 rounded flex-1"
                     />
                     <button
@@ -190,7 +245,6 @@ export default function LinkRow({ link, setLinks }: any) {
                     </button>
                 </div>
             )}
-
         </div>
     );
 }
