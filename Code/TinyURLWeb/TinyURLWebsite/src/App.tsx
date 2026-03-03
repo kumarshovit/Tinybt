@@ -10,12 +10,8 @@ import AdminRoute from "./components/auth/AdminRoute";
 import AdminPage from "./pages/AdminPage";
 import ProfilePage from "./pages/ProfilePage";
 import TagManagement from "./pages/TagManagement";
-<<<<<<< Updated upstream
 import MyAnalytics from "./pages/MyAnalytics";
-=======
 import AnalysisPage from "./pages/AnalysisPage";
-
->>>>>>> Stashed changes
 export default function App() {
   return (
     <BrowserRouter>
