@@ -15,4 +15,20 @@ public interface IAnalyticsRepository
 
   Task<int> GetActiveLinksAsync(CancellationToken ct);
   Task<int> GetExpiredLinksAsync(CancellationToken ct);
+  Task<DashboardOverviewDto> GetUserDashboardAsync(
+      int userId,
+      DateTime from,
+      DateTime to,
+      CancellationToken ct);
+
+  Task<List<AnalyticsItemDto>> GetAnalyticsByFieldAsync(
+        int userId,
+        DateTime from,
+        DateTime to,
+        string field);
+  Task<List<AnalyticsItemDto>> GetClicksOverTimeByUserAsync(
+    int userId,
+    DateTime from,
+    DateTime to,
+    CancellationToken ct);
 }
