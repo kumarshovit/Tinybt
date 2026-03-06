@@ -225,4 +225,31 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
       Count = x.Count
     }).ToList();
   }
+  public async Task<List<AnalyticsItemDto>> GetPopularLinksByUserAsync(
+       int userId,
+       DateTime start,
+       DateTime end,
+       CancellationToken ct)
+  {
+    var query =
+        from c in context.ClickLogs
+        join u in context.UrlMappings
+        on c.ShortCode equals u.ShortCode
+        where u.UserId == userId
+        && c.ClickedAt >= start
+            && c.ClickedAt <= end
+        select c;
+
+    return await query
+        .GroupBy(x => x.ShortCode)
+        .Select(g => new AnalyticsItemDto
+        {
+          Label = g.Key,
+          Count = g.Count()
+        })
+        .OrderByDescending(x => x.Count)
+        .Take(10)
+        .ToListAsync(ct);
+  }
+
 }

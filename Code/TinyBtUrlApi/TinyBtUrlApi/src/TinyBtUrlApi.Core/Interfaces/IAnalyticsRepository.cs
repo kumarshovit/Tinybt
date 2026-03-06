@@ -31,4 +31,9 @@ public interface IAnalyticsRepository
     DateTime from,
     DateTime to,
     CancellationToken ct);
+  Task<List<AnalyticsItemDto>> GetPopularLinksByUserAsync(
+    int userId,
+    DateTime from,
+    DateTime to,
+    CancellationToken ct);
 }
