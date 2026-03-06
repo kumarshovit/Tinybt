@@ -252,4 +252,29 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
         .ToListAsync(ct);
   }
 
+  public async Task<List<AnalyticsItemDto>> GetDeviceLanguageByUserAsync(
+    int userId,
+    DateTime start,
+    DateTime end,
+    CancellationToken ct)
+  {
+    var query =
+        from c in context.ClickLogs
+        join u in context.UrlMappings
+        on c.ShortCode equals u.ShortCode
+        where u.UserId == userId
+        && c.ClickedAt >= start
+        && c.ClickedAt <= end
+        select c;
+
+    return await query
+        .GroupBy(x => x.DeviceLanguage)
+        .Select(g => new AnalyticsItemDto
+        {
+          Label = g.Key ?? "Unknown",
+          Count = g.Count()
+        })
+        .OrderByDescending(x => x.Count)
+        .ToListAsync(ct);
+  }
 }

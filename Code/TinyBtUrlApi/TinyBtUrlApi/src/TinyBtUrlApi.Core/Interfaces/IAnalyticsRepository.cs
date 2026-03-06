@@ -36,4 +36,9 @@ public interface IAnalyticsRepository
     DateTime from,
     DateTime to,
     CancellationToken ct);
+  Task<List<AnalyticsItemDto>> GetDeviceLanguageByUserAsync(
+    int userId,
+    DateTime from,
+    DateTime to,
+    CancellationToken ct);
 }
