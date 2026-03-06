@@ -1,165 +1,449 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
+import AnalyticsSidebar from "../components/AnalyticsSidebar";
 
-interface AnalyticsItem {
-  period: string;
-  clicks: number;
+import {
+LineChart,
+Line,
+XAxis,
+YAxis,
+Tooltip,
+ResponsiveContainer,
+PieChart,
+Pie,
+Cell,
+BarChart,
+Bar,
+Legend
+} from "recharts";
+
+import CountUp from "react-countup";
+
+const API_BASE = "https://localhost:57679";
+
+const COLORS = [
+"#7c3aed",
+"#22c55e",
+"#f97316",
+"#06b6d4",
+"#ef4444"
+];
+
+export default function MyAnalytics(){
+
+const [from,setFrom] = useState("");
+const [to,setTo] = useState("");
+
+const [clicks,setClicks] = useState<any[]>([]);
+const [referrer,setReferrer] = useState<any[]>([]);
+const [country,setCountry] = useState<any[]>([]);
+const [device,setDevice] = useState<any[]>([]);
+const [os,setOs] = useState<any[]>([]);
+const [browser,setBrowser] = useState<any[]>([]);
+const [topLinks,setTopLinks] = useState<any[]>([]);
+
+const [totalClicks,setTotalClicks] = useState(0);
+
+const token = localStorage.getItem("token");
+
+const headers = {
+"Content-Type":"application/json",
+Authorization:`Bearer ${token}`
+};
+
+const fetchDashboard = async()=>{
+
+const body = { from,to };
+
+const clicksRes = await fetch(
+`${API_BASE}/analytics/user/clicks-over-time`,
+{
+method:"POST",
+headers,
+body:JSON.stringify(body)
+}
+);
+
+const clicksData = await clicksRes.json();
+
+setClicks(clicksData);
+
+let total = 0;
+
+clicksData.forEach((x:any)=>{
+total += x.count;
+});
+
+setTotalClicks(total);
+
+const breakdown = async(type:string)=>{
+
+const res = await fetch(
+`${API_BASE}/analytics/breakdown`,
+{
+method:"POST",
+headers,
+body:JSON.stringify({
+from,
+to,
+type
+})
+}
+);
+
+return res.json();
+
+};
+
+setReferrer(await breakdown("referrer"));
+setCountry(await breakdown("country"));
+setDevice(await breakdown("device"));
+setOs(await breakdown("os"));
+setBrowser(await breakdown("browser"));
+
+const linksRes = await fetch(
+`${API_BASE}/analytics/user/popular-links`,
+{
+method:"POST",
+headers,
+body:JSON.stringify(body)
+}
+);
+
+setTopLinks(await linksRes.json());
+
+};
+
+const exportCSV = ()=>{
+
+let csv = "Date,Clicks\n";
+
+clicks.forEach((x:any)=>{
+csv += `${x.label},${x.count}\n`;
+});
+
+csv += "\nTop Links\n";
+
+topLinks.forEach((x:any)=>{
+csv += `${x.label},${x.count}\n`;
+});
+
+const blob = new Blob([csv],{type:"text/csv"});
+const url = window.URL.createObjectURL(blob);
+
+const a = document.createElement("a");
+a.href = url;
+a.download = "analytics.csv";
+a.click();
+
+};
+
+return(
+
+<>
+<Navbar/>
+
+<div className="flex bg-gray-100 min-h-screen">
+
+<AnalyticsSidebar/>
+
+<div className="flex-1 p-8">
+
+<div className="max-w-7xl mx-auto">
+
+<h1 className="text-3xl font-bold mb-6">
+📊 My Analytics Dashboard
+</h1>
+
+{/* Filters */}
+
+<div className="bg-white rounded-xl shadow p-6 mb-8 flex gap-4">
+
+<input
+type="date"
+value={from}
+onChange={e=>setFrom(e.target.value)}
+className="border p-2 rounded"
+/>
+
+<input
+type="date"
+value={to}
+onChange={e=>setTo(e.target.value)}
+className="border p-2 rounded"
+/>
+
+<button
+onClick={fetchDashboard}
+className="bg-purple-600 text-white px-6 py-2 rounded-lg"
+>
+Apply
+</button>
+
+<button
+onClick={exportCSV}
+className="bg-green-600 text-white px-6 py-2 rounded-lg"
+>
+Export CSV
+</button>
+
+</div>
+
+{/* Summary Cards */}
+
+<div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+
+<SummaryCard title="Total Clicks 📈" value={totalClicks}/>
+<SummaryCard title="Countries 🌍" value={country.length}/>
+<SummaryCard title="Devices 💻" value={device.length}/>
+<SummaryCard title="Browsers 🌐" value={browser.length}/>
+
+</div>
+
+{/* Top Links */}
+
+<div id="links" className="bg-white rounded-xl shadow p-6 mb-8">
+
+<h2 className="text-xl font-semibold mb-4">
+Top Performing Links
+</h2>
+
+<table className="w-full text-left">
+
+<thead>
+<tr className="border-b">
+<th className="py-2">Short Link</th>
+<th className="py-2">Clicks</th>
+</tr>
+</thead>
+
+<tbody>
+
+{topLinks.map((link:any,i:number)=>(
+
+<tr key={i} className="border-b">
+
+<td className="py-2 text-purple-600">
+{link.label}
+</td>
+
+<td className="py-2 font-semibold">
+{link.count}
+</td>
+
+</tr>
+
+))}
+
+</tbody>
+
+</table>
+
+</div>
+
+{/* Clicks Over Time */}
+
+<div id="clicks" className="bg-white rounded-xl shadow p-6 mb-8">
+
+<h2 className="text-xl font-semibold mb-4">
+Clicks Over Time
+</h2>
+
+<ResponsiveContainer width="100%" height={300}>
+
+<LineChart data={clicks}>
+
+<XAxis
+dataKey="label"
+label={{ value:"Date", position:"insideBottom", offset:-5 }}
+/>
+
+<YAxis
+label={{
+value:"Clicks",
+angle:-90,
+position:"insideLeft"
+}}
+/>
+
+<Tooltip formatter={(v)=>`${v} clicks`} />
+
+<Legend/>
+
+<Line
+type="monotone"
+dataKey="count"
+stroke="#7c3aed"
+strokeWidth={3}
+/>
+
+</LineChart>
+
+</ResponsiveContainer>
+
+</div>
+
+{/* Charts */}
+
+<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+<div id="traffic">
+<ChartPie title="Traffic Source" data={referrer}/>
+</div>
+
+<div id="country">
+<ChartPie title="Country Distribution" data={country}/>
+</div>
+
+<div id="device">
+<ChartBar title="Device Types" data={device}/>
+</div>
+
+<div id="os">
+<ChartBar title="Operating Systems" data={os}/>
+</div>
+
+<div id="browser">
+<ChartBar title="Browsers" data={browser}/>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</>
+
+);
+
 }
 
-const BASE_URL = "https://localhost:57679/api/analytics";
+function SummaryCard({title,value}:any){
 
-export default function MyAnalytics() {
-  const [shortCode, setShortCode] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [viewType, setViewType] = useState("Daily");
-  const [data, setData] = useState<AnalyticsItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+return(
 
-  const fetchAnalytics = async () => {
-    if (!shortCode || !startDate || !endDate) {
-      setError("All fields are required");
-      return;
-    }
+<div className="bg-white p-6 rounded-xl shadow hover:shadow-xl transition">
 
-    const token = localStorage.getItem("token");
+<p className="text-gray-500 text-sm mb-2">
+{title}
+</p>
 
-    try {
-      setLoading(true);
-      setError("");
-      setData([]);
+<h2 className="text-3xl font-bold text-purple-600">
 
-      const response = await fetch(
-        `${BASE_URL}/${shortCode}/clicks-over-time?startDate=${startDate}&endDate=${endDate}&viewType=${viewType}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+<CountUp end={value} duration={1.5}/>
 
-      if (!response.ok) {
-        throw new Error("Unable to fetch analytics");
-      }
+</h2>
 
-      const result = await response.json();
-      setData(result);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  };
+</div>
 
-  return (
-    <>
-      <Navbar />
+);
 
-      <div className="min-h-screen bg-gray-100 py-10 px-4">
-        <div className="max-w-6xl mx-auto">
+}
 
-          {/* Page Title */}
-          <h1 className="text-4xl font-bold mb-8 text-gray-800">
-            📊 My Link Analytics
-          </h1>
+function ChartPie({title,data}:any){
 
-          {/* Filter Card */}
-          <div className="bg-white rounded-2xl shadow-md p-8 mb-8">
-            <div className="grid md:grid-cols-4 gap-6">
+if(!data.length)
+return(
+<div className="bg-white rounded-xl shadow p-6 text-center text-gray-400">
+No data available
+</div>
+);
 
-              <input
-                type="text"
-                placeholder="Enter Short Code"
-                value={shortCode}
-                onChange={(e) => setShortCode(e.target.value)}
-                className="border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 p-3 rounded-lg outline-none transition"
-              />
+return(
 
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 p-3 rounded-lg outline-none transition"
-              />
+<div className="bg-white rounded-xl shadow p-6">
 
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 p-3 rounded-lg outline-none transition"
-              />
+<h3 className="text-lg font-semibold mb-4">
+{title}
+</h3>
 
-              <select
-                value={viewType}
-                onChange={(e) => setViewType(e.target.value)}
-                className="border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 p-3 rounded-lg outline-none transition"
-              >
-                <option value="Daily">Daily</option>
-                <option value="Weekly">Weekly</option>
-                <option value="Monthly">Monthly</option>
-              </select>
-            </div>
+<ResponsiveContainer width="100%" height={250}>
 
-            <button
-              onClick={fetchAnalytics}
-              disabled={loading}
-              className="mt-6 bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white px-8 py-3 rounded-lg font-semibold transition disabled:opacity-50"
-            >
-              {loading ? "Loading..." : "Get Analytics"}
-            </button>
+<PieChart>
 
-            {error && (
-              <p className="text-red-500 mt-4 font-medium">{error}</p>
-            )}
-          </div>
+<Tooltip formatter={(v)=>`${v} clicks`} />
 
-          {/* Empty State */}
-          {!loading && data.length === 0 && !error && (
-            <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-500">
-              No analytics data available.
-            </div>
-          )}
+<Legend/>
 
-          {/* Results Table */}
-          {data.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-              <div className="p-6 border-b">
-                <h2 className="text-2xl font-semibold text-gray-700">
-                  Analytics Results
-                </h2>
-              </div>
+<Pie
+data={data}
+dataKey="count"
+nameKey="label"
+label={({name,value}:any)=>`${name}: ${value}`}
+outerRadius={80}
+>
 
-              <table className="w-full text-left">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="p-4 font-semibold text-gray-600">
-                      Period
-                    </th>
-                    <th className="p-4 font-semibold text-gray-600">
-                      Clicks
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.map((item, index) => (
-                    <tr
-                      key={index}
-                      className="border-t hover:bg-gray-50 transition"
-                    >
-                      <td className="p-4">{item.period}</td>
-                      <td className="p-4 font-bold text-purple-600">
-                        {item.clicks}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+{data.map((_:any,index:number)=>(
 
-        </div>
-      </div>
-    </>
-  );
+<Cell
+key={index}
+fill={COLORS[index % COLORS.length]}
+/>
+
+))}
+
+</Pie>
+
+</PieChart>
+
+</ResponsiveContainer>
+
+</div>
+
+);
+
+}
+
+function ChartBar({title,data}:any){
+
+if(!data.length)
+return(
+<div className="bg-white rounded-xl shadow p-6 text-center text-gray-400">
+No data available
+</div>
+);
+
+return(
+
+<div className="bg-white rounded-xl shadow p-6">
+
+<h3 className="text-lg font-semibold mb-4">
+{title}
+</h3>
+
+<ResponsiveContainer width="100%" height={250}>
+
+<BarChart data={data}>
+
+<XAxis dataKey="label"/>
+
+<YAxis
+label={{
+value:"Clicks",
+angle:-90,
+position:"insideLeft"
+}}
+/>
+
+<Tooltip formatter={(v)=>`${v} clicks`} />
+
+<Legend/>
+
+<Bar
+dataKey="count"
+fill="#7c3aed"
+radius={[4,4,0,0]}
+/>
+
+</BarChart>
+
+</ResponsiveContainer>
+
+</div>
+
+);
+
 }

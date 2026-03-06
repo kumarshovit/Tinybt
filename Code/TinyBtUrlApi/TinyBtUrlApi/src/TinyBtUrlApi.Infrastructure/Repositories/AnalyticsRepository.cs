@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TinyBtUrlApi.Core.DTOs;
+﻿using TinyBtUrlApi.Core.DTOs;
 using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Infrastructure.Data;
 
@@ -125,12 +124,12 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
       To = endDate
     };
   }
-  public async Task<List<AnalyticsItemDto>> GetAnalyticsByFieldAsync(
+ public async Task<List<AnalyticsItemDto>> GetAnalyticsByFieldAsync(
     int userId,
     DateTime start,
     DateTime end,
     string field)
-  {
+{
     var query =
         from c in context.ClickLogs
         join u in context.UrlMappings
@@ -142,57 +141,93 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
 
     return field switch
     {
-      "referrer" => await query
-          .GroupBy(x => x.Referrer)
-          .Select(g => new AnalyticsItemDto
-          {
-            Label = g.Key ?? "Direct",
-            Count = g.Count()
-          }).ToListAsync(),
+        "referrer" => await query
+            .GroupBy(x =>
+                string.IsNullOrEmpty(x.Referrer)
+                ? "Direct"
+                : x.Referrer.Contains("google")
+                    ? "Google"
+                    : x.Referrer.Contains("linkedin")
+                        ? "LinkedIn"
+                        : x.Referrer.Contains("twitter")
+                            ? "Twitter"
+                            : "Other")
+            .Select(g => new AnalyticsItemDto
+            {
+                Label = g.Key,
+                Count = g.Count()
+            })
+            .OrderByDescending(x => x.Count)
+            .ToListAsync(),
 
-      "country" => await query
-          .GroupBy(x => x.Country)
-          .Select(g => new AnalyticsItemDto
-          {
-            Label = g.Key ?? "Unknown",
-            Count = g.Count()
-          }).ToListAsync(),
+        "country" => await query
+            .GroupBy(x =>
+                string.IsNullOrEmpty(x.Country)
+                ? "Unknown"
+                : x.Country)
+            .Select(g => new AnalyticsItemDto
+            {
+                Label = g.Key,
+                Count = g.Count()
+            })
+            .OrderByDescending(x => x.Count)
+            .ToListAsync(),
 
-      "device" => await query
-          .GroupBy(x => x.DeviceType)
-          .Select(g => new AnalyticsItemDto
-          {
-            Label = g.Key ?? "Unknown",
-            Count = g.Count()
-          }).ToListAsync(),
+        "device" => await query
+            .GroupBy(x =>
+                string.IsNullOrEmpty(x.DeviceType)
+                ? "Unknown"
+                : x.DeviceType)
+            .Select(g => new AnalyticsItemDto
+            {
+                Label = g.Key,
+                Count = g.Count()
+            })
+            .OrderByDescending(x => x.Count)
+            .ToListAsync(),
 
-      "browser" => await query
-          .GroupBy(x => x.Browser)
-          .Select(g => new AnalyticsItemDto
-          {
-            Label = g.Key ?? "Unknown",
-            Count = g.Count()
-          }).ToListAsync(),
+        "browser" => await query
+            .GroupBy(x =>
+                string.IsNullOrEmpty(x.Browser)
+                ? "Unknown"
+                : x.Browser)
+            .Select(g => new AnalyticsItemDto
+            {
+                Label = g.Key,
+                Count = g.Count()
+            })
+            .OrderByDescending(x => x.Count)
+            .ToListAsync(),
 
-      "os" => await query
-          .GroupBy(x => x.OS)
-          .Select(g => new AnalyticsItemDto
-          {
-            Label = g.Key ?? "Unknown",
-            Count = g.Count()
-          }).ToListAsync(),
+        "os" => await query
+            .GroupBy(x =>
+                string.IsNullOrEmpty(x.OS)
+                ? "Unknown"
+                : x.OS)
+            .Select(g => new AnalyticsItemDto
+            {
+                Label = g.Key,
+                Count = g.Count()
+            })
+            .OrderByDescending(x => x.Count)
+            .ToListAsync(),
 
-      "language" => await query
-          .GroupBy(x => x.DeviceLanguage)
-          .Select(g => new AnalyticsItemDto
-          {
-            Label = g.Key ?? "Unknown",
-            Count = g.Count()
-          }).ToListAsync(),
+        "language" => await query
+            .GroupBy(x =>
+                string.IsNullOrEmpty(x.DeviceLanguage)
+                ? "Unknown"
+                : x.DeviceLanguage)
+            .Select(g => new AnalyticsItemDto
+            {
+                Label = g.Key,
+                Count = g.Count()
+            })
+            .OrderByDescending(x => x.Count)
+            .ToListAsync(),
 
-      _ => new List<AnalyticsItemDto>()
+        _ => new List<AnalyticsItemDto>()
     };
-  }
+}
 
   public async Task<List<AnalyticsItemDto>> GetClicksOverTimeByUserAsync(
     int userId,
