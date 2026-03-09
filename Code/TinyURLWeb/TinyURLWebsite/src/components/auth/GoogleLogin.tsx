@@ -43,7 +43,7 @@ const GoogleLogin = () => {
 
   const handleCredentialResponse = async (response: any) => {
     try {
-      const res = axios.post(
+      const res = await  axios.post(
         `${import.meta.env.VITE_API_URL}/api/auth/google-login`,
         { token: response.credential },
       );

@@ -41,4 +41,10 @@ public interface IAnalyticsRepository
     DateTime from,
     DateTime to,
     CancellationToken ct);
+
+  Task<List<HeatmapDto>> GetClicksHeatmapAsync(
+    int userId,
+    DateTime start,
+    DateTime end,
+    CancellationToken ct);
 }

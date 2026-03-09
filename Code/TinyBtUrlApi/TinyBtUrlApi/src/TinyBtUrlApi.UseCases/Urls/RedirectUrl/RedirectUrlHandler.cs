@@ -27,7 +27,7 @@ public class RedirectUrlHandler(IUrlRepository repo)
     var userAgent = request.Browser ?? string.Empty;
 
     // =========================
-    // ✅ DEVICE TYPE DETECTION
+    // DEVICE TYPE DETECTION
     // =========================
     var deviceType =
         userAgent.Contains("Tablet", StringComparison.OrdinalIgnoreCase) ||
@@ -40,7 +40,7 @@ public class RedirectUrlHandler(IUrlRepository repo)
                 : "Desktop";
 
     // =========================
-    // ✅ OS DETECTION
+    // OS DETECTION
     // =========================
     var os =
         userAgent.Contains("Windows", StringComparison.OrdinalIgnoreCase)
@@ -55,34 +55,63 @@ public class RedirectUrlHandler(IUrlRepository repo)
                         : request.OS ?? "Unknown";
 
     // =========================
-    // ✅ BROWSER DETECTION
+    // BROWSER DETECTION
     // =========================
     var browser =
         userAgent.Contains("Edg", StringComparison.OrdinalIgnoreCase)
             ? "Edge"
-            : userAgent.Contains("Chrome", StringComparison.OrdinalIgnoreCase)
+            : userAgent.Contains("Chrome", StringComparison.OrdinalIgnoreCase) &&
+              !userAgent.Contains("Edg", StringComparison.OrdinalIgnoreCase)
                 ? "Chrome"
                 : userAgent.Contains("Firefox", StringComparison.OrdinalIgnoreCase)
                     ? "Firefox"
                     : userAgent.Contains("Safari", StringComparison.OrdinalIgnoreCase)
                         ? "Safari"
-                        : request.Browser ?? "Unknown";
+                        : "Unknown";
+
+    var userAgentString = request.Browser ?? "Unknown";
+    // =========================
+    // TRAFFIC SOURCE DETECTION
+    // =========================
+    var referrer = request.Referrer ?? "";
+
+    var trafficSource =
+        string.IsNullOrWhiteSpace(referrer) ? "Direct" :
+        referrer.Contains("google", StringComparison.OrdinalIgnoreCase) ||
+        referrer.Contains("bing", StringComparison.OrdinalIgnoreCase) ||
+        referrer.Contains("yahoo", StringComparison.OrdinalIgnoreCase)
+            ? "Search"
+            : referrer.Contains("facebook", StringComparison.OrdinalIgnoreCase) ||
+              referrer.Contains("twitter", StringComparison.OrdinalIgnoreCase) ||
+              referrer.Contains("linkedin", StringComparison.OrdinalIgnoreCase)
+                ? "Social"
+                : "Referral";
 
     // =========================
-    // ✅ CREATE CLICK LOG
+    // COUNTRY FIX FOR LOCALHOST
+    // =========================
+    var country =
+        request.IpAddress == "::1" || request.IpAddress == "127.0.0.1"
+            ? "India"
+            : request.Country ?? "Unknown";
+
+    var visitorId = $"{request.IpAddress}_{browser}_{deviceType}_{request.DeviceLanguage}";
+    // =========================
+    // CREATE CLICK LOG
     // =========================
     var clickLog = new ClickLog
     {
       ShortCode = url.ShortCode,
-      VisitorId = Guid.NewGuid().ToString(),
+      VisitorId = visitorId,
       ClickedAt = DateTime.UtcNow,
       Browser = browser,
       OS = os,
-      Country = request.Country ?? "Unknown",
+      Country = country,
       DeviceLanguage = request.DeviceLanguage ?? "Unknown",
-      Referrer = request.Referrer ?? "Direct",
+      Referrer = trafficSource,
       DeviceType = deviceType,
       IpAddress = request.IpAddress ?? "Unknown",
+      UserAgent = userAgentString,
       RawHeaders = request.RawHeaders ?? "N/A"
     };
 

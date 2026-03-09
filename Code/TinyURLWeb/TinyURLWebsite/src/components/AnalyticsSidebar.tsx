@@ -84,7 +84,12 @@ onClick={()=>scrollTo("browser")}
 >
 Browser
 </li>
-
+<li
+className={itemClass("heatmap")}
+onClick={()=>scrollTo("heatmap")}
+>
+Popular Days & Times
+</li>
 </ul>
 
 </div>

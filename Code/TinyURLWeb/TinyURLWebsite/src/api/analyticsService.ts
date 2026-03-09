@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "https://localhost:57679/api/analytics";
+const BASE_URL = `${import.meta.env.VITE_API_URL}/api/analytics`;
 
 export const getClicksOverTime = (
   startDate: string,
@@ -35,7 +35,7 @@ export const getClicksByBrowser = async (
   endDate?: string
 ) => {
   return await axios.get(
-    "https://localhost:57679/api/analytics/clicks-by-browser",
+    `${import.meta.env.VITE_API_URL}/api/analytics/clicks-by-browser`,
     {
       params: {
         startDate,
@@ -44,4 +44,9 @@ export const getClicksByBrowser = async (
       withCredentials: true,
     }
   );
+};
+
+export const getHeatmap = async () => {
+  const res = await fetch("/analytics/heatmap");
+  return res.json();
 };

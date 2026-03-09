@@ -141,26 +141,20 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
 
     return field switch
     {
-        "referrer" => await query
-            .GroupBy(x =>
-                string.IsNullOrEmpty(x.Referrer)
-                ? "Direct"
-                : x.Referrer.Contains("google")
-                    ? "Google"
-                    : x.Referrer.Contains("linkedin")
-                        ? "LinkedIn"
-                        : x.Referrer.Contains("twitter")
-                            ? "Twitter"
-                            : "Other")
-            .Select(g => new AnalyticsItemDto
-            {
-                Label = g.Key,
-                Count = g.Count()
-            })
-            .OrderByDescending(x => x.Count)
-            .ToListAsync(),
+      "referrer" => await query
+   .GroupBy(x =>
+       string.IsNullOrEmpty(x.Referrer)
+           ? "Direct"
+           : x.Referrer.Trim())
+   .Select(g => new AnalyticsItemDto
+   {
+     Label = g.Key,
+     Count = g.Count()
+   })
+   .OrderByDescending(x => x.Count)
+   .ToListAsync(),
 
-        "country" => await query
+      "country" => await query
             .GroupBy(x =>
                 string.IsNullOrEmpty(x.Country)
                 ? "Unknown"
@@ -311,5 +305,41 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
         })
         .OrderByDescending(x => x.Count)
         .ToListAsync(ct);
+  }
+
+  public async Task<List<HeatmapDto>> GetClicksHeatmapAsync(
+      int userId,
+      DateTime start,
+      DateTime end,
+      CancellationToken ct)
+  {
+    // 1️⃣ user ke shortcodes
+    var userShortCodes = await context.UrlMappings
+        .Where(u => u.UserId == userId)
+        .Select(u => u.ShortCode)
+        .ToListAsync(ct);
+
+    // 2️⃣ relevant click logs
+    var clickLogs = await context.ClickLogs
+        .Where(c =>
+            c.ClickedAt >= start &&
+            c.ClickedAt <= end &&
+            userShortCodes.Contains(c.ShortCode))
+        .ToListAsync(ct);
+
+    // 3️⃣ memory me grouping
+    return clickLogs
+        .GroupBy(c => new
+        {
+          Day = (int)c.ClickedAt.DayOfWeek,
+          Hour = c.ClickedAt.Hour
+        })
+        .Select(g => new HeatmapDto
+        {
+          Day = g.Key.Day,
+          Hour = g.Key.Hour,
+          Count = g.Count()
+        })
+        .ToList();
   }
 }

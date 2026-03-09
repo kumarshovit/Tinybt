@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import AnalyticsSidebar from "../components/AnalyticsSidebar";
+import HeatmapChart from "../components/analysis/HeatmapChart";
 
 import {
 LineChart,
@@ -19,7 +20,7 @@ Legend
 
 import CountUp from "react-countup";
 
-const API_BASE = "https://localhost:57679";
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const COLORS = [
 "#7c3aed",
@@ -151,38 +152,38 @@ return(
 
 <div className="max-w-7xl mx-auto">
 
-<h1 className="text-3xl font-bold mb-6">
+<h1 className="text-3xl font-bold mb-8">
 📊 My Analytics Dashboard
 </h1>
 
 {/* Filters */}
 
-<div className="bg-white rounded-xl shadow p-6 mb-8 flex gap-4">
+<div className="bg-white rounded-xl shadow p-6 mb-10 flex flex-wrap gap-4 items-center">
 
 <input
 type="date"
 value={from}
 onChange={e=>setFrom(e.target.value)}
-className="border p-2 rounded"
+className="border p-2 rounded-lg"
 />
 
 <input
 type="date"
 value={to}
 onChange={e=>setTo(e.target.value)}
-className="border p-2 rounded"
+className="border p-2 rounded-lg"
 />
 
 <button
 onClick={fetchDashboard}
-className="bg-purple-600 text-white px-6 py-2 rounded-lg"
+className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg"
 >
 Apply
 </button>
 
 <button
 onClick={exportCSV}
-className="bg-green-600 text-white px-6 py-2 rounded-lg"
+className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
 >
 Export CSV
 </button>
@@ -191,7 +192,7 @@ Export CSV
 
 {/* Summary Cards */}
 
-<div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+<div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
 
 <SummaryCard title="Total Clicks 📈" value={totalClicks}/>
 <SummaryCard title="Countries 🌍" value={country.length}/>
@@ -202,7 +203,7 @@ Export CSV
 
 {/* Top Links */}
 
-<div id="links" className="bg-white rounded-xl shadow p-6 mb-8">
+<div id="links" className="bg-white rounded-xl shadow p-6 mb-10">
 
 <h2 className="text-xl font-semibold mb-4">
 Top Performing Links
@@ -211,7 +212,7 @@ Top Performing Links
 <table className="w-full text-left">
 
 <thead>
-<tr className="border-b">
+<tr className="border-b text-gray-500">
 <th className="py-2">Short Link</th>
 <th className="py-2">Clicks</th>
 </tr>
@@ -221,9 +222,9 @@ Top Performing Links
 
 {topLinks.map((link:any,i:number)=>(
 
-<tr key={i} className="border-b">
+<tr key={i} className="border-b hover:bg-gray-50">
 
-<td className="py-2 text-purple-600">
+<td className="py-2 text-purple-600 font-medium">
 {link.label}
 </td>
 
@@ -243,28 +244,19 @@ Top Performing Links
 
 {/* Clicks Over Time */}
 
-<div id="clicks" className="bg-white rounded-xl shadow p-6 mb-8">
+<div id="clicks" className="bg-white rounded-xl shadow p-6 mb-10">
 
 <h2 className="text-xl font-semibold mb-4">
 Clicks Over Time
 </h2>
 
-<ResponsiveContainer width="100%" height={300}>
+<ResponsiveContainer width="100%" height={320}>
 
 <LineChart data={clicks}>
 
-<XAxis
-dataKey="label"
-label={{ value:"Date", position:"insideBottom", offset:-5 }}
-/>
+<XAxis dataKey="label"/>
 
-<YAxis
-label={{
-value:"Clicks",
-angle:-90,
-position:"insideLeft"
-}}
-/>
+<YAxis/>
 
 <Tooltip formatter={(v)=>`${v} clicks`} />
 
@@ -285,7 +277,7 @@ strokeWidth={3}
 
 {/* Charts */}
 
-<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
 
 <div id="traffic">
 <ChartPie title="Traffic Source" data={referrer}/>
@@ -309,6 +301,14 @@ strokeWidth={3}
 
 </div>
 
+{/* Heatmap LAST */}
+
+<div id="heatmap" className="mt-12">
+
+<HeatmapChart/>
+
+</div>
+
 </div>
 
 </div>
@@ -325,7 +325,7 @@ function SummaryCard({title,value}:any){
 
 return(
 
-<div className="bg-white p-6 rounded-xl shadow hover:shadow-xl transition">
+<div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
 
 <p className="text-gray-500 text-sm mb-2">
 {title}
@@ -372,8 +372,8 @@ return(
 data={data}
 dataKey="count"
 nameKey="label"
-label={({name,value}:any)=>`${name}: ${value}`}
 outerRadius={80}
+label={({name,value}:any)=>`${name}: ${value}`}
 >
 
 {data.map((_:any,index:number)=>(
@@ -420,13 +420,7 @@ return(
 
 <XAxis dataKey="label"/>
 
-<YAxis
-label={{
-value:"Clicks",
-angle:-90,
-position:"insideLeft"
-}}
-/>
+<YAxis/>
 
 <Tooltip formatter={(v)=>`${v} clicks`} />
 
