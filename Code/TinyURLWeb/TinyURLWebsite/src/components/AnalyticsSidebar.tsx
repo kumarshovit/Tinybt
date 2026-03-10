@@ -77,7 +77,12 @@ onClick={()=>scrollTo("os")}
 >
 Operating System
 </li>
-
+<li
+className={itemClass("language")}
+onClick={()=>scrollTo("language")}
+>
+Device Language
+</li>
 <li
 className={itemClass("browser")}
 onClick={()=>scrollTo("browser")}

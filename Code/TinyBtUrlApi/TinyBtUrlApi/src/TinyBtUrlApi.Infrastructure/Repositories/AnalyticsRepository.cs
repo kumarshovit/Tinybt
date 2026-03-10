@@ -282,29 +282,32 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
   }
 
   public async Task<List<AnalyticsItemDto>> GetDeviceLanguageByUserAsync(
-    int userId,
-    DateTime start,
-    DateTime end,
-    CancellationToken ct)
+     int userId,
+     DateTime start,
+     DateTime end,
+     CancellationToken ct)
   {
-    var query =
+    var data = await (
         from c in context.ClickLogs
         join u in context.UrlMappings
         on c.ShortCode equals u.ShortCode
         where u.UserId == userId
-        && c.ClickedAt >= start
-        && c.ClickedAt <= end
-        select c;
+        && c.ClickedAt >= start.Date
+        && c.ClickedAt < end.Date.AddDays(1)
+        select c.DeviceLanguage
+    ).ToListAsync(ct);
 
-    return await query
-        .GroupBy(x => x.DeviceLanguage)
+    return data
+        .Where(x => !string.IsNullOrEmpty(x))
+        .Select(x => x.Split(',')[0])
+        .GroupBy(x => x)
         .Select(g => new AnalyticsItemDto
         {
-          Label = g.Key ?? "Unknown",
+          Label = g.Key,
           Count = g.Count()
         })
         .OrderByDescending(x => x.Count)
-        .ToListAsync(ct);
+        .ToList();
   }
 
   public async Task<List<HeatmapDto>> GetClicksHeatmapAsync(

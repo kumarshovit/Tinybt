@@ -42,7 +42,7 @@ const [device,setDevice] = useState<any[]>([]);
 const [os,setOs] = useState<any[]>([]);
 const [browser,setBrowser] = useState<any[]>([]);
 const [topLinks,setTopLinks] = useState<any[]>([]);
-
+const [language,setLanguage] = useState<any[]>([]);
 const [totalClicks,setTotalClicks] = useState(0);
 
 const token = localStorage.getItem("token");
@@ -55,6 +55,10 @@ Authorization:`Bearer ${token}`
 const fetchDashboard = async()=>{
 
 const body = { from,to };
+
+try{
+
+/* -------- Clicks Over Time -------- */
 
 const clicksRes = await fetch(
 `${API_BASE}/analytics/user/clicks-over-time`,
@@ -76,6 +80,9 @@ total += x.count;
 });
 
 setTotalClicks(total);
+
+
+/* -------- Breakdown API -------- */
 
 const breakdown = async(type:string)=>{
 
@@ -102,6 +109,26 @@ setDevice(await breakdown("device"));
 setOs(await breakdown("os"));
 setBrowser(await breakdown("browser"));
 
+
+/* -------- Language API (ONLY ONCE) -------- */
+
+const langRes = await fetch(
+`${API_BASE}/analytics/user/device-language`,
+{
+method:"POST",
+headers,
+body:JSON.stringify({
+from,
+to
+})
+}
+);
+
+setLanguage(await langRes.json());
+
+
+/* -------- Popular Links -------- */
+
 const linksRes = await fetch(
 `${API_BASE}/analytics/user/popular-links`,
 {
@@ -112,6 +139,11 @@ body:JSON.stringify(body)
 );
 
 setTopLinks(await linksRes.json());
+
+}
+catch(err){
+console.error("Analytics error",err);
+}
 
 };
 
@@ -299,14 +331,14 @@ strokeWidth={3}
 <ChartBar title="Browsers" data={browser}/>
 </div>
 
+<div id="language">
+<ChartPie title="Device Language" data={language}/>
 </div>
 
-{/* Heatmap LAST */}
+</div>
 
 <div id="heatmap" className="mt-12">
-
 <HeatmapChart/>
-
 </div>
 
 </div>
@@ -321,6 +353,8 @@ strokeWidth={3}
 
 }
 
+/* -------- Components -------- */
+
 function SummaryCard({title,value}:any){
 
 return(
@@ -332,9 +366,7 @@ return(
 </p>
 
 <h2 className="text-3xl font-bold text-purple-600">
-
 <CountUp end={value} duration={1.5}/>
-
 </h2>
 
 </div>
