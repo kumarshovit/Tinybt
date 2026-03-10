@@ -24,5 +24,5 @@ export default function useClickOutside(
       document.removeEventListener("mousedown", handleClick);
       document.removeEventListener("keydown", handleEscape);
     };
-  }, []);
+  }, [ref, onClose]);
 }
