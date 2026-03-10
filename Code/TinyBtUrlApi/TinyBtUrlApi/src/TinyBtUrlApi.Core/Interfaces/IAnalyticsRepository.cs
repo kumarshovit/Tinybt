@@ -15,4 +15,6 @@ public interface IAnalyticsRepository
 
   Task<int> GetActiveLinksAsync(CancellationToken ct);
   Task<int> GetExpiredLinksAsync(CancellationToken ct);
+  Task<List<UserActivityDto>> GetUserActivityAsync(int userId, CancellationToken ct);
+
 }

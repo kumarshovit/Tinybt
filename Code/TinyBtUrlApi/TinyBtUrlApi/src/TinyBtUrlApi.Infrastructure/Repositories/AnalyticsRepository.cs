@@ -69,6 +69,7 @@
 
 
 using Microsoft.EntityFrameworkCore;
+using TinyBtUrlApi.Core.DTOs;
 using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Infrastructure.Data;
 
@@ -134,5 +135,52 @@ public sealed class AnalyticsRepository(AppDbContext context)
             x.ExpirationDate != null &&
             x.ExpirationDate <= now)
         .CountAsync(ct);
+  }
+
+  public async Task<List<UserActivityDto>> GetUserActivityAsync(int userId, CancellationToken ct)
+  {
+    var activities = new List<UserActivityDto>();
+
+    var links = await context.UrlMappings
+        .AsNoTracking()
+        .Where(x => x.UserId == userId)
+        .ToListAsync(ct);
+
+    foreach (var link in links)
+    {
+      activities.Add(new UserActivityDto
+      {
+        ActivityType = "Link Created",
+        ShortCode = link.ShortCode,
+        LongUrl = link.LongUrl,
+        ActivityTime = link.CreatedAt
+      });
+
+      if (link.DeletedAt != null)
+      {
+        activities.Add(new UserActivityDto
+        {
+          ActivityType = "Link Deleted",
+          ShortCode = link.ShortCode,
+          LongUrl = link.LongUrl,
+          ActivityTime = link.DeletedAt.Value
+        });
+      }
+
+      //if (link.ClickedAt != null)
+      //{
+      //  activities.Add(new UserActivityDto
+      //  {
+      //    ActivityType = "Link Clicked",
+      //    ShortCode = link.ShortCode,
+      //    LongUrl = link.LongUrl,
+      //    ActivityTime = link.ClickedAt.Value
+      //  });
+      //}
+    }
+
+    return activities
+        .OrderByDescending(x => x.ActivityTime)
+        .ToList();
   }
 }
