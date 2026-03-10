@@ -159,10 +159,18 @@ export default function LinkRow({
                         Delete
                     </button>
                 </div>
+
             </div>
 
-            {/* {hovered && !isEditingAlias && !isEditingDestination && (
-                <div className="flex gap-4 mt-4 text-sm text-gray-500">
+            {/* EDIT BUTTONS */}
+            {!isEditingAlias && !isEditingDestination && (
+                <div
+                    className={`flex gap-4 mt-4 text-sm text-gray-500 transition-all duration-300 ease-in-out ${hovered
+                            ? "opacity-100 translate-y-0"
+                            : "opacity-0 -translate-y-2 pointer-events-none"
+                        }`}
+                >
+
                     <button
                         onClick={() => {
                             setNewAlias(link.shortUrl.split("/").pop() || "");
@@ -180,56 +188,41 @@ export default function LinkRow({
                     >
                         Edit Destination
                     </button>
+
                 </div>
-            )} */}
+            )}
 
-            <div
-                className={`
-        flex gap-4 mt-4 text-sm text-gray-500
-        transition-all duration-300 ease-in-out
-        ${hovered && !isEditingAlias && !isEditingDestination
-                        ? "opacity-100 translate-y-0"
-                        : "opacity-0 -translate-y-2 pointer-events-none"}
-    `}
-            >
-                <button
-                    onClick={() => {
-                        setNewAlias(link.shortUrl.split("/").pop() || "");
-                        setActiveEdit({ id: link.id, type: "alias" });
-                    }}
-                >
-                    Edit Alias
-                </button>
-
-                <button
-                    onClick={() => {
-                        setNewDestination(link.longUrl);
-                        setActiveEdit({ id: link.id, type: "destination" });
-                    }}
-                >
-                    Edit Destination
-                </button>
-            </div>
-
-
+            {/* ALIAS EDIT */}
             {isEditingAlias && (
                 <div className="flex gap-2 mt-4">
+
                     <input
                         value={newAlias}
                         onChange={(e) => setNewAlias(e.target.value)}
                         className="border px-3 py-1 rounded flex-1"
                     />
+
                     <button
                         onClick={handleAliasUpdate}
                         className="bg-blue-600 text-white px-3 py-1 rounded"
                     >
                         Save
                     </button>
+
+                    <button
+                        onClick={() => setActiveEdit(null)}
+                        className="bg-gray-300 px-3 py-1 rounded"
+                    >
+                        Cancel
+                    </button>
+
                 </div>
             )}
 
+            {/* DESTINATION EDIT */}
             {isEditingDestination && (
                 <div className="flex gap-2 mt-4">
+
                     <input
                         value={newDestination}
                         onChange={(e) =>
@@ -237,14 +230,24 @@ export default function LinkRow({
                         }
                         className="border px-3 py-1 rounded flex-1"
                     />
+
                     <button
                         onClick={handleDestinationUpdate}
                         className="bg-blue-600 text-white px-3 py-1 rounded"
                     >
                         Save
                     </button>
+
+                    <button
+                        onClick={() => setActiveEdit(null)}
+                        className="bg-gray-300 px-3 py-1 rounded"
+                    >
+                        Cancel
+                    </button>
+
                 </div>
             )}
+
         </div>
     );
 }
