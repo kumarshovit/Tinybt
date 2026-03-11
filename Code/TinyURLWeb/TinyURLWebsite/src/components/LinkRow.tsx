@@ -42,9 +42,15 @@ export default function LinkRow({
     const isEditingDestination =
         activeEdit?.id === link.id && activeEdit?.type === "destination";
 
-    useClickOutside(cardRef, () => {
-        setActiveEdit(null);
-    });
+    // useClickOutside(cardRef, () => {
+    //     setActiveEdit(null);
+    // });
+
+    useClickOutside(
+        cardRef,
+        () => setActiveEdit(null),
+        isEditingAlias || isEditingDestination
+    );
 
     const handleAliasUpdate = async () => {
         if (!newAlias.trim()) return;
@@ -166,8 +172,8 @@ export default function LinkRow({
             {!isEditingAlias && !isEditingDestination && (
                 <div
                     className={`flex gap-4 mt-4 text-sm text-gray-500 transition-all duration-300 ease-in-out ${hovered
-                            ? "opacity-100 translate-y-0"
-                            : "opacity-0 -translate-y-2 pointer-events-none"
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 -translate-y-2 pointer-events-none"
                         }`}
                 >
 
@@ -197,6 +203,7 @@ export default function LinkRow({
                 <div className="flex gap-2 mt-4">
 
                     <input
+                        autoFocus
                         value={newAlias}
                         onChange={(e) => setNewAlias(e.target.value)}
                         className="border px-3 py-1 rounded flex-1"
