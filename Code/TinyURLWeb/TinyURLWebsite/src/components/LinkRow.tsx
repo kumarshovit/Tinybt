@@ -117,29 +117,30 @@ export default function LinkRow({
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >
-            <div className="flex justify-between items-center">
-                <div>
-                    <a
-                        href={link.shortUrl}
-                        target="_blank"
-                        className="text-blue-600 font-medium"
-                    >
-                        {link.shortUrl}
-                    </a>
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">                <div>
+                <a
+                    href={link.shortUrl}
+                    target="_blank"
+                    className="text-blue-600 font-medium"
+                >
+                    {link.shortUrl}
+                </a>
 
-                    <p className="text-sm text-gray-500 mt-1">
-                        {link.longUrl}
-                    </p>
-                    <p className="text-sm text-gray-400">
-                        {link.clickCount} clicks
-                    </p>
+                <p className="text-sm text-gray-500 mt-1 truncate max-w-[450px]">
+                    {link.longUrl.length > 60
+                        ? link.longUrl.slice(0, 60) + "..."
+                        : link.longUrl}
+                </p>
+                <p className="text-sm text-gray-400">
+                    {link.clickCount} clicks
+                </p>
 
-                    {link.expirationDate && (
-                        <p className="text-sm text-red-500">
-                            Expires on: {new Date(link.expirationDate).toLocaleString()}
-                        </p>
-                    )}
-                </div>
+                {link.expirationDate && (
+                    <p className="text-sm text-red-500">
+                        Expires on: {new Date(link.expirationDate).toLocaleString()}
+                    </p>
+                )}
+            </div>
 
                 <div className="flex gap-3">
                     <button
