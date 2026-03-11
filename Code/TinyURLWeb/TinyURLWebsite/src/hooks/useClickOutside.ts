@@ -2,11 +2,16 @@ import { useEffect } from "react";
 
 export default function useClickOutside(
   ref: React.RefObject<HTMLElement | null>,
-  onClose: () => void
+  onClose: () => void,
+  enabled: boolean
 ) {
   useEffect(() => {
+    if (!enabled) return;
+
     function handleClick(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
+      if (!ref.current) return;
+
+      if (!ref.current.contains(event.target as Node)) {
         onClose();
       }
     }
@@ -24,5 +29,5 @@ export default function useClickOutside(
       document.removeEventListener("mousedown", handleClick);
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [ref, onClose]);
+  }, [ref, onClose, enabled]);
 }
