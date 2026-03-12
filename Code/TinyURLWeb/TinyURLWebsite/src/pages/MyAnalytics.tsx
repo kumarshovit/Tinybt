@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import AnalyticsSidebar from "../components/AnalyticsSidebar";
 import HeatmapChart from "../components/analysis/HeatmapChart";
@@ -32,8 +32,24 @@ const COLORS = [
 
 export default function MyAnalytics(){
 
-const [from,setFrom] = useState("");
-const [to,setTo] = useState("");
+/* ---------- DEFAULT LAST 7 DAYS ---------- */
+
+const today = new Date();
+const lastWeek = new Date();
+lastWeek.setDate(today.getDate()-7);
+
+const [from,setFrom] = useState(lastWeek.toISOString().split("T")[0]);
+const [to,setTo] = useState(today.toISOString().split("T")[0]);
+
+/* ---------- FILTER STATES ---------- */
+
+const [allLinks,setAllLinks] = useState<any[]>([]);
+const [selectedLink,setSelectedLink] = useState("");
+
+const [allTags,setAllTags] = useState<string[]>([]);
+const [selectedTag,setSelectedTag] = useState("");
+
+/* ---------- DATA STATES ---------- */
 
 const [clicks,setClicks] = useState<any[]>([]);
 const [referrer,setReferrer] = useState<any[]>([]);
@@ -45,6 +61,12 @@ const [topLinks,setTopLinks] = useState<any[]>([]);
 const [language,setLanguage] = useState<any[]>([]);
 const [totalClicks,setTotalClicks] = useState(0);
 
+/* ---------- POPUP STATES ---------- */
+
+const [openPopup,setOpenPopup] = useState(false);
+const [popupTitle,setPopupTitle] = useState("");
+const [popupData,setPopupData] = useState<any[]>([]);
+
 const token = localStorage.getItem("token");
 
 const headers = {
@@ -52,13 +74,48 @@ const headers = {
 Authorization:`Bearer ${token}`
 };
 
+/* ---------- FETCH USER LINKS (for filters + tags) ---------- */
+
+const fetchUserLinks = async()=>{
+
+const res = await fetch(`${API_BASE}/api/urls`,{
+headers
+});
+
+const data = await res.json();
+
+setAllLinks(data);
+
+/* extract tags */
+
+const tagSet = new Set<string>();
+
+data.forEach((link:any)=>{
+if(link.tags){
+link.tags.forEach((tag:string)=>{
+tagSet.add(tag);
+});
+}
+});
+
+setAllTags(Array.from(tagSet));
+
+};
+
+/* ---------- FETCH DASHBOARD ---------- */
+
 const fetchDashboard = async()=>{
 
-const body = { from,to };
+const body = {
+from,
+to,
+link:selectedLink,
+tag:selectedTag
+};
 
 try{
 
-/* -------- Clicks Over Time -------- */
+/* clicks over time */
 
 const clicksRes = await fetch(
 `${API_BASE}/analytics/user/clicks-over-time`,
@@ -81,8 +138,7 @@ total += x.count;
 
 setTotalClicks(total);
 
-
-/* -------- Breakdown API -------- */
+/* breakdown */
 
 const breakdown = async(type:string)=>{
 
@@ -94,7 +150,9 @@ headers,
 body:JSON.stringify({
 from,
 to,
-type
+type,
+link:selectedLink,
+tag:selectedTag
 })
 }
 );
@@ -109,25 +167,20 @@ setDevice(await breakdown("device"));
 setOs(await breakdown("os"));
 setBrowser(await breakdown("browser"));
 
-
-/* -------- Language API (ONLY ONCE) -------- */
+/* language */
 
 const langRes = await fetch(
 `${API_BASE}/analytics/user/device-language`,
 {
 method:"POST",
 headers,
-body:JSON.stringify({
-from,
-to
-})
+body:JSON.stringify(body)
 }
 );
 
 setLanguage(await langRes.json());
 
-
-/* -------- Popular Links -------- */
+/* top links */
 
 const linksRes = await fetch(
 `${API_BASE}/analytics/user/popular-links`,
@@ -138,7 +191,16 @@ body:JSON.stringify(body)
 }
 );
 
-setTopLinks(await linksRes.json());
+const linksData = await linksRes.json();
+
+if(selectedLink){
+setTopLinks(
+linksData.filter((x:any)=>x.label === selectedLink)
+);
+}
+else{
+setTopLinks(linksData);
+}
 
 }
 catch(err){
@@ -146,6 +208,26 @@ console.error("Analytics error",err);
 }
 
 };
+
+/* ---------- LOAD DEFAULT ---------- */
+
+useEffect(()=>{
+fetchUserLinks();
+},[]);
+
+useEffect(()=>{
+fetchDashboard();
+},[from,to,selectedLink,selectedTag]);
+
+/* ---------- POPUP ---------- */
+
+const openDataPopup = (title:string,data:any[])=>{
+setPopupTitle(title);
+setPopupData(data);
+setOpenPopup(true);
+};
+
+/* ---------- CSV ---------- */
 
 const exportCSV = ()=>{
 
@@ -188,7 +270,7 @@ return(
 📊 My Analytics Dashboard
 </h1>
 
-{/* Filters */}
+{/* ---------- FILTERS ---------- */}
 
 <div className="bg-white rounded-xl shadow p-6 mb-10 flex flex-wrap gap-4 items-center">
 
@@ -206,12 +288,37 @@ onChange={e=>setTo(e.target.value)}
 className="border p-2 rounded-lg"
 />
 
-<button
-onClick={fetchDashboard}
-className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg"
+<select
+value={selectedLink}
+onChange={(e)=>{setSelectedLink(e.target.value); setSelectedTag("");}}
+className="border p-2 rounded-lg"
 >
-Apply
-</button>
+<option value="">All Links</option>
+
+{allLinks.map((link:any)=>(
+<option key={link.id} value={link.shortCode}>
+{link.shortCode}
+</option>
+))}
+
+</select>
+
+<select
+value={selectedTag}
+onChange={(e)=>{setSelectedTag(e.target.value);setSelectedLink("");
+}}
+className="border p-2 rounded-lg"
+>
+
+<option value="">All Tags</option>
+
+{allTags.map((tag)=>(
+<option key={tag} value={tag}>
+{tag}
+</option>
+))}
+
+</select>
 
 <button
 onClick={exportCSV}
@@ -222,7 +329,7 @@ Export CSV
 
 </div>
 
-{/* Summary Cards */}
+{/* ---------- SUMMARY ---------- */}
 
 <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
 
@@ -233,7 +340,7 @@ Export CSV
 
 </div>
 
-{/* Top Links */}
+{/* ---------- TOP LINKS ---------- */}
 
 <div id="links" className="bg-white rounded-xl shadow p-6 mb-10">
 
@@ -252,9 +359,13 @@ Top Performing Links
 
 <tbody>
 
-{topLinks.map((link:any,i:number)=>(
+{topLinks.slice(0,5).map((link:any,i:number)=>(
 
-<tr key={i} className="border-b hover:bg-gray-50">
+<tr
+key={i}
+className="border-b hover:bg-gray-50 cursor-pointer"
+onClick={()=>openDataPopup("Link Details",[link])}
+>
 
 <td className="py-2 text-purple-600 font-medium">
 {link.label}
@@ -274,9 +385,13 @@ Top Performing Links
 
 </div>
 
-{/* Clicks Over Time */}
+{/* ---------- CLICKS OVER TIME ---------- */}
 
-<div id="clicks" className="bg-white rounded-xl shadow p-6 mb-10">
+<div
+id="clicks"
+onClick={()=>openDataPopup("Clicks Over Time",clicks)}
+className="bg-white rounded-xl shadow p-6 mb-10 cursor-pointer"
+>
 
 <h2 className="text-xl font-semibold mb-4">
 Clicks Over Time
@@ -287,7 +402,6 @@ Clicks Over Time
 <LineChart data={clicks}>
 
 <XAxis dataKey="label"/>
-
 <YAxis/>
 
 <Tooltip formatter={(v)=>`${v} clicks`} />
@@ -307,31 +421,31 @@ strokeWidth={3}
 
 </div>
 
-{/* Charts */}
+{/* ---------- CHARTS ---------- */}
 
 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
 
-<div id="traffic">
+<div onClick={()=>openDataPopup("Traffic Source",referrer)}>
 <ChartPie title="Traffic Source" data={referrer}/>
 </div>
 
-<div id="country">
+<div onClick={()=>openDataPopup("Country Distribution",country)}>
 <ChartPie title="Country Distribution" data={country}/>
 </div>
 
-<div id="device">
+<div onClick={()=>openDataPopup("Device Types",device)}>
 <ChartBar title="Device Types" data={device}/>
 </div>
 
-<div id="os">
+<div onClick={()=>openDataPopup("Operating Systems",os)}>
 <ChartBar title="Operating Systems" data={os}/>
 </div>
 
-<div id="browser">
+<div onClick={()=>openDataPopup("Browsers",browser)}>
 <ChartBar title="Browsers" data={browser}/>
 </div>
 
-<div id="language">
+<div onClick={()=>openDataPopup("Device Language",language)}>
 <ChartPie title="Device Language" data={language}/>
 </div>
 
@@ -347,13 +461,62 @@ strokeWidth={3}
 
 </div>
 
+{/* ---------- DATA POPUP ---------- */}
+
+{openPopup &&(
+
+<div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+<div className="bg-white rounded-xl p-8 w-[600px]">
+
+<h2 className="text-xl font-bold mb-6">
+{popupTitle}
+</h2>
+
+<table className="w-full text-left">
+
+<thead>
+<tr className="border-b text-gray-500">
+<th className="py-2">Label</th>
+<th className="py-2">Clicks</th>
+</tr>
+</thead>
+
+<tbody>
+
+{popupData.map((item:any,i:number)=>(
+
+<tr key={i} className="border-b">
+<td className="py-2">{item.label}</td>
+<td className="py-2 font-semibold">{item.count}</td>
+</tr>
+
+))}
+
+</tbody>
+
+</table>
+
+<button
+onClick={()=>setOpenPopup(false)}
+className="mt-6 bg-purple-600 text-white px-4 py-2 rounded"
+>
+Close
+</button>
+
+</div>
+
+</div>
+
+)}
+
 </>
 
 );
 
 }
 
-/* -------- Components -------- */
+/* ---------- COMPONENTS ---------- */
 
 function SummaryCard({title,value}:any){
 
@@ -405,7 +568,6 @@ data={data}
 dataKey="count"
 nameKey="label"
 outerRadius={80}
-label={({name,value}:any)=>`${name}: ${value}`}
 >
 
 {data.map((_:any,index:number)=>(
@@ -451,7 +613,6 @@ return(
 <BarChart data={data}>
 
 <XAxis dataKey="label"/>
-
 <YAxis/>
 
 <Tooltip formatter={(v)=>`${v} clicks`} />
