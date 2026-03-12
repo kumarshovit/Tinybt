@@ -13,7 +13,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     await logoutUser(); // ✅ Call service
-    navigate("/login"); // ✅ Redirect
+    navigate("/"); // ✅ Redirect
   };
 
    return (
@@ -21,8 +21,8 @@ const Navbar = () => {
       <div className="flex justify-between items-center">
 
         {/* Logo */}
-        <h1 className="text-xl font-bold text-indigo-600">
-          TinyURL 
+        <h1 className="text-xl font-bold text-blue-600">
+          TinyURL
         </h1>
 
         {/* Hamburger Button (Mobile Only) */}
@@ -48,7 +48,7 @@ const Navbar = () => {
 
           <Link
             to="/dashboard"
-            className="text-gray-700 hover:text-indigo-600 transition"
+            className="text-gray-700 hover:text-blue-600 transition"
           >
             Dashboard
           </Link>
@@ -56,15 +56,15 @@ const Navbar = () => {
           {role === "Admin" && (
             <Link
               to="/admin"
-              className="text-gray-700 hover:text-indigo-600 transition"
+              className="text-gray-700 hover:text-blue-600 transition"
             >
-              Admin Panel 🔐
+              Admin Panel
             </Link>
           )}
 
           <Link
             to="/profile"
-            className="text-gray-700 hover:text-indigo-600 transition"
+            className="text-gray-700 hover:text-blue-600 transition"
           >
             Profile
           </Link>
@@ -74,13 +74,13 @@ const Navbar = () => {
               to="/my-analytics"
               className="text-gray-700 hover:text-purple-600"
             >
-              My Analytics 📊
+              My Analytics
             </Link>
           )}
 
           <button
             onClick={handleLogout}
-            className="bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition"
+            className="bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition"
           >
             Logout
           </button>
@@ -116,7 +116,7 @@ const Navbar = () => {
 
           <button
             onClick={handleLogout}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg"
           >
             Logout
           </button>

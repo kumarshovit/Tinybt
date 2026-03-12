@@ -25,7 +25,7 @@ export default function ProfileAvatar({ name,email }: Props) {
 
     <div className="bg-white rounded-xl shadow p-6 flex items-center gap-4 hover:shadow-md transition">
 
-      <div className="w-16 h-16 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xl font-bold overflow-hidden">
+      <div className="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center text-xl font-bold overflow-hidden">
 
         {preview ? (
 

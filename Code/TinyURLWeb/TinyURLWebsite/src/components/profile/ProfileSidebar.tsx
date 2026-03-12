@@ -29,7 +29,7 @@ export default function ProfileSidebar({ active, setActive }: Props) {
             onClick={() => setActive(item.name)}
             className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm transition ${
               active === item.name
-                ? "bg-indigo-50 text-indigo-600"
+                ? "bg-indigo-50 text-blue-600"
                 : "hover:bg-gray-50"
             }`}
           >

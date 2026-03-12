@@ -213,7 +213,7 @@ const AdminPage = () => {
             <button
               onClick={updateDefaultExpiration}
               disabled={settingLoading}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg"
             >
               {settingLoading ? "Saving..." : "Save"}
             </button>
@@ -235,11 +235,8 @@ const AdminPage = () => {
         {/* ================= USER TABLE ================= */}
 
         <div className="overflow-x-auto">
-
-          <table className="min-w-[600px] w-full bg-white shadow rounded-lg text-sm sm:text-base">
-
-            <thead className="bg-indigo-600 text-white">
-
+          <table className="min-w-full bg-white shadow rounded-lg">
+            <thead className="bg-blue-600 text-white">
               <tr>
                 <th className="py-3 px-4 text-left">Email</th>
                 <th className="py-3 px-4 text-center">Role</th>

@@ -103,6 +103,6 @@ export const logoutUser = async () => {
 
   localStorage.removeItem("token");
   localStorage.removeItem("refreshToken");
-  window.location.href = "/login";
+  
 };
 export default apiClient;

@@ -54,7 +54,7 @@ const Login = () => {
             <input
               type="email"
               placeholder="Enter your email"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -69,7 +69,7 @@ const Login = () => {
             <input
               type="password"
               placeholder="Enter your password"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -79,7 +79,7 @@ const Login = () => {
           <div className="text-right">
             <Link
               to="/forgot-password"
-              className="text-sm text-indigo-600 hover:underline"
+              className="text-sm text-blue-600 hover:underline"
             >
               Forgot Password?
             </Link>
@@ -92,7 +92,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 transition disabled:opacity-60"
+            className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-60"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
@@ -103,7 +103,7 @@ const Login = () => {
           Don't have an account?{" "}
           <Link
             to="/register"
-            className="text-indigo-600 font-semibold hover:underline"
+            className="text-blue-600 font-semibold hover:underline"
           >
             Register
           </Link>

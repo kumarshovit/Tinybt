@@ -73,7 +73,7 @@ export default function ProfileSecurityCard({
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="text-indigo-600 text-sm"
+              className="text-blue-600 text-sm"
             >
               {showPassword ? "Hide" : "Show"}
             </button>

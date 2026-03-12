@@ -40,7 +40,7 @@ export default function ProfileInfoCard({
 
           <button
             onClick={() => setEditing(true)}
-            className="text-indigo-600 text-sm hover:underline"
+            className="text-blue-600 text-sm hover:underline"
           >
             Edit
           </button>
@@ -61,7 +61,7 @@ export default function ProfileInfoCard({
 
             <button
               onClick={save}
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg"
             >
               Save
             </button>
