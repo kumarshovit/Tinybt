@@ -69,6 +69,32 @@ const [popupData,setPopupData] = useState<any[]>([]);
 
 const token = localStorage.getItem("token");
 
+
+// ---------- QUICK DATE FILTERS ----------
+
+const setToday = () => {
+  const today = new Date().toISOString().split("T")[0];
+  setFrom(today);
+  setTo(today);
+};
+
+const setLast7Days = () => {
+  const today = new Date();
+  const lastWeek = new Date();
+  lastWeek.setDate(today.getDate() - 7);
+
+  setFrom(lastWeek.toISOString().split("T")[0]);
+  setTo(today.toISOString().split("T")[0]);
+};
+
+const setLast30Days = () => {
+  const today = new Date();
+  const lastMonth = new Date();
+  lastMonth.setDate(today.getDate() - 30);
+
+  setFrom(lastMonth.toISOString().split("T")[0]);
+  setTo(today.toISOString().split("T")[0]);
+};
 const headers = {
 "Content-Type":"application/json",
 Authorization:`Bearer ${token}`
@@ -193,14 +219,34 @@ body:JSON.stringify(body)
 
 const linksData = await linksRes.json();
 
-if(selectedLink){
-setTopLinks(
-linksData.filter((x:any)=>x.label === selectedLink)
-);
-}
-else{
-setTopLinks(linksData);
-}
+// alias -> clicks map
+const aliasClicks: Record<string, number> = {};
+linksData.forEach((x:any)=>{
+  aliasClicks[x.label] = x.count;
+});
+
+// tag -> clicks
+const tagCounts: Record<string, number> = {};
+
+allLinks.forEach((link:any)=>{
+  const clicks = aliasClicks[link.shortCode] || 0;
+
+  if(link.tags){
+    link.tags.forEach((tag:string)=>{
+      if(!tagCounts[tag]) tagCounts[tag] = 0;
+      tagCounts[tag] += clicks;
+    });
+  }
+});
+
+const tagData = Object.keys(tagCounts).map(tag=>({
+  label: tag,
+  count: tagCounts[tag]
+}))
+.sort((a,b)=>b.count-a.count);
+
+setTopLinks(tagData);
+
 
 }
 catch(err){
@@ -216,8 +262,10 @@ fetchUserLinks();
 },[]);
 
 useEffect(()=>{
+if(allLinks.length){
 fetchDashboard();
-},[from,to,selectedLink,selectedTag]);
+}
+},[from,to,selectedLink,selectedTag,allLinks]);
 
 /* ---------- POPUP ---------- */
 
@@ -252,7 +300,36 @@ a.download = "analytics.csv";
 a.click();
 
 };
+const openTagPopup = async(tag)=>{
 
+const body = {
+  from,
+  to,
+  tag
+};
+
+const res = await fetch(
+`${API_BASE}/analytics/user/popular-links`,
+{
+  method:"POST",
+  headers,
+  body:JSON.stringify(body)
+}
+);
+
+const data = await res.json();
+
+const popupLinks = data.map((x:any)=>({
+  shortUrl: `${API_BASE}/${x.label}`,
+  shortCode: x.label,
+  clickCount: x.count
+}));
+
+setPopupTitle(`Links for tag: ${tag}`);
+setPopupData(popupLinks);
+setOpenPopup(true);
+
+};
 return(
 
 <>
@@ -273,7 +350,21 @@ return(
 {/* ---------- FILTERS ---------- */}
 
 <div className="bg-white rounded-xl shadow p-6 mb-10 flex flex-wrap gap-4 items-center">
+{/* Quick Date Buttons */}
 
+<button
+onClick={setLast7Days}
+className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-200"
+>
+Last 7 Days
+</button>
+
+<button
+onClick={setLast30Days}
+className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-200"
+>
+Last 30 Days
+</button>
 <input
 type="date"
 value={from}
@@ -293,7 +384,7 @@ value={selectedLink}
 onChange={(e)=>{setSelectedLink(e.target.value); setSelectedTag("");}}
 className="border p-2 rounded-lg"
 >
-<option value="">All Links</option>
+<option value="">All Alias</option>
 
 {allLinks.map((link:any)=>(
 <option key={link.id} value={link.shortCode}>
@@ -345,34 +436,38 @@ Export CSV
 <div id="links" className="bg-white rounded-xl shadow p-6 mb-10">
 
 <h2 className="text-xl font-semibold mb-4">
-Top Performing Links
+{selectedLink
+  ? `Tags for alias: ${selectedLink}`
+  : selectedTag
+  ? `Analytics for tag: ${selectedTag}`
+  : "Top Performing Tags"}
 </h2>
 
 <table className="w-full text-left">
 
 <thead>
 <tr className="border-b text-gray-500">
-<th className="py-2">Short Link</th>
+<th className="py-2">Tag</th>
 <th className="py-2">Clicks</th>
 </tr>
 </thead>
 
 <tbody>
 
-{topLinks.slice(0,5).map((link:any,i:number)=>(
+{topLinks.slice(0,5).map((tag:any,i:number)=>(
 
 <tr
 key={i}
 className="border-b hover:bg-gray-50 cursor-pointer"
-onClick={()=>openDataPopup("Link Details",[link])}
+onClick={()=>openTagPopup(tag.label)}
 >
 
 <td className="py-2 text-purple-600 font-medium">
-{link.label}
+{tag.label}
 </td>
 
 <td className="py-2 font-semibold">
-{link.count}
+{tag.count}
 </td>
 
 </tr>
@@ -423,29 +518,29 @@ strokeWidth={3}
 
 {/* ---------- CHARTS ---------- */}
 
-<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 border-none">
 
-<div onClick={()=>openDataPopup("Traffic Source",referrer)}>
+<div id="traffic" onClick={()=>openDataPopup("Traffic Source",referrer)}>
 <ChartPie title="Traffic Source" data={referrer}/>
 </div>
 
-<div onClick={()=>openDataPopup("Country Distribution",country)}>
+<div id="country" onClick={()=>openDataPopup("Country Distribution",country)}>
 <ChartPie title="Country Distribution" data={country}/>
 </div>
 
-<div onClick={()=>openDataPopup("Device Types",device)}>
+<div id="device" onClick={()=>openDataPopup("Device Types",device)}>
 <ChartBar title="Device Types" data={device}/>
 </div>
 
-<div onClick={()=>openDataPopup("Operating Systems",os)}>
+<div id="os" onClick={()=>openDataPopup("Operating Systems",os)}>
 <ChartBar title="Operating Systems" data={os}/>
 </div>
 
-<div onClick={()=>openDataPopup("Browsers",browser)}>
+<div id="browser" onClick={()=>openDataPopup("Browsers",browser)}>
 <ChartBar title="Browsers" data={browser}/>
 </div>
 
-<div onClick={()=>openDataPopup("Device Language",language)}>
+<div id="language" onClick={()=>openDataPopup("Device Language",language)}>
 <ChartPie title="Device Language" data={language}/>
 </div>
 
@@ -477,22 +572,72 @@ strokeWidth={3}
 
 <thead>
 <tr className="border-b text-gray-500">
+
+{popupData[0]?.shortCode ? (
+<>
+<th className="py-2">Short URL</th>
+<th className="py-2">Short Alias</th>
+<th className="py-2">Clicks</th>
+</>
+) : (
+<>
 <th className="py-2">Label</th>
 <th className="py-2">Clicks</th>
+</>
+)}
+
 </tr>
 </thead>
 
 <tbody>
+{popupData.map((item:any,i:number)=>{
 
-{popupData.map((item:any,i:number)=>(
-
+// CASE 1 → link popup
+if(item.shortCode){
+return(
 <tr key={i} className="border-b">
-<td className="py-2">{item.label}</td>
-<td className="py-2 font-semibold">{item.count}</td>
+
+<td className="py-2 text-purple-600">
+<a
+href={item.shortUrl}
+target="_blank"
+rel="noopener noreferrer"
+className="underline"
+>
+{item.shortUrl}
+</a>
+</td>
+
+<td className="py-2">
+{item.shortCode}
+</td>
+
+<td className="py-2 font-semibold">
+{item.clickCount}
+</td>
+
 </tr>
+)
+}
 
-))}
+// CASE 2 → analytics popup
+return(
+<tr key={i} className="border-b">
 
+<td className="py-2">
+{item.label}
+</td>
+
+<td className="py-2 font-semibold">
+{item.count}
+</td>
+
+<td></td>
+
+</tr>
+)
+
+})}
 </tbody>
 
 </table>
@@ -549,15 +694,15 @@ No data available
 
 return(
 
-<div className="bg-white rounded-xl shadow p-6">
+<div className="bg-white rounded-xl shadow p-6 border-0 overflow-hidden">
 
 <h3 className="text-lg font-semibold mb-4">
 {title}
 </h3>
 
-<ResponsiveContainer width="100%" height={250}>
+<ResponsiveContainer width="100%" height={250} style={{outline:"none"}}>
 
-<PieChart>
+<PieChart style={{border:"none", outline:"none"}}>
 
 <Tooltip formatter={(v)=>`${v} clicks`} />
 
@@ -568,6 +713,12 @@ data={data}
 dataKey="count"
 nameKey="label"
 outerRadius={80}
+stroke="none"
+strokeWidth={0}
+innerRadius={0}
+paddingAngle={0}
+stroke="none"
+isAnimationActive={false}
 >
 
 {data.map((_:any,index:number)=>(
@@ -575,6 +726,7 @@ outerRadius={80}
 <Cell
 key={index}
 fill={COLORS[index % COLORS.length]}
+stroke="none"
 />
 
 ))}
@@ -602,7 +754,7 @@ No data available
 
 return(
 
-<div className="bg-white rounded-xl shadow p-6">
+<div className="bg-white rounded-xl shadow p-6 border-0">
 
 <h3 className="text-lg font-semibold mb-4">
 {title}
@@ -612,8 +764,8 @@ return(
 
 <BarChart data={data}>
 
-<XAxis dataKey="label"/>
-<YAxis/>
+<XAxis dataKey="label" axisLine={false} tickLine={false}/>
+<YAxis axisLine={false} tickLine={false}/>
 
 <Tooltip formatter={(v)=>`${v} clicks`} />
 

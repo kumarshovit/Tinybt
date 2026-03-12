@@ -24,6 +24,8 @@ public class GetAnalyticsHandler
         request.UserId,
         request.From,
         request.To,
-        request.Type);
+        request.Type,
+        request.Link,
+    request.Tag);
   }
 }

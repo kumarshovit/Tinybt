@@ -8,5 +8,7 @@ namespace TinyBtUrlApi.UseCases.Urls.Analytics.GetUserDashboard;
 public record GetPopularLinksByUserQuery(
     int UserId,
     DateTime From,
-    DateTime To
+    DateTime To,
+    string? Link,
+    string? Tag
 ) : IRequest<List<AnalyticsItemDto>>;

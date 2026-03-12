@@ -9,5 +9,7 @@ using TinyBtUrlApi.Core.DTOs;
 public record GetClicksOverTimeByUserQuery(
     int UserId,
     DateTime From,
-    DateTime To
+    DateTime To,
+    string? Link,
+    string? Tag
 ) : IRequest<List<AnalyticsItemDto>>;

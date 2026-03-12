@@ -9,5 +9,7 @@ public record GetAnalyticsQuery(
     int UserId,
     DateTime From,
     DateTime To,
-    string Type
+    string Type,
+    string? Link,
+    string? Tag
 ) : IRequest<List<AnalyticsItemDto>>;

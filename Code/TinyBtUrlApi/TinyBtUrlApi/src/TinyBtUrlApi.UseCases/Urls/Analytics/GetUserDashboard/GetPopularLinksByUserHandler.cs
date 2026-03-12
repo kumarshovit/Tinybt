@@ -24,6 +24,8 @@ public class GetPopularLinksByUserHandler
         request.UserId,
         request.From,
         request.To,
+         request.Link,
+    request.Tag,
         ct);
   }
 }

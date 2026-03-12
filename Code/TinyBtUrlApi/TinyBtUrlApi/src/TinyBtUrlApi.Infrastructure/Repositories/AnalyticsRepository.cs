@@ -124,110 +124,14 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
       To = endDate
     };
   }
- public async Task<List<AnalyticsItemDto>> GetAnalyticsByFieldAsync(
+
+  public async Task<List<AnalyticsItemDto>> GetAnalyticsByFieldAsync(
     int userId,
     DateTime start,
     DateTime end,
-    string field)
-{
-    var query =
-        from c in context.ClickLogs
-        join u in context.UrlMappings
-        on c.ShortCode equals u.ShortCode
-        where u.UserId == userId
-        && c.ClickedAt >= start
-        && c.ClickedAt <= end
-        select c;
-
-    return field switch
-    {
-      "referrer" => await query
-   .GroupBy(x =>
-       string.IsNullOrEmpty(x.Referrer)
-           ? "Direct"
-           : x.Referrer.Trim())
-   .Select(g => new AnalyticsItemDto
-   {
-     Label = g.Key,
-     Count = g.Count()
-   })
-   .OrderByDescending(x => x.Count)
-   .ToListAsync(),
-
-      "country" => await query
-            .GroupBy(x =>
-                string.IsNullOrEmpty(x.Country)
-                ? "Unknown"
-                : x.Country)
-            .Select(g => new AnalyticsItemDto
-            {
-                Label = g.Key,
-                Count = g.Count()
-            })
-            .OrderByDescending(x => x.Count)
-            .ToListAsync(),
-
-        "device" => await query
-            .GroupBy(x =>
-                string.IsNullOrEmpty(x.DeviceType)
-                ? "Unknown"
-                : x.DeviceType)
-            .Select(g => new AnalyticsItemDto
-            {
-                Label = g.Key,
-                Count = g.Count()
-            })
-            .OrderByDescending(x => x.Count)
-            .ToListAsync(),
-
-        "browser" => await query
-            .GroupBy(x =>
-                string.IsNullOrEmpty(x.Browser)
-                ? "Unknown"
-                : x.Browser)
-            .Select(g => new AnalyticsItemDto
-            {
-                Label = g.Key,
-                Count = g.Count()
-            })
-            .OrderByDescending(x => x.Count)
-            .ToListAsync(),
-
-        "os" => await query
-            .GroupBy(x =>
-                string.IsNullOrEmpty(x.OS)
-                ? "Unknown"
-                : x.OS)
-            .Select(g => new AnalyticsItemDto
-            {
-                Label = g.Key,
-                Count = g.Count()
-            })
-            .OrderByDescending(x => x.Count)
-            .ToListAsync(),
-
-        "language" => await query
-            .GroupBy(x =>
-                string.IsNullOrEmpty(x.DeviceLanguage)
-                ? "Unknown"
-                : x.DeviceLanguage)
-            .Select(g => new AnalyticsItemDto
-            {
-                Label = g.Key,
-                Count = g.Count()
-            })
-            .OrderByDescending(x => x.Count)
-            .ToListAsync(),
-
-        _ => new List<AnalyticsItemDto>()
-    };
-}
-
-  public async Task<List<AnalyticsItemDto>> GetClicksOverTimeByUserAsync(
-    int userId,
-    DateTime start,
-    DateTime end,
-    CancellationToken ct)
+    string field,
+    string? link,
+    string? tag)
   {
     var query =
         from c in context.ClickLogs
@@ -236,10 +140,147 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
         where u.UserId == userId
         && c.ClickedAt >= start
         && c.ClickedAt <= end
-        select c;
+        select new { c, u };
+
+    // LINK FILTER
+    if (!string.IsNullOrEmpty(link))
+    {
+      query = query.Where(x => x.u.ShortCode == link);
+    }
+
+    // TAG FILTER
+    if (!string.IsNullOrEmpty(tag))
+    {
+      query =
+          from q in query
+          join ut in context.UrlTags
+          on q.u.Id equals ut.UrlMappingId
+          join t in context.Tags
+          on ut.TagId equals t.Id
+          where t.Name == tag
+          select q;
+    }
+
+    return field switch
+    {
+      "referrer" => await query
+          .GroupBy(x =>
+              string.IsNullOrEmpty(x.c.Referrer)
+                  ? "Direct"
+                  : x.c.Referrer.Trim())
+          .Select(g => new AnalyticsItemDto
+          {
+            Label = g.Key,
+            Count = g.Count()
+          })
+          .OrderByDescending(x => x.Count)
+          .ToListAsync(),
+
+      "country" => await query
+          .GroupBy(x =>
+              string.IsNullOrEmpty(x.c.Country)
+                  ? "Unknown"
+                  : x.c.Country)
+          .Select(g => new AnalyticsItemDto
+          {
+            Label = g.Key,
+            Count = g.Count()
+          })
+          .OrderByDescending(x => x.Count)
+          .ToListAsync(),
+
+      "device" => await query
+          .GroupBy(x =>
+              string.IsNullOrEmpty(x.c.DeviceType)
+                  ? "Unknown"
+                  : x.c.DeviceType)
+          .Select(g => new AnalyticsItemDto
+          {
+            Label = g.Key,
+            Count = g.Count()
+          })
+          .OrderByDescending(x => x.Count)
+          .ToListAsync(),
+
+      "browser" => await query
+          .GroupBy(x =>
+              string.IsNullOrEmpty(x.c.Browser)
+                  ? "Unknown"
+                  : x.c.Browser)
+          .Select(g => new AnalyticsItemDto
+          {
+            Label = g.Key,
+            Count = g.Count()
+          })
+          .OrderByDescending(x => x.Count)
+          .ToListAsync(),
+
+      "os" => await query
+          .GroupBy(x =>
+              string.IsNullOrEmpty(x.c.OS)
+                  ? "Unknown"
+                  : x.c.OS)
+          .Select(g => new AnalyticsItemDto
+          {
+            Label = g.Key,
+            Count = g.Count()
+          })
+          .OrderByDescending(x => x.Count)
+          .ToListAsync(),
+
+      "language" => await query
+          .GroupBy(x =>
+              string.IsNullOrEmpty(x.c.DeviceLanguage)
+                  ? "Unknown"
+                  : x.c.DeviceLanguage)
+          .Select(g => new AnalyticsItemDto
+          {
+            Label = g.Key,
+            Count = g.Count()
+          })
+          .OrderByDescending(x => x.Count)
+          .ToListAsync(),
+
+      _ => new List<AnalyticsItemDto>()
+    };
+  }
+
+  public async Task<List<AnalyticsItemDto>> GetClicksOverTimeByUserAsync(
+     int userId,
+     DateTime start,
+     DateTime end,
+     string? link,
+     string? tag,
+     CancellationToken ct)
+  {
+    var query =
+        from c in context.ClickLogs
+        join u in context.UrlMappings
+        on c.ShortCode equals u.ShortCode
+        where u.UserId == userId
+        && c.ClickedAt >= start
+        && c.ClickedAt <= end
+        select new { c, u };
+
+    if (!string.IsNullOrEmpty(link))
+    {
+      query = query.Where(x => x.u.ShortCode == link);
+    }
+
+    if (!string.IsNullOrEmpty(tag))
+    {
+      query =
+          from q in query
+          join ut in context.UrlTags
+          on q.u.Id equals ut.UrlMappingId
+          join t in context.Tags
+          on ut.TagId equals t.Id
+          where t.Name == tag
+          select q;
+    }
 
     var data = await query
-        .GroupBy(x => x.ClickedAt.Date)
+        .GroupBy(x => x.c.ClickedAt.Date)
         .Select(g => new
         {
           Date = g.Key,
@@ -255,10 +296,12 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
     }).ToList();
   }
   public async Task<List<AnalyticsItemDto>> GetPopularLinksByUserAsync(
-       int userId,
-       DateTime start,
-       DateTime end,
-       CancellationToken ct)
+    int userId,
+    DateTime start,
+    DateTime end,
+    string? link,
+    string? tag,
+    CancellationToken ct)
   {
     var query =
         from c in context.ClickLogs
@@ -266,11 +309,28 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
         on c.ShortCode equals u.ShortCode
         where u.UserId == userId
         && c.ClickedAt >= start
-            && c.ClickedAt <= end
-        select c;
+        && c.ClickedAt <= end
+        select new { c, u };
+
+    if (!string.IsNullOrEmpty(link))
+    {
+      query = query.Where(x => x.u.ShortCode == link);
+    }
+
+    if (!string.IsNullOrEmpty(tag))
+    {
+      query =
+          from q in query
+          join ut in context.UrlTags
+          on q.u.Id equals ut.UrlMappingId
+          join t in context.Tags
+          on ut.TagId equals t.Id
+          where t.Name == tag
+          select q;
+    }
 
     return await query
-        .GroupBy(x => x.ShortCode)
+        .GroupBy(x => x.c.ShortCode)
         .Select(g => new AnalyticsItemDto
         {
           Label = g.Key,
@@ -282,33 +342,56 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
   }
 
   public async Task<List<AnalyticsItemDto>> GetDeviceLanguageByUserAsync(
-     int userId,
-     DateTime start,
-     DateTime end,
-     CancellationToken ct)
+    int userId,
+    DateTime start,
+    DateTime end,
+    string? link,
+    string? tag,
+    CancellationToken ct)
   {
-    var data = await (
+    var query =
         from c in context.ClickLogs
         join u in context.UrlMappings
         on c.ShortCode equals u.ShortCode
         where u.UserId == userId
-        && c.ClickedAt >= start.Date
-        && c.ClickedAt < end.Date.AddDays(1)
-        select c.DeviceLanguage
-    ).ToListAsync(ct);
+        && c.ClickedAt >= start
+        && c.ClickedAt <= end
+        select new { c, u };
+
+    if (!string.IsNullOrEmpty(link))
+    {
+      query = query.Where(x => x.u.ShortCode == link);
+    }
+
+    if (!string.IsNullOrEmpty(tag))
+    {
+      query =
+          from q in query
+          join ut in context.UrlTags
+          on q.u.Id equals ut.UrlMappingId
+          join t in context.Tags
+          on ut.TagId equals t.Id
+          where t.Name == tag
+          select q;
+    }
+
+    var data = await query
+        .Select(x => x.c.DeviceLanguage)
+        .ToListAsync(ct);
 
     return data
-        .Where(x => !string.IsNullOrEmpty(x))
-        .Select(x => x.Split(',')[0])
-        .GroupBy(x => x)
-        .Select(g => new AnalyticsItemDto
-        {
-          Label = g.Key,
-          Count = g.Count()
-        })
-        .OrderByDescending(x => x.Count)
-        .ToList();
+     .Where(x => !string.IsNullOrWhiteSpace(x))
+     .Select(x => x!.Split(',')[0])
+     .GroupBy(x => x)
+     .Select(g => new AnalyticsItemDto
+     {
+       Label = g.Key,
+       Count = g.Count()
+     })
+     .OrderByDescending(x => x.Count)
+     .ToList();
   }
+
 
   public async Task<List<HeatmapDto>> GetClicksHeatmapAsync(
       int userId,

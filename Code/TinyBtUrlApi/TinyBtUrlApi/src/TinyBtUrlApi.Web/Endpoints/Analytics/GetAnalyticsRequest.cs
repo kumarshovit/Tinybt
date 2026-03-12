@@ -7,4 +7,9 @@ public class GetAnalyticsRequest
   public DateTime To { get; set; }
 
   public string Type { get; set; } = "";
+
+  public string? Link { get; set; }
+
+  public string? Tag { get; set; }
+
 }

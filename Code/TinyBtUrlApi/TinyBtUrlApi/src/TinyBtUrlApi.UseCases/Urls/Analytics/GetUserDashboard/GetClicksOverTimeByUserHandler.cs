@@ -22,6 +22,8 @@ public class GetClicksOverTimeByUserHandler
         request.UserId,
         request.From,
         request.To,
+        request.Link,
+    request.Tag,
         ct);
   }
 }

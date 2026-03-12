@@ -26,14 +26,22 @@ public class GetDeviceLanguageEndpoint
       DeviceLanguageRequest req,
       CancellationToken ct)
   {
-    int userId = int.Parse(
-        User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+    var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+    if (userIdClaim == null)
+    {
+      await Send.UnauthorizedAsync(ct);
+      return;
+    }
+
+    int userId = int.Parse(userIdClaim.Value);
 
     var result = await _mediator.Send(
         new GetDeviceLanguageByUserQuery(
             userId,
             req.From,
-            req.To),
+            req.To, req.Link,
+    req.Tag),
         ct);
 
     await Send.OkAsync(result);

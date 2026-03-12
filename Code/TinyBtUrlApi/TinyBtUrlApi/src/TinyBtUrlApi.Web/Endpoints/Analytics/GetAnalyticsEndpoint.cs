@@ -25,11 +25,25 @@ public class GetAnalyticsEndpoint
       GetAnalyticsRequest req,
       CancellationToken ct)
   {
-    int userId = int.Parse(
-        User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+    var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+
+    if (userIdClaim == null)
+    {
+      await Send.UnauthorizedAsync(ct);
+      return;
+    }
+
+    int userId = int.Parse(userIdClaim.Value);
 
     var result = await _mediator.Send(
-        new GetAnalyticsQuery(userId, req.From, req.To, req.Type),
+        new GetAnalyticsQuery(
+    userId,
+    req.From,
+    req.To,
+    req.Type,
+    req.Link,
+    req.Tag
+),
         ct);
 
     await Send.OkAsync(result);

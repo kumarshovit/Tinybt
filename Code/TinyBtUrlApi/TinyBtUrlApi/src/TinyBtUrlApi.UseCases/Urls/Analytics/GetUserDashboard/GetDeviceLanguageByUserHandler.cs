@@ -21,6 +21,8 @@ public class GetDeviceLanguageByUserHandler
         request.UserId,
         request.From,
         request.To,
+         request.Link,
+    request.Tag,
         ct);
   }
 }
