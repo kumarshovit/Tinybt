@@ -1,3 +1,102 @@
+// // import { useEffect, useState } from "react";
+// // import {
+// //   BarChart,
+// //   Bar,
+// //   XAxis,
+// //   YAxis,
+// //   Tooltip,
+// //   CartesianGrid,
+// //   ResponsiveContainer,
+// // } from "recharts";
+// // import { getClicksByOS } from "../../api/analyticsService";
+
+// // export default function ClicksByOS() {
+// //   const [data, setData] = useState<any[]>([]);
+
+// //   useEffect(() => {
+// //     loadData();
+// //   }, []);
+
+// //   const loadData = async () => {
+// //     const res = await getClicksByOS();
+// //     setData(res.data);
+// //   };
+
+// //   return (
+// //     <div>
+// //       <h2 className="text-xl font-bold mb-6">
+// //         Clicks by Operating System
+// //       </h2>
+
+// //       <ResponsiveContainer width="100%" height={400}>
+// //         <BarChart data={data}>
+// //           <CartesianGrid stroke="#ccc" />
+// //           <XAxis dataKey="os" />
+// //           <YAxis />
+// //           <Tooltip />
+// //           <Bar dataKey="clicks" fill="#2563eb" />
+// //         </BarChart>
+// //       </ResponsiveContainer>
+// //     </div>
+// //   );
+// // }
+
+// import { useEffect, useState } from "react";
+// import {
+//   BarChart,
+//   Bar,
+//   XAxis,
+//   YAxis,
+//   Tooltip,
+//   CartesianGrid,
+//   ResponsiveContainer,
+// } from "recharts";
+// import { getClicksByOS } from "../../api/analyticsService";
+
+// interface Props {
+//   startDate: string;
+//   endDate: string;
+// }
+
+// export default function ClicksByOS({ startDate, endDate }: Props) {
+//   const [data, setData] = useState<any[]>([]);
+
+//   const loadData = async () => {
+//     try {
+//       const res = await getClicksByOS(startDate, endDate);
+//       setData(res.data);
+//     } catch (error) {
+//       console.error("Failed to load OS data:", error);
+//     }
+//   };
+
+//   useEffect(() => {
+//     loadData();
+//   }, [startDate, endDate]);
+
+//   return (
+//     <div>
+//       <h2 className="text-xl font-bold mb-6">
+//         Clicks by Operating System
+//       </h2>
+
+//       <ResponsiveContainer width="100%" height={400}>
+//         <BarChart data={data}>
+//           <CartesianGrid stroke="#ccc" />
+//           <XAxis dataKey="os" />
+//           <YAxis />
+//           <Tooltip cursor={{ fill: "rgba(0,0,0,0.05)" }} />
+//           <Bar
+//             dataKey="clicks"
+//             fill="#2563eb"
+//             cursor="pointer"
+//           />
+//         </BarChart>
+//       </ResponsiveContainer>
+//     </div>
+//   );
+// }
+
 import { useEffect, useState } from "react";
 import {
   BarChart,
@@ -7,19 +106,49 @@ import {
   Tooltip,
   CartesianGrid,
   ResponsiveContainer,
+  Cell,
 } from "recharts";
 import { getClicksByOS } from "../../api/analyticsService";
 
-export default function ClicksByOS() {
-  const [data, setData] = useState<any[]>([]);
+interface OSData {
+  os: string;
+  clicks: number;
+}
+
+interface Props {
+  startDate: string;
+  endDate: string;
+}
+
+const COLORS = [
+  "#6366F1",
+  "#22C55E",
+  "#F97316",
+  "#EF4444",
+  "#14B8A6",
+  "#A855F7",
+];
+
+export default function ClicksByOS({ startDate, endDate }: Props) {
+  const [data, setData] = useState<OSData[]>([]);
+  const [selected, setSelected] = useState<OSData | null>(null);
+
+  const loadData = async () => {
+    try {
+      const res = await getClicksByOS(startDate, endDate);
+      setData(res.data);
+      setSelected(null);
+    } catch (error) {
+      console.error("Failed to load OS data:", error);
+    }
+  };
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [startDate, endDate]);
 
-  const loadData = async () => {
-    const res = await getClicksByOS();
-    setData(res.data);
+  const handleClick = (entry: any) => {
+    setSelected(entry);
   };
 
   return (
@@ -28,15 +157,56 @@ export default function ClicksByOS() {
         Clicks by Operating System
       </h2>
 
-      <ResponsiveContainer width="100%" height={400}>
-        <BarChart data={data}>
-          <CartesianGrid stroke="#ccc" />
-          <XAxis dataKey="os" />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey="clicks" fill="#2563eb" />
-        </BarChart>
-      </ResponsiveContainer>
+      <div className="flex gap-8 items-start">
+
+        {/* Chart */}
+        <div className="flex-1">
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart data={data}>
+              <CartesianGrid stroke="#e5e7eb" />
+
+              <XAxis dataKey="os" />
+
+              <YAxis allowDecimals={false} />
+
+              <Tooltip cursor={{ fill: "rgba(0,0,0,0.05)" }} />
+
+              <Bar
+                dataKey="clicks"
+                cursor="pointer"
+                onClick={handleClick}
+              >
+                {data.map((entry, index) => (
+                  <Cell
+                    key={index}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Details Panel */}
+        <div className="w-72">
+          {selected && (
+            <div className="bg-gray-100 p-5 rounded shadow">
+              <h3 className="text-lg font-semibold mb-3">
+                OS Details
+              </h3>
+
+              <p>
+                <strong>Operating System:</strong> {selected.os}
+              </p>
+
+              <p>
+                <strong>Clicks:</strong> {selected.clicks}
+              </p>
+            </div>
+          )}
+        </div>
+
+      </div>
     </div>
   );
 }

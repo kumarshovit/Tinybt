@@ -8,6 +8,6 @@ using TinyBtUrlApi.Core.DTOs;
 namespace TinyBtUrlApi.UseCases.Urls.Analytics;
 
 public record GetClicksByBrowserQuery(
-    DateTime StartDate,
-    DateTime EndDate
+    DateTime? StartDate,
+    DateTime? EndDate
 ) : IRequest<List<ClicksByBrowserDto>>;
