@@ -200,7 +200,6 @@ export default function TagManagement() {
                     <span className="text-gray-700 font-medium text-sm">
                       {tag}
                     </span>
-
                     <div className="flex gap-4 text-sm">
                       <button
                         onClick={() => {
@@ -211,7 +210,6 @@ export default function TagManagement() {
                       >
                         Edit
                       </button>
-
                       <button
                         onClick={() => handleRemoveTag(tag)}
                         className="text-red-500 hover:underline"

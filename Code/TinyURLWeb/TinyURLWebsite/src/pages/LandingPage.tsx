@@ -1,7 +1,25 @@
 import LandingNavbar from "../components/LandingNavbar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 export default function LandingPage() {
+
+  const navigate = useNavigate();
+
+  const [longUrl, setLongUrl] = useState("");
+  const [alias, setAlias] = useState("");
+
+  const handleGenerate = () => {
+
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    navigate("/dashboard");
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -43,22 +61,50 @@ export default function LandingPage() {
 
         </div>
 
-        {/* Demo Card */}
-        <div className="bg-white p-6 shadow-lg rounded-xl">
+        {/* SHORTEN CARD PREVIEW */}
+
+        <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md">
 
           <input
             placeholder="Enter long URL"
-            className="border w-full p-3 rounded mb-4"
+            value={longUrl}
+            onChange={(e) => setLongUrl(e.target.value)}
+            className="w-full border rounded-lg px-4 py-2 mb-4"
           />
 
           <input
-            placeholder="Custom alias"
-            className="border w-full p-3 rounded mb-4"
+            placeholder="Custom alias (optional)"
+            value={alias}
+            onChange={(e) => setAlias(e.target.value)}
+            className="w-full border rounded-lg px-4 py-2 mb-4"
           />
 
-          <button className="bg-blue-600 text-white w-full py-3 rounded hover:bg-blue-700">
+          {/* Tags preview */}
+
+          <input
+            placeholder="Search or add tags..."
+            disabled
+            className="w-full border rounded-lg px-4 py-2 mb-4 bg-gray-100"
+          />
+
+          {/* Expiration preview */}
+
+          <input
+            type="datetime-local"
+            disabled
+            className="w-full border rounded-lg px-4 py-2 mb-4 bg-gray-100"
+          />
+
+          <button
+            onClick={handleGenerate}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg"
+          >
             Generate Short Link
           </button>
+
+          <p className="text-sm text-gray-500 text-center mt-3">
+            Sign in to save and manage your links
+          </p>
 
         </div>
 
@@ -66,10 +112,7 @@ export default function LandingPage() {
 
 
       {/* FEATURES */}
-      <section
-        id="features"
-        className="bg-white py-24 px-6"
-      >
+      <section id="features" className="bg-white py-24 px-6">
 
         <div className="max-w-7xl mx-auto text-center">
 
@@ -105,12 +148,7 @@ export default function LandingPage() {
 
       </section>
 
-
-      {/* HOW IT WORKS */}
-      <section
-        id="how"
-        className="py-24 px-6"
-      >
+      <section id="how" className="py-24 px-6">
 
         <div className="max-w-6xl mx-auto text-center">
 
@@ -143,8 +181,6 @@ export default function LandingPage() {
         </div>
 
       </section>
-
-
       {/* CTA */}
       <section className="bg-blue-600 text-white py-20 text-center">
 
@@ -164,9 +200,6 @@ export default function LandingPage() {
         </Link>
 
       </section>
-
-
-      {/* FOOTER */}
       <footer className="bg-gray-900 text-gray-300 py-10">
 
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8">
@@ -208,42 +241,23 @@ export default function LandingPage() {
     </div>
   );
 }
-
-
-
 function FeatureCard({ title, text }: any) {
   return (
     <div className="p-6 border rounded-xl hover:shadow-lg transition">
-
-      <h3 className="font-semibold text-lg mb-2">
-        {title}
-      </h3>
-
-      <p className="text-gray-600">
-        {text}
-      </p>
-
+      <h3 className="font-semibold text-lg mb-2">{title}</h3>
+      <p className="text-gray-600">{text}</p>
     </div>
   );
 }
-
-
 function Step({ number, title, text }: any) {
   return (
     <div>
-
       <div className="text-blue-600 text-4xl font-bold mb-4">
         {number}
       </div>
-
-      <h3 className="font-semibold text-lg mb-2">
-        {title}
-      </h3>
-
-      <p className="text-gray-600">
-        {text}
-      </p>
-
+      <h3 className="font-semibold text-lg mb-2">{title}</h3>
+      <p className="text-gray-600">{text}</p>
     </div>
   );
 }
+

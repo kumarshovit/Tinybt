@@ -17,6 +17,35 @@ const getAuthHeaders = () => {
 };
 
 /* ============================= */
+/* 📌 GET ALL TAGS              */
+/* ============================= */
+
+export const getAllTags = async () => {
+
+  const res = await fetch(`${BASE_URL}`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) {
+    return { success: false };
+  }
+
+  const urls = await res.json();
+
+  const tagSet = new Set<string>();
+
+  urls.forEach((url: any) => {
+    if (url.tags) {
+      url.tags.forEach((t: string) => tagSet.add(t));
+    }
+  });
+
+  return { success: true, data: Array.from(tagSet) };
+};
+
+
+
+/* ============================= */
 /* 📌 GET ALL URLS              */
 /* ============================= */
 export const getAllUrls = async () => {
