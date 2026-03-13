@@ -1,4 +1,6 @@
-﻿using TinyBtUrlApi.Core.DTOs;
+using TinyBtUrlApi.Core.DTOs;
+using Microsoft.EntityFrameworkCore;
+using TinyBtUrlApi.Core.DTOs;
 using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Infrastructure.Data;
 
@@ -426,6 +428,59 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
           Hour = g.Key.Hour,
           Count = g.Count()
         })
+
+  public async Task<List<UserActivityDto>> GetUserActivityAsync(int userId, CancellationToken ct)
+  {
+    var activities = new List<UserActivityDto>();
+
+    var links = await context.UrlMappings
+        .AsNoTracking()
+        .Where(x => x.UserId == userId)
+        .ToListAsync(ct);
+
+    foreach (var link in links)
+    {
+      // Link created
+      activities.Add(new UserActivityDto
+      {
+        ActivityType = "Link Created",
+        ShortCode = link.ShortCode,
+        LongUrl = link.LongUrl,
+        ActivityTime = link.CreatedAt
+      });
+
+      // Link deleted
+      if (link.DeletedAt != null)
+      {
+        activities.Add(new UserActivityDto
+        {
+          ActivityType = "Link Deleted",
+          ShortCode = link.ShortCode,
+          LongUrl = link.LongUrl,
+          ActivityTime = link.DeletedAt.Value
+        });
+      }
+
+      //// Clicks on this link
+      //var clicks = await context.ClickLogs
+      //    .AsNoTracking()
+      //    .Where(c => c.ShortCode == link.ShortCode)
+      //    .ToListAsync(ct);
+
+      //foreach (var click in clicks)
+      //{
+      //  activities.Add(new UserActivityDto
+      //  {
+      //    ActivityType = "Link Clicked",
+      //    ShortCode = link.ShortCode,
+      //    LongUrl = link.LongUrl,
+      //    ActivityTime = click.ClickedAt
+      //  });
+      //}
+    }
+
+    return activities
+        .OrderByDescending(x => x.ActivityTime)
         .ToList();
   }
 }

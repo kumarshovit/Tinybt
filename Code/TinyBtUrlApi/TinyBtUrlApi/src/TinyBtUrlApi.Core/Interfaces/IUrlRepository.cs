@@ -31,9 +31,14 @@ public interface IUrlRepository
     string viewType,
     CancellationToken cancellationToken);
 
+  //Task<List<ClicksByBrowserDto>> GetClicksByBrowserAsync(
+  //  DateTime startDate,
+  //  DateTime endDate,
+  //  CancellationToken cancellationToken);
+
   Task<List<ClicksByBrowserDto>> GetClicksByBrowserAsync(
-    DateTime startDate,
-    DateTime endDate,
+    DateTime? startDate,
+    DateTime? endDate,
     CancellationToken cancellationToken);
 
   Task<List<ClicksByCountryDto>> GetClicksByCountryAsync(
@@ -45,10 +50,20 @@ public interface IUrlRepository
     int topCount,
     CancellationToken cancellationToken);
 
-  Task<List<ClicksByDeviceLanguageDto>>
-    GetClicksByDeviceLanguageAsync(CancellationToken cancellationToken);
+  //Task<List<ClicksByDeviceLanguageDto>>
+  //  GetClicksByDeviceLanguageAsync(CancellationToken cancellationToken);
+
+  Task<List<ClicksByDeviceLanguageDto>> GetClicksByDeviceLanguageAsync(
+    DateTime startDate,
+    DateTime endDate,
+    CancellationToken cancellationToken);
+
+  //Task<List<ClicksByOsDto>> GetClicksByOsAsync(
+  //  CancellationToken cancellationToken);
 
   Task<List<ClicksByOsDto>> GetClicksByOsAsync(
+    DateTime startDate,
+    DateTime endDate,
     CancellationToken cancellationToken);
 
   Task<List<ClicksByDeviceTypeDto>> GetClicksByDeviceTypeAsync(
@@ -68,4 +83,10 @@ public interface IUrlRepository
     DateTime endDate,
     string viewType,
     CancellationToken cancellationToken);
+
+
+  Task<List<PopularDaysTimesDto>> GetPopularDaysTimesAsync(
+    DateTime? startDate,
+    DateTime? endDate,
+    CancellationToken ct);
 }

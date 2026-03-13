@@ -1,4 +1,30 @@
-﻿using FastEndpoints;
+﻿//using FastEndpoints;
+//using Mediator;
+//using TinyBtUrlApi.Core.DTOs;
+//using TinyBtUrlApi.UseCases.Urls.Analytics;
+
+//namespace TinyBtUrlApi.Web.Endpoints.Analytics;
+
+//public class GetClicksByDeviceLanguageEndpoint(IMediator mediator)
+//    : EndpointWithoutRequest<List<ClicksByDeviceLanguageDto>>
+//{
+//  public override void Configure()
+//  {
+//    Get("/api/analytics/clicks-by-language");
+//    AllowAnonymous();
+//  }
+
+//  public override async Task HandleAsync(CancellationToken ct)
+//  {
+//    var result = await mediator.Send(
+//        new GetClicksByDeviceLanguageQuery(),
+//        ct);
+
+//    await Send.OkAsync(result, ct);
+//  }
+//}
+
+using FastEndpoints;
 using Mediator;
 using TinyBtUrlApi.Core.DTOs;
 using TinyBtUrlApi.UseCases.Urls.Analytics;
@@ -6,7 +32,7 @@ using TinyBtUrlApi.UseCases.Urls.Analytics;
 namespace TinyBtUrlApi.Web.Endpoints.Analytics;
 
 public class GetClicksByDeviceLanguageEndpoint(IMediator mediator)
-    : EndpointWithoutRequest<List<ClicksByDeviceLanguageDto>>
+    : Endpoint<ClicksByDeviceLanguageRequest, List<ClicksByDeviceLanguageDto>>
 {
   public override void Configure()
   {
@@ -14,10 +40,14 @@ public class GetClicksByDeviceLanguageEndpoint(IMediator mediator)
     AllowAnonymous();
   }
 
-  public override async Task HandleAsync(CancellationToken ct)
+  public override async Task HandleAsync(
+      ClicksByDeviceLanguageRequest req,
+      CancellationToken ct)
   {
     var result = await mediator.Send(
-        new GetClicksByDeviceLanguageQuery(),
+        new GetClicksByDeviceLanguageQuery(
+            req.StartDate,
+            req.EndDate),
         ct);
 
     await Send.OkAsync(result, ct);

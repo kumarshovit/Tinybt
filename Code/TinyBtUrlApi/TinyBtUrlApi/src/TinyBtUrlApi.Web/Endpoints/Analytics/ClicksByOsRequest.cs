@@ -1,7 +1,7 @@
 ﻿namespace TinyBtUrlApi.Web.Endpoints.Analytics;
 
-public class ClicksByBrowserRequest
+public class ClicksByOsRequest
 {
   public DateTime? StartDate { get; set; }
-  public DateTime?EndDate { get; set; }
+  public DateTime? EndDate { get; set; }
 }

@@ -13,10 +13,22 @@ import ClicksByBrowser from "../components/analysis/ClicksByBrowser";
 import Navbar from "../components/Navbar";
 
 const AnalysisPage = () => {
+
+  const today = new Date();
+  const last7Days = new Date();
+  last7Days.setDate(today.getDate() - 7);
+
   const [data, setData] = useState<DashboardOverview | null>(null);
   const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+
+  const [startDate, setStartDate] = useState(
+    last7Days.toISOString().split("T")[0]
+  );
+
+  const [endDate, setEndDate] = useState(
+    today.toISOString().split("T")[0]
+  );
+
   const [active, setActive] = useState("time");
 
   const loadDashboard = async () => {
@@ -33,22 +45,24 @@ const AnalysisPage = () => {
     }
   };
 
+  /*
+    IMPORTANT CHANGE:
+    Now dashboard reloads when startDate or endDate changes.
+    Default load = last 7 days automatically.
+  */
   useEffect(() => {
     loadDashboard();
-  }, []);
+  }, [startDate, endDate]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
 
-      {/* Navbar */}
       <Navbar />
 
       <div className="flex flex-1">
 
-        {/* Sidebar */}
         <AnalysisSidebar active={active} setActive={setActive} />
 
-        {/* Main Content */}
         <div className="flex-1 p-8">
 
           <h1 className="text-2xl font-bold mb-6">
@@ -79,7 +93,6 @@ const AnalysisPage = () => {
             </button>
           </div>
 
-          {/* Loading Skeleton */}
           {loading && (
             <>
               <div className="grid grid-cols-4 gap-6 mb-10">
@@ -95,7 +108,6 @@ const AnalysisPage = () => {
             </>
           )}
 
-          {/* Dashboard Content */}
           {!loading && data && (
             <>
               {/* Summary Cards */}
@@ -130,12 +142,29 @@ const AnalysisPage = () => {
                   <ClicksOverTime startDate={startDate} endDate={endDate} />
                 )}
 
-                {active === "geo" && <ClicksByGeography />}
-                {active === "lang" && <ClicksByLanguage />}
-                {active === "popular" && <PopularDaysTimes />}
-                {active === "device" && <ClicksByDevice />}
-                {active === "os" && <ClicksByOS />}
-                {active === "browser" && <ClicksByBrowser />}
+                {active === "geo" && (
+                  <ClicksByGeography startDate={startDate} endDate={endDate} />
+                )}
+
+                {active === "lang" && (
+                  <ClicksByLanguage startDate={startDate} endDate={endDate} />
+                )}
+
+                {active === "popular" && (
+                  <PopularDaysTimes startDate={startDate} endDate={endDate} />
+                )}
+
+                {active === "device" && (
+                  <ClicksByDevice startDate={startDate} endDate={endDate} />
+                )}
+
+                {active === "os" && (
+                  <ClicksByOS startDate={startDate} endDate={endDate} />
+                )}
+
+                {active === "browser" && (
+                  <ClicksByBrowser startDate={startDate} endDate={endDate} />
+                )}
 
               </div>
             </>
@@ -148,5 +177,3 @@ const AnalysisPage = () => {
 };
 
 export default AnalysisPage;
-
-

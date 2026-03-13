@@ -177,15 +177,41 @@ public class UrlRepository : IUrlRepository
         .ToListAsync(cancellationToken);
   }
 
+  //public async Task<List<ClicksByBrowserDto>> GetClicksByBrowserAsync(
+  //  DateTime startDate,
+  //  DateTime endDate,
+  //  CancellationToken cancellationToken)
+  //{
+  //  return await _context.ClickLogs
+  //      .Where(x => x.ClickedAt >= startDate && x.ClickedAt <= endDate)
+  //      .GroupBy(x => x.Browser)
+  //      .OrderByDescending(g => g.Count()) // sort by highest clicks
+  //      .Select(g => new ClicksByBrowserDto
+  //      {
+  //        Browser = g.Key ?? "Unknown",
+  //        Clicks = g.Count()
+  //      })
+  //      .ToListAsync(cancellationToken);
+  //}
+
   public async Task<List<ClicksByBrowserDto>> GetClicksByBrowserAsync(
-    DateTime startDate,
-    DateTime endDate,
+    DateTime? startDate,
+    DateTime? endDate,
     CancellationToken cancellationToken)
   {
-    return await _context.ClickLogs
-        .Where(x => x.ClickedAt >= startDate && x.ClickedAt <= endDate)
+    var query = _context.ClickLogs.AsQueryable();
+
+    // Apply filter ONLY if dates are provided
+    if (startDate.HasValue && endDate.HasValue)
+    {
+      query = query.Where(x =>
+          x.ClickedAt >= startDate.Value &&
+          x.ClickedAt <= endDate.Value);
+    }
+
+    return await query
         .GroupBy(x => x.Browser)
-        .OrderByDescending(g => g.Count()) // sort by highest clicks
+        .OrderByDescending(g => g.Count())
         .Select(g => new ClicksByBrowserDto
         {
           Browser = g.Key ?? "Unknown",
@@ -236,10 +262,29 @@ public class UrlRepository : IUrlRepository
         .ToListAsync(cancellationToken);
   }
 
-  public async Task<List<ClicksByDeviceLanguageDto>>
-    GetClicksByDeviceLanguageAsync(CancellationToken cancellationToken)
+  //public async Task<List<ClicksByDeviceLanguageDto>>
+  //  GetClicksByDeviceLanguageAsync(CancellationToken cancellationToken)
+  //{
+  //  return await _context.ClickLogs
+  //      .GroupBy(x => string.IsNullOrEmpty(x.DeviceLanguage)
+  //          ? "Unknown"
+  //          : x.DeviceLanguage)
+  //      .Select(g => new ClicksByDeviceLanguageDto
+  //      {
+  //        DeviceLanguage = g.Key!,
+  //        Clicks = g.Count()
+  //      })
+  //      .OrderByDescending(x => x.Clicks)
+  //      .ToListAsync(cancellationToken);
+  //}
+
+  public async Task<List<ClicksByDeviceLanguageDto>> GetClicksByDeviceLanguageAsync(
+    DateTime startDate,
+    DateTime endDate,
+    CancellationToken cancellationToken)
   {
     return await _context.ClickLogs
+        .Where(x => x.ClickedAt >= startDate && x.ClickedAt <= endDate)
         .GroupBy(x => string.IsNullOrEmpty(x.DeviceLanguage)
             ? "Unknown"
             : x.DeviceLanguage)
@@ -275,10 +320,29 @@ public class UrlRepository : IUrlRepository
         .CountAsync(cancellationToken);
   }
 
+  //public async Task<List<ClicksByOsDto>> GetClicksByOsAsync(
+  //  CancellationToken cancellationToken)
+  //{
+  //  return await _context.ClickLogs
+  //      .GroupBy(x => string.IsNullOrEmpty(x.OS)
+  //          ? "Unknown"
+  //          : x.OS)
+  //      .Select(g => new ClicksByOsDto
+  //      {
+  //        Os = g.Key!,
+  //        Clicks = g.Count()
+  //      })
+  //      .OrderByDescending(x => x.Clicks)
+  //      .ToListAsync(cancellationToken);
+  //}
+
   public async Task<List<ClicksByOsDto>> GetClicksByOsAsync(
+    DateTime startDate,
+    DateTime endDate,
     CancellationToken cancellationToken)
   {
     return await _context.ClickLogs
+        .Where(x => x.ClickedAt >= startDate && x.ClickedAt <= endDate)
         .GroupBy(x => string.IsNullOrEmpty(x.OS)
             ? "Unknown"
             : x.OS)
@@ -412,4 +476,36 @@ public class UrlRepository : IUrlRepository
       Clicks = x.Clicks
     }).ToList();
   }
+
+  public async Task<List<PopularDaysTimesDto>> GetPopularDaysTimesAsync(
+       DateTime? startDate,
+       DateTime? endDate,
+       CancellationToken ct)
+  {
+    // Default to previous 7 days if no dates provided
+    var start = startDate ?? DateTime.UtcNow.AddDays(-7).Date;
+    var end = endDate ?? DateTime.UtcNow.Date.AddDays(1).AddTicks(-1); // end of today
+
+    // Step 1: Filter on server side (SQL)
+    var logs = await _context.ClickLogs
+        .Where(x => x.ClickedAt >= start && x.ClickedAt <= end)
+        .AsNoTracking()
+        .ToListAsync(ct); // bring filtered logs into memory
+
+    // Step 2: Group by day & hour on client side
+    var grouped = logs
+        .GroupBy(x => new { Day = x.ClickedAt.DayOfWeek, Hour = x.ClickedAt.Hour })
+        .Select(g => new PopularDaysTimesDto
+        {
+          Day = g.Key.Day.ToString(),
+          Hour = g.Key.Hour,
+          Clicks = g.Count()
+        })
+        .OrderBy(x => x.Day)
+        .ThenBy(x => x.Hour)
+        .ToList();
+
+    return grouped;
+  }
 }
+

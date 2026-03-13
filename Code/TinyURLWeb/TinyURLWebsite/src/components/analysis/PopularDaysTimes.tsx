@@ -1,52 +1,131 @@
+
+
 import { useEffect, useState } from "react";
 import { getPopularTimes } from "../../api/analyticsService";
 
-export default function PopularDaysTimes() {
-  const [data, setData] = useState<any[]>([]);
+interface Props {
+  startDate: string;
+  endDate: string;
+}
+
+interface HeatmapItem {
+  day: string;
+  hour: number;
+  clicks: number;
+}
+
+const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const hours = Array.from({ length: 24 }, (_, i) => i);
+
+// Backend day name → short day
+const dayMap: any = {
+  Monday: "Mon",
+  Tuesday: "Tue",
+  Wednesday: "Wed",
+  Thursday: "Thu",
+  Friday: "Fri",
+  Saturday: "Sat",
+  Sunday: "Sun",
+};
+
+export default function PopularDaysTimes({ startDate, endDate }: Props) {
+  const [data, setData] = useState<HeatmapItem[]>([]);
+
+  const loadData = async () => {
+    try {
+      const res = await getPopularTimes(startDate, endDate);
+
+      const normalized = res.data.map((item: any) => ({
+        day: dayMap[item.day] || item.day,
+        hour: Number(item.hour),
+        clicks: item.clicks,
+      }));
+
+      setData(normalized);
+    } catch (error) {
+      console.error("Failed to load popular times:", error);
+    }
+  };
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [startDate, endDate]);
 
-  const loadData = async () => {
-    const res = await getPopularTimes();
-    setData(res.data);
-  };
+  const dataMap = new Map<string, number>();
+
+  data.forEach((item) => {
+    const key = `${item.day}-${item.hour}`;
+    dataMap.set(key, item.clicks);
+  });
 
   const getColor = (clicks: number) => {
-    if (clicks > 50) return "bg-blue-800 text-white";
-    if (clicks > 30) return "bg-blue-600 text-white";
-    if (clicks > 15) return "bg-blue-400";
-    if (clicks > 5) return "bg-blue-200";
-    return "bg-gray-100";
+    if (clicks >= 10) return "bg-green-600";
+    if (clicks >= 5) return "bg-green-400";
+    if (clicks >= 1) return "bg-green-200";
+    return "bg-gray-200";
   };
 
   return (
-    <div>
+    <div className="w-full">
+
       <h2 className="text-xl font-bold mb-6">
         Clicks by Popular Days & Times
       </h2>
 
-      <div className="grid grid-cols-6 gap-4">
-        {data.map((item: any, index: number) => (
-          <div
-            key={index}
-            className={`p-4 rounded shadow text-center ${getColor(
-              item.clicks
-            )}`}
-          >
-            <p className="font-semibold">
-              {item.dayOfWeek}
-            </p>
-            <p className="text-sm">
-              Hour: {item.hour}
-            </p>
-            <p className="text-lg font-bold">
-              {item.clicks}
-            </p>
+      <div className="overflow-x-auto">
+
+        {/* Hour labels */}
+        <div className="flex ml-20 mb-3 text-xs text-gray-600 gap-2">
+          {hours.map((hour) => (
+            <div key={hour} className="w-8 text-center">
+              {hour}
+            </div>
+          ))}
+        </div>
+
+        {/* Heatmap rows */}
+        {days.map((day) => (
+          <div key={day} className="flex items-center mb-2">
+
+            {/* Day label */}
+            <div className="w-20 font-medium">
+              {day}
+            </div>
+
+            {/* Cells */}
+            <div className="flex gap-2">
+              {hours.map((hour) => {
+
+                const clicks = dataMap.get(`${day}-${hour}`) || 0;
+
+                return (
+                  <div
+                    key={hour}
+                    className={`w-8 h-8 rounded ${getColor(clicks)} hover:scale-110 transition`}
+                    title={`${day} ${hour}:00 → ${clicks} clicks`}
+                  />
+                );
+
+              })}
+            </div>
+
           </div>
         ))}
+
       </div>
+
+      {/* Legend */}
+      <div className="flex items-center gap-3 mt-6 text-sm text-gray-600">
+        <span>Less</span>
+
+        <div className="w-5 h-5 bg-gray-200 rounded"></div>
+        <div className="w-5 h-5 bg-green-200 rounded"></div>
+        <div className="w-5 h-5 bg-green-400 rounded"></div>
+        <div className="w-5 h-5 bg-green-600 rounded"></div>
+
+        <span>More</span>
+      </div>
+
     </div>
   );
 }
