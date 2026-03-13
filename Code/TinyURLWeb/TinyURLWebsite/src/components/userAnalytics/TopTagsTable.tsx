@@ -7,9 +7,9 @@ openTagPopup
 
 return(
 
-<div id="links" className="bg-white rounded-xl shadow p-6 mb-10">
+<div id="links" className="bg-white rounded-xl shadow p-4 sm:p-6 mb-10">
 
-<h2 className="text-xl font-semibold mb-4">
+<h2 className="text-lg sm:text-xl font-semibold mb-4">
 {selectedLink
   ? `Tags for alias: ${selectedLink}`
   : selectedTag
@@ -17,7 +17,9 @@ return(
   : "Top Performing Tags"}
 </h2>
 
-<table className="w-full text-left">
+<div className="overflow-x-auto">
+
+<table className="w-full text-left min-w-[400px]">
 
 <thead>
 <tr className="border-b text-gray-500">
@@ -32,7 +34,7 @@ return(
 
 <tr
 key={i}
-className="border-b hover:bg-gray-50 cursor-pointer"
+className="border-b hover:bg-gray-50 cursor-pointer transition"
 onClick={()=>openTagPopup(tag.label)}
 >
 
@@ -51,6 +53,8 @@ onClick={()=>openTagPopup(tag.label)}
 </tbody>
 
 </table>
+
+</div>
 
 </div>
 

@@ -16,18 +16,18 @@ exportCSV
 
 return(
 
-<div className="bg-white rounded-xl shadow p-6 mb-10 flex flex-wrap gap-4 items-center">
+<div className="bg-white rounded-xl shadow p-4 sm:p-6 mb-10 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 items-start sm:items-center">
 
 <button
 onClick={setLast7Days}
-className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-200"
+className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-200 w-full sm:w-auto"
 >
 Last 7 Days
 </button>
 
 <button
 onClick={setLast30Days}
-className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-200"
+className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-200 w-full sm:w-auto"
 >
 Last 30 Days
 </button>
@@ -36,20 +36,20 @@ Last 30 Days
 type="date"
 value={from}
 onChange={e=>setFrom(e.target.value)}
-className="border p-2 rounded-lg"
+className="border p-2 rounded-lg w-full sm:w-auto"
 />
 
 <input
 type="date"
 value={to}
 onChange={e=>setTo(e.target.value)}
-className="border p-2 rounded-lg"
+className="border p-2 rounded-lg w-full sm:w-auto"
 />
 
 <select
 value={selectedLink}
 onChange={(e)=>{setSelectedLink(e.target.value); setSelectedTag("");}}
-className="border p-2 rounded-lg"
+className="border p-2 rounded-lg w-full sm:w-auto"
 >
 <option value="">All Alias</option>
 
@@ -66,12 +66,12 @@ className="border p-2 rounded-lg"
 <select
 value={selectedTag}
 onChange={(e)=>{setSelectedTag(e.target.value);setSelectedLink("");}}
-className="border p-2 rounded-lg"
+className="border p-2 rounded-lg w-full sm:w-auto"
 >
 
 <option value="">All Tags</option>
 
-{allTags.map((tag)=>(
+{allTags.map((tag:any)=>(
 
 <option key={tag} value={tag}>
 {tag}
@@ -83,7 +83,7 @@ className="border p-2 rounded-lg"
 
 <button
 onClick={exportCSV}
-className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
+className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg w-full sm:w-auto"
 >
 Export CSV
 </button>

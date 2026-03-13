@@ -20,134 +20,123 @@ const days = [
 
 export default function HeatmapChart() {
 
-  const [data, setData] = useState<HeatmapItem[]>([]);
+const [data,setData] = useState<HeatmapItem[]>([]);
 
 useEffect(()=>{
 
-  const token = localStorage.getItem("token");
+const token = localStorage.getItem("token");
 
-  fetch(`${API_BASE}/analytics/heatmap`,{
-    headers:{
-      Authorization:`Bearer ${token}`
-    }
-  })
-  .then(res=>res.json())
-  .then(result=>{
-    console.log("Heatmap:",result);
-    setData(result);
-  });
+fetch(`${API_BASE}/analytics/heatmap`,{
+headers:{
+Authorization:`Bearer ${token}`
+}
+})
+.then(res=>res.json())
+.then(result=>{
+console.log("Heatmap:",result);
+setData(result);
+});
 
 },[]);
 
-  const getCount = (day: number, hour: number) => {
-    const item = data.find(x => x.day === day && x.hour === hour);
-    return item ? item.count : 0;
-  };
+const getCount = (day:number,hour:number)=>{
+const item = data.find(x=>x.day===day && x.hour===hour);
+return item ? item.count : 0;
+};
 
-  const getColor = (count: number) => {
+const getColor = (count:number)=>{
 
-    if (count === 0) return "#e5e7eb";
-    if (count < 3) return "#bbf7d0";
-    if (count < 6) return "#4ade80";
-    if (count < 10) return "#22c55e";
+if(count===0) return "#e5e7eb";
+if(count<3) return "#bbf7d0";
+if(count<6) return "#4ade80";
+if(count<10) return "#22c55e";
 
-    return "#166534";
-  };
+return "#166534";
+};
 
-  return (
+return(
 
-    <div style={{
-      marginTop: 40,
-      padding: 20,
-      background: "white",
-      borderRadius: 12,
-      boxShadow: "0 2px 8px rgba(0,0,0,0.08)"
-    }}>
+<div className="mt-10 bg-white rounded-xl shadow p-4 sm:p-6">
 
-      <h3 style={{ marginBottom: 15 }}>
-        🔥 Clicks by Popular Days & Times
-      </h3>
+<h3 className="text-base sm:text-lg font-semibold mb-4">
+🔥 Clicks by Popular Days & Times
+</h3>
 
-      <div style={{ overflowX: "auto" }}>
+<div className="overflow-x-auto">
 
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "60px repeat(24,30px)",
-          gap: "4px",
-          alignItems: "center"
-        }}>
+<div
+className="grid gap-1 items-center"
+style={{
+gridTemplateColumns:"60px repeat(24,28px)"
+}}
+>
 
-          <div></div>
+<div></div>
 
-          {[...Array(24)].map((_, hour) => (
-            <div key={hour} style={{
-              fontSize: 10,
-              textAlign: "center",
-              color: "#6b7280"
-            }}>
-              {hour}
-            </div>
-          ))}
+{[...Array(24)].map((_,hour)=>(
 
-          {days.map(day => (
-            <React.Fragment key={day.index}>
+<div
+key={hour}
+className="text-[10px] text-center text-gray-500"
+>
+{hour}
+</div>
 
-              <div style={{
-                fontWeight: 600,
-                fontSize: 13
-              }}>
-                {day.label}
-              </div>
+))}
 
-              {[...Array(24)].map((_, hour) => {
+{days.map(day=>(
 
-                const count = getCount(day.index, hour);
+<React.Fragment key={day.index}>
 
-                return (
-                  <div
-                    key={hour}
-                    title={`${day.label} ${hour}:00 → ${count} clicks`}
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 4,
-                      background: getColor(count),
-                      cursor: "pointer"
-                    }}
-                  />
-                );
+<div className="font-semibold text-xs sm:text-sm">
+{day.label}
+</div>
 
-              })}
+{[...Array(24)].map((_,hour)=>{
 
-            </React.Fragment>
-          ))}
+const count = getCount(day.index,hour);
 
-        </div>
+return(
 
-      </div>
+<div
+key={hour}
+title={`${day.label} ${hour}:00 → ${count} clicks`}
+className="w-6 h-6 sm:w-7 sm:h-7 rounded cursor-pointer"
+style={{
+background:getColor(count)
+}}
+/>
 
-      {/* Legend */}
+);
 
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        marginTop: 15,
-        fontSize: 12
-      }}>
+})}
 
-        <span>Less</span>
+</React.Fragment>
 
-        <div style={{ width: 16, height: 16, background: "#e5e7eb" }} />
-        <div style={{ width: 16, height: 16, background: "#bbf7d0" }} />
-        <div style={{ width: 16, height: 16, background: "#4ade80" }} />
-        <div style={{ width: 16, height: 16, background: "#22c55e" }} />
-        <div style={{ width: 16, height: 16, background: "#166534" }} />
+))}
 
-        <span>More</span>
+</div>
 
-      </div>
+</div>
 
-    </div>
-  );
+{/* Legend */}
+
+<div className="flex items-center gap-2 mt-4 text-xs sm:text-sm">
+
+<span>Less</span>
+
+<div className="w-4 h-4 bg-gray-200"/>
+<div className="w-4 h-4 bg-green-200"/>
+<div className="w-4 h-4 bg-green-400"/>
+<div className="w-4 h-4 bg-green-500"/>
+<div className="w-4 h-4 bg-green-900"/>
+
+<span>More</span>
+
+</div>
+
+</div>
+
+);
+
 }

@@ -13,29 +13,53 @@ openDataPopup
 
 return(
 
-<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 border-none">
+<div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-10">
 
-<div id="traffic" onClick={()=>openDataPopup("Traffic Source",referrer)}>
+<div
+id="traffic"
+onClick={()=>openDataPopup("Traffic Source",referrer)}
+className="cursor-pointer"
+>
 <ChartPie title="Traffic Source" data={referrer}/>
 </div>
 
-<div id="country" onClick={()=>openDataPopup("Country Distribution",country)}>
+<div
+id="country"
+onClick={()=>openDataPopup("Country Distribution",country)}
+className="cursor-pointer"
+>
 <ChartPie title="Country Distribution" data={country}/>
 </div>
 
-<div id="device" onClick={()=>openDataPopup("Device Types",device)}>
+<div
+id="device"
+onClick={()=>openDataPopup("Device Types",device)}
+className="cursor-pointer"
+>
 <ChartBar title="Device Types" data={device}/>
 </div>
 
-<div id="os" onClick={()=>openDataPopup("Operating Systems",os)}>
+<div
+id="os"
+onClick={()=>openDataPopup("Operating Systems",os)}
+className="cursor-pointer"
+>
 <ChartBar title="Operating Systems" data={os}/>
 </div>
 
-<div id="browser" onClick={()=>openDataPopup("Browsers",browser)}>
+<div
+id="browser"
+onClick={()=>openDataPopup("Browsers",browser)}
+className="cursor-pointer"
+>
 <ChartBar title="Browsers" data={browser}/>
 </div>
 
-<div id="language" onClick={()=>openDataPopup("Device Language",language)}>
+<div
+id="language"
+onClick={()=>openDataPopup("Device Language",language)}
+className="cursor-pointer"
+>
 <ChartPie title="Device Language" data={language}/>
 </div>
 

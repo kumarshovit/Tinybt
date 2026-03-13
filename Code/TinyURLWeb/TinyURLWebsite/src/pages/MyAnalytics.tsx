@@ -56,11 +56,13 @@ return(
 
 <>
 <Navbar/>
-<div className="flex bg-gray-100 min-h-screen">
+<div className="flex flex-col lg:flex-row bg-gray-100 min-h-screen">
+<div className="lg:w-64 w-full">
 <AnalyticsSidebar/>
-<div className="flex-1 p-8">
-<div className="max-w-7xl mx-auto">
-<h1 className="text-3xl font-bold mb-8">
+</div>
+<div className="flex-1 p-4 sm:p-6 lg:p-8">
+<div className="max-w-7xl mx-auto w-full">
+<h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-6 lg:mb-8">
 📊 My Analytics Dashboard
 </h1>
 
@@ -129,7 +131,7 @@ openDataPopup={popup.openDataPopup}
 
 {/* ---------- HEATMAP ---------- */}
 
-<div id="heatmap" className="mt-12">
+<div id="heatmap" className="mt-8 lg:mt-12 overflow-x-auto">
 <HeatmapChart/>
 </div>
 

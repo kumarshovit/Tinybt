@@ -19,26 +19,28 @@ export default function ChartPie({title,data}:any){
 
 if(!data.length)
 return(
-<div className="bg-white rounded-xl shadow p-6 text-center text-gray-400">
+<div className="bg-white rounded-xl shadow p-4 sm:p-6 text-center text-gray-400">
 No data available
 </div>
 );
 
 return(
 
-<div className="bg-white rounded-xl shadow p-6 border-0 overflow-hidden">
+<div className="bg-white rounded-xl shadow p-4 sm:p-6 overflow-hidden hover:shadow-lg transition">
 
-<h3 className="text-lg font-semibold mb-4">
+<h3 className="text-base sm:text-lg font-semibold mb-4">
 {title}
 </h3>
 
-<ResponsiveContainer width="100%" height={250} style={{outline:"none"}}>
+<ResponsiveContainer width="100%" height={240}>
 
-<PieChart style={{border:"none", outline:"none"}}>
+<PieChart>
 
 <Tooltip formatter={(v)=>`${v} clicks`} />
 
-<Legend/>
+<Legend
+wrapperStyle={{fontSize:"12px"}}
+/>
 
 <Pie
 data={data}
@@ -47,10 +49,8 @@ nameKey="label"
 outerRadius={80}
 stroke="none"
 strokeWidth={0}
-innerRadius={0}
-paddingAngle={0}
-stroke="none"
-isAnimationActive={false}
+paddingAngle={1}
+isAnimationActive={true}
 >
 
 {data.map((_:any,index:number)=>(
@@ -58,7 +58,6 @@ isAnimationActive={false}
 <Cell
 key={index}
 fill={COLORS[index % COLORS.length]}
-stroke="none"
 />
 
 ))}
