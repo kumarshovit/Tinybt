@@ -22,7 +22,7 @@ const Navbar = () => {
 
         {/* Logo */}
         <h1 className="text-xl font-bold text-indigo-600">
-          TinyURL 🚀
+          TinyURL 
         </h1>
 
         {/* Hamburger Button (Mobile Only) */}
