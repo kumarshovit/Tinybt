@@ -1,175 +1,3 @@
-// // import { useEffect, useState } from "react";
-// // import {
-// //   PieChart,
-// //   Pie,
-// //   Tooltip,
-// //   ResponsiveContainer,
-// //   Legend,
-// //   Cell,
-// // } from "recharts";
-// // import { getClicksByDevice } from "../../api/analyticsService";
-
-// // const COLORS = [
-// //   "#2563EB", // Desktop - Blue
-// //   "#16A34A", // Mobile - Green
-// //   "#F59E0B", // Tablet - Orange
-// //   "#DC2626", // Other - Red
-// //   "#7C3AED", // Purple
-// // ];
-
-// // interface DeviceData {
-// //   deviceType: string;
-// //   clicks: number;
-// // }
-
-// // export default function ClicksByDevice() {
-// //   const [data, setData] = useState<DeviceData[]>([]);
-
-// //   useEffect(() => {
-// //     loadData();
-// //   }, []);
-
-// //   const loadData = async () => {
-// //     try {
-// //       const res = await getClicksByDevice();
-// //       setData(res.data);
-// //     } catch (error) {
-// //       console.error("Failed to load device data:", error);
-// //     }
-// //   };
-
-// //   return (
-// //     <div>
-// //       <h2 className="text-xl font-bold mb-6">
-// //         Clicks by Device Type
-// //       </h2>
-
-// //       <ResponsiveContainer width="100%" height={400}>
-// //         <PieChart>
-// //           <Pie
-// //             data={data}
-// //             dataKey="clicks"
-// //             nameKey="deviceType"
-// //             outerRadius={150}
-// //             label={({ name, percent }) =>
-// //               `${name} (${(percent * 100).toFixed(0)}%)`
-// //             }
-// //           >
-// //             {data.map((_, index) => (
-// //               <Cell
-// //                 key={`cell-${index}`}
-// //                 fill={COLORS[index % COLORS.length]}
-// //               />
-// //             ))}
-// //           </Pie>
-
-// //           <Tooltip
-// //             formatter={(value: any, name: any, props: any) => [
-// //               value,
-// //               props.payload.deviceType,
-// //             ]}
-// //           />
-
-// //           <Legend
-// //             formatter={(value: any, entry: any) =>
-// //               entry.payload.deviceType
-// //             }
-// //           />
-// //         </PieChart>
-// //       </ResponsiveContainer>
-// //     </div>
-// //   );
-// // }
-
-// import { useEffect, useState } from "react";
-// import {
-//   PieChart,
-//   Pie,
-//   Tooltip,
-//   ResponsiveContainer,
-//   Legend,
-//   Cell,
-// } from "recharts";
-// import { getClicksByDevice } from "../../api/analyticsService";
-
-// const COLORS = [
-//   "#2563EB",
-//   "#16A34A",
-//   "#F59E0B",
-//   "#DC2626",
-//   "#7C3AED",
-// ];
-
-// interface DeviceData {
-//   deviceType: string;
-//   clicks: number;
-// }
-
-// interface Props {
-//   startDate: string;
-//   endDate: string;
-// }
-
-// export default function ClicksByDevice({ startDate, endDate }: Props) {
-//   const [data, setData] = useState<DeviceData[]>([]);
-
-//   const loadData = async () => {
-//     try {
-//       const res = await getClicksByDevice(startDate, endDate);
-//       setData(res.data);
-//     } catch (error) {
-//       console.error("Failed to load device data:", error);
-//     }
-//   };
-
-//   useEffect(() => {
-//     loadData();
-//   }, [startDate, endDate]);
-
-//   return (
-//     <div>
-//       <h2 className="text-xl font-bold mb-6">
-//         Clicks by Device Type
-//       </h2>
-
-//       <ResponsiveContainer width="100%" height={400}>
-//         <PieChart>
-//           <Pie
-//             data={data}
-//             dataKey="clicks"
-//             nameKey="deviceType"
-//             outerRadius={150}
-//             label={({ name, percent }) =>
-//               `${name} (${(percent * 100).toFixed(0)}%)`
-//             }
-//           >
-//             {data.map((_, index) => (
-//               <Cell
-//                 key={`cell-${index}`}
-//                 fill={COLORS[index % COLORS.length]}
-//               />
-//             ))}
-//           </Pie>
-
-//           <Tooltip
-//             formatter={(value: any, name: any, props: any) => [
-//               value,
-//               props.payload.deviceType,
-//             ]}
-//           />
-
-//           <Legend
-//             formatter={(value: any, entry: any) =>
-//               entry.payload.deviceType
-//             }
-//           />
-//         </PieChart>
-//       </ResponsiveContainer>
-//     </div>
-//   );
-// }
-
-
 import { useEffect, useState } from "react";
 import {
   PieChart,
@@ -201,6 +29,7 @@ const COLORS = [
 ];
 
 export default function ClicksByDevice({ startDate, endDate }: Props) {
+
   const [data, setData] = useState<DeviceData[]>([]);
   const [selected, setSelected] = useState<DeviceData | null>(null);
 
@@ -224,24 +53,30 @@ export default function ClicksByDevice({ startDate, endDate }: Props) {
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-6">
+
+      <h2 className="text-lg sm:text-xl font-bold mb-6">
         Clicks by Device Type
       </h2>
 
-      <div className="flex gap-8 items-start">
+      {/* Responsive Layout */}
+
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
 
         {/* Chart */}
-        <div className="flex-1">
-          <ResponsiveContainer width="100%" height={350}>
+
+        <div className="flex-1 w-full">
+
+          <ResponsiveContainer width="100%" height={320}>
+
             <PieChart>
+
               <Pie
                 data={data}
                 dataKey="clicks"
                 nameKey="deviceType"
-                outerRadius={120}
+                outerRadius={110}
                 cursor="pointer"
                 onClick={handleClick}
-                activeShape={false}
                 label={({ name, percent }) =>
                   `${name} (${(percent * 100).toFixed(0)}%)`
                 }
@@ -256,14 +91,21 @@ export default function ClicksByDevice({ startDate, endDate }: Props) {
 
               <Tooltip />
               <Legend />
+
             </PieChart>
+
           </ResponsiveContainer>
+
         </div>
 
         {/* Details Panel */}
-        <div className="w-72">
+
+        <div className="w-full lg:w-72">
+
           {selected && (
+
             <div className="bg-gray-100 p-5 rounded shadow">
+
               <h3 className="text-lg font-semibold mb-3">
                 Device Details
               </h3>
@@ -275,11 +117,15 @@ export default function ClicksByDevice({ startDate, endDate }: Props) {
               <p>
                 <strong>Clicks:</strong> {selected.clicks}
               </p>
+
             </div>
+
           )}
+
         </div>
 
       </div>
+
     </div>
   );
 }

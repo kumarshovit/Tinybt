@@ -1,102 +1,3 @@
-// // import { useEffect, useState } from "react";
-// // import {
-// //   BarChart,
-// //   Bar,
-// //   XAxis,
-// //   YAxis,
-// //   Tooltip,
-// //   CartesianGrid,
-// //   ResponsiveContainer,
-// // } from "recharts";
-// // import { getClicksByOS } from "../../api/analyticsService";
-
-// // export default function ClicksByOS() {
-// //   const [data, setData] = useState<any[]>([]);
-
-// //   useEffect(() => {
-// //     loadData();
-// //   }, []);
-
-// //   const loadData = async () => {
-// //     const res = await getClicksByOS();
-// //     setData(res.data);
-// //   };
-
-// //   return (
-// //     <div>
-// //       <h2 className="text-xl font-bold mb-6">
-// //         Clicks by Operating System
-// //       </h2>
-
-// //       <ResponsiveContainer width="100%" height={400}>
-// //         <BarChart data={data}>
-// //           <CartesianGrid stroke="#ccc" />
-// //           <XAxis dataKey="os" />
-// //           <YAxis />
-// //           <Tooltip />
-// //           <Bar dataKey="clicks" fill="#2563eb" />
-// //         </BarChart>
-// //       </ResponsiveContainer>
-// //     </div>
-// //   );
-// // }
-
-// import { useEffect, useState } from "react";
-// import {
-//   BarChart,
-//   Bar,
-//   XAxis,
-//   YAxis,
-//   Tooltip,
-//   CartesianGrid,
-//   ResponsiveContainer,
-// } from "recharts";
-// import { getClicksByOS } from "../../api/analyticsService";
-
-// interface Props {
-//   startDate: string;
-//   endDate: string;
-// }
-
-// export default function ClicksByOS({ startDate, endDate }: Props) {
-//   const [data, setData] = useState<any[]>([]);
-
-//   const loadData = async () => {
-//     try {
-//       const res = await getClicksByOS(startDate, endDate);
-//       setData(res.data);
-//     } catch (error) {
-//       console.error("Failed to load OS data:", error);
-//     }
-//   };
-
-//   useEffect(() => {
-//     loadData();
-//   }, [startDate, endDate]);
-
-//   return (
-//     <div>
-//       <h2 className="text-xl font-bold mb-6">
-//         Clicks by Operating System
-//       </h2>
-
-//       <ResponsiveContainer width="100%" height={400}>
-//         <BarChart data={data}>
-//           <CartesianGrid stroke="#ccc" />
-//           <XAxis dataKey="os" />
-//           <YAxis />
-//           <Tooltip cursor={{ fill: "rgba(0,0,0,0.05)" }} />
-//           <Bar
-//             dataKey="clicks"
-//             fill="#2563eb"
-//             cursor="pointer"
-//           />
-//         </BarChart>
-//       </ResponsiveContainer>
-//     </div>
-//   );
-// }
-
 import { useEffect, useState } from "react";
 import {
   BarChart,
@@ -130,6 +31,7 @@ const COLORS = [
 ];
 
 export default function ClicksByOS({ startDate, endDate }: Props) {
+
   const [data, setData] = useState<OSData[]>([]);
   const [selected, setSelected] = useState<OSData | null>(null);
 
@@ -153,16 +55,23 @@ export default function ClicksByOS({ startDate, endDate }: Props) {
 
   return (
     <div>
-      <h2 className="text-xl font-bold mb-6">
+
+      <h2 className="text-lg sm:text-xl font-bold mb-6">
         Clicks by Operating System
       </h2>
 
-      <div className="flex gap-8 items-start">
+      {/* Responsive Layout */}
+
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
 
         {/* Chart */}
-        <div className="flex-1">
-          <ResponsiveContainer width="100%" height={350}>
+
+        <div className="flex-1 w-full">
+
+          <ResponsiveContainer width="100%" height={320}>
+
             <BarChart data={data}>
+
               <CartesianGrid stroke="#e5e7eb" />
 
               <XAxis dataKey="os" />
@@ -183,14 +92,21 @@ export default function ClicksByOS({ startDate, endDate }: Props) {
                   />
                 ))}
               </Bar>
+
             </BarChart>
+
           </ResponsiveContainer>
+
         </div>
 
         {/* Details Panel */}
-        <div className="w-72">
+
+        <div className="w-full lg:w-72">
+
           {selected && (
+
             <div className="bg-gray-100 p-5 rounded shadow">
+
               <h3 className="text-lg font-semibold mb-3">
                 OS Details
               </h3>
@@ -202,11 +118,15 @@ export default function ClicksByOS({ startDate, endDate }: Props) {
               <p>
                 <strong>Clicks:</strong> {selected.clicks}
               </p>
+
             </div>
+
           )}
+
         </div>
 
       </div>
+
     </div>
   );
 }

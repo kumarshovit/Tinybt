@@ -45,11 +45,6 @@ const AnalysisPage = () => {
     }
   };
 
-  /*
-    IMPORTANT CHANGE:
-    Now dashboard reloads when startDate or endDate changes.
-    Default load = last 7 days automatically.
-  */
   useEffect(() => {
     loadDashboard();
   }, [startDate, endDate]);
@@ -59,44 +54,49 @@ const AnalysisPage = () => {
 
       <Navbar />
 
-      <div className="flex flex-1">
+      <div className="flex flex-col lg:flex-row flex-1">
 
         <AnalysisSidebar active={active} setActive={setActive} />
 
-        <div className="flex-1 p-8">
+        <div className="flex-1 p-4 sm:p-6 lg:p-8">
 
-          <h1 className="text-2xl font-bold mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold mb-6 ">
             Link Performance Overview
           </h1>
 
           {/* Date Filters */}
-          <div className="flex gap-4 mb-6">
+
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="border p-2 rounded"
+              className="border p-2 rounded w-full sm:w-auto"
             />
 
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="border p-2 rounded"
+              className="border p-2 rounded w-full sm:w-auto"
             />
 
             <button
               onClick={loadDashboard}
-              className="bg-blue-600 text-white px-4 py-2 rounded"
+              className="bg-blue-600 text-white px-4 py-2 rounded w-full sm:w-auto hover:bg-blue-700 transition"
             >
               Apply
             </button>
+
           </div>
+
+          {/* Loading Skeleton */}
 
           {loading && (
             <>
-              <div className="grid grid-cols-4 gap-6 mb-10">
-                {[1,2,3,4].map((i) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
                     className="bg-gray-200 h-24 rounded animate-pulse"
@@ -108,35 +108,40 @@ const AnalysisPage = () => {
             </>
           )}
 
+          {/* Dashboard Data */}
+
           {!loading && data && (
             <>
+
               {/* Summary Cards */}
-              <div className="grid grid-cols-4 gap-6 mb-10">
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
 
                 <div className="bg-white shadow rounded p-6">
-                  <h2 className="text-gray-500">Total Clicks</h2>
+                  <h2 className="text-gray-500 text-sm">Total Clicks</h2>
                   <p className="text-2xl font-bold">{data.totalClicks}</p>
                 </div>
 
                 <div className="bg-white shadow rounded p-6">
-                  <h2 className="text-gray-500">Total Links</h2>
+                  <h2 className="text-gray-500 text-sm">Total Links</h2>
                   <p className="text-2xl font-bold">{data.totalUrls}</p>
                 </div>
 
                 <div className="bg-white shadow rounded p-6">
-                  <h2 className="text-gray-500">Active Links</h2>
+                  <h2 className="text-gray-500 text-sm">Active Links</h2>
                   <p className="text-2xl font-bold">{data.activeLinks}</p>
                 </div>
 
                 <div className="bg-white shadow rounded p-6">
-                  <h2 className="text-gray-500">Expired Links</h2>
+                  <h2 className="text-gray-500 text-sm">Expired Links</h2>
                   <p className="text-2xl font-bold">{data.expiredLinks}</p>
                 </div>
 
               </div>
 
               {/* Analytics Section */}
-              <div className="bg-white rounded shadow p-6">
+
+              <div id="chart-section" className="bg-white rounded shadow p-4 sm:p-6">
 
                 {active === "time" && (
                   <ClicksOverTime startDate={startDate} endDate={endDate} />
@@ -167,11 +172,14 @@ const AnalysisPage = () => {
                 )}
 
               </div>
+
             </>
           )}
 
         </div>
+
       </div>
+
     </div>
   );
 };
