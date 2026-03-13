@@ -77,13 +77,5 @@ export const getHeatmap = async () => {
   const res = await fetch("/analytics/heatmap");
   return res.json();
 };
-
-export const getClicksByBrowser = (
-  startDate: string,
-  endDate: string
-) =>
-  axios.get(`${BASE_URL}/clicks-by-browser`, {
-    params: { startDate, endDate },
-    withCredentials: true,
-  });
+   
 

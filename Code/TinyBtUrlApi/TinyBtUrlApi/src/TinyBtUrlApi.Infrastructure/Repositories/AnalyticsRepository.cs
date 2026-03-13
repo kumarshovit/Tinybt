@@ -1,6 +1,5 @@
-using TinyBtUrlApi.Core.DTOs;
+﻿using TinyBtUrlApi.Core.DTOs;
 using Microsoft.EntityFrameworkCore;
-using TinyBtUrlApi.Core.DTOs;
 using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Infrastructure.Data;
 
@@ -427,7 +426,8 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
           Day = g.Key.Day,
           Hour = g.Key.Hour,
           Count = g.Count()
-        })
+        }).ToList();
+  }
 
   public async Task<List<UserActivityDto>> GetUserActivityAsync(int userId, CancellationToken ct)
   {
