@@ -32,16 +32,20 @@ public class RedirectUrlEndpoint : EndpointWithoutRequest
 
     var headers = HttpContext.Request.Headers;
 
+    var ip =
+        headers["X-Forwarded-For"].FirstOrDefault() ??
+        HttpContext.Connection.RemoteIpAddress?.ToString();
+
     var query = new RedirectUrlQuery(
         shortCode,
-        headers["User-Agent"].ToString(),               // Browser
-        headers["sec-ch-ua-platform"].ToString(),       // OS
-        headers["CF-IPCountry"].ToString(),             // Country (if behind proxy)
-        headers["Accept-Language"].ToString(),          // Language
-        headers["Referer"].ToString(),                  // Referrer
-        headers["sec-ch-ua-mobile"].ToString(),         // DeviceType
-        HttpContext.Connection.RemoteIpAddress?.ToString(), // IP
-        headers.ToString()                              // RawHeaders
+        headers["User-Agent"].ToString(),
+        headers["sec-ch-ua-platform"].ToString(),
+        headers["CF-IPCountry"].ToString(),
+        headers["Accept-Language"].ToString(),
+        headers["Referer"].ToString(),
+        headers["sec-ch-ua-mobile"].ToString(),
+        ip,
+        headers.ToString()
     );
 
     var url = await _mediator.Send(query, ct);

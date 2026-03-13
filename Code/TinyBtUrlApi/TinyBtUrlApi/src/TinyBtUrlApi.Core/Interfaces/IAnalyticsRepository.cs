@@ -15,4 +15,44 @@ public interface IAnalyticsRepository
 
   Task<int> GetActiveLinksAsync(CancellationToken ct);
   Task<int> GetExpiredLinksAsync(CancellationToken ct);
+  Task<DashboardOverviewDto> GetUserDashboardAsync(
+      int userId,
+      DateTime from,
+      DateTime to,
+      CancellationToken ct);
+
+  Task<List<AnalyticsItemDto>> GetAnalyticsByFieldAsync(
+        int userId,
+        DateTime from,
+        DateTime to,
+        string field,
+        string? link,
+    string? tag);
+  Task<List<AnalyticsItemDto>> GetClicksOverTimeByUserAsync(
+      int userId,
+      DateTime from,
+      DateTime to,
+      string? link,
+      string? tag,
+      CancellationToken ct);
+  Task<List<AnalyticsItemDto>> GetPopularLinksByUserAsync(
+      int userId,
+      DateTime from,
+      DateTime to,
+      string? link,
+      string? tag,
+      CancellationToken ct);
+  Task<List<AnalyticsItemDto>> GetDeviceLanguageByUserAsync(
+      int userId,
+      DateTime from,
+      DateTime to,
+      string? link,
+      string? tag,
+      CancellationToken ct);
+
+  Task<List<HeatmapDto>> GetClicksHeatmapAsync(
+    int userId,
+    DateTime start,
+    DateTime end,
+    CancellationToken ct);
 }

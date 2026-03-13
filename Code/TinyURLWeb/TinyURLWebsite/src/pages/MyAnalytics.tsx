@@ -1,165 +1,155 @@
-import { useState } from "react";
 import Navbar from "../components/Navbar";
+import AnalyticsSidebar from "../components/AnalyticsSidebar";
+import HeatmapChart from "../components/analysis/HeatmapChart";
+import Filters from "../components/userAnalytics/Filters";
+import SummarySection from "../components/userAnalytics/SummarySection";
+import TopTagsTable from "../components/userAnalytics/TopTagsTable";
+import ClicksChart from "../components/userAnalytics/ClicksChart";
+import ChartsSection from "../components/userAnalytics/ChartsSection";
+import DataPopup from "../components/userAnalytics/DataPopup";
+import useAnalyticsFilters from "../components/hooks/useAnalyticsFilters";
+import useAnalyticsData from "../components/hooks/useAnalyticsData";
+import useAnalyticsPopup from "../components/hooks/useAnalyticsPopup";
 
-interface AnalyticsItem {
-  period: string;
-  clicks: number;
-}
+export default function MyAnalytics(){
 
-const BASE_URL = "https://localhost:57679/api/analytics";
+/* ---------- HOOKS ---------- */
 
-export default function MyAnalytics() {
-  const [shortCode, setShortCode] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [viewType, setViewType] = useState("Daily");
-  const [data, setData] = useState<AnalyticsItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+const filters = useAnalyticsFilters();
 
-  const fetchAnalytics = async () => {
-    if (!shortCode || !startDate || !endDate) {
-      setError("All fields are required");
-      return;
-    }
+const analytics = useAnalyticsData({
+from:filters.from,
+to:filters.to,
+selectedLink:filters.selectedLink,
+selectedTag:filters.selectedTag
+});
 
-    const token = localStorage.getItem("token");
+const popup = useAnalyticsPopup();
 
-    try {
-      setLoading(true);
-      setError("");
-      setData([]);
+/* ---------- CSV ---------- */
 
-      const response = await fetch(
-        `${BASE_URL}/${shortCode}/clicks-over-time?startDate=${startDate}&endDate=${endDate}&viewType=${viewType}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+const exportCSV = ()=>{
 
-      if (!response.ok) {
-        throw new Error("Unable to fetch analytics");
-      }
+let csv = "Date,Clicks\n";
 
-      const result = await response.json();
-      setData(result);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  };
+analytics.clicks.forEach((x:any)=>{
+csv += `${x.label},${x.count}\n`;
+});
 
-  return (
-    <>
-      <Navbar />
+csv += "\nTop Links\n";
 
-      <div className="min-h-screen bg-gray-100 py-10 px-4">
-        <div className="max-w-6xl mx-auto">
+analytics.topLinks.forEach((x:any)=>{
+csv += `${x.label},${x.count}\n`;
+});
 
-          {/* Page Title */}
-          <h1 className="text-4xl font-bold mb-8 text-gray-800">
-            📊 My Link Analytics
-          </h1>
+const blob = new Blob([csv],{type:"text/csv"});
+const url = window.URL.createObjectURL(blob);
 
-          {/* Filter Card */}
-          <div className="bg-white rounded-2xl shadow-md p-8 mb-8">
-            <div className="grid md:grid-cols-4 gap-6">
+const a = document.createElement("a");
+a.href = url;
+a.download = "analytics.csv";
+a.click();
 
-              <input
-                type="text"
-                placeholder="Enter Short Code"
-                value={shortCode}
-                onChange={(e) => setShortCode(e.target.value)}
-                className="border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 p-3 rounded-lg outline-none transition"
-              />
+};
 
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 p-3 rounded-lg outline-none transition"
-              />
+return(
 
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 p-3 rounded-lg outline-none transition"
-              />
+<>
+<Navbar/>
+<div className="flex bg-gray-100 min-h-screen">
+<AnalyticsSidebar/>
+<div className="flex-1 p-8">
+<div className="max-w-7xl mx-auto">
+<h1 className="text-3xl font-bold mb-8">
+📊 My Analytics Dashboard
+</h1>
 
-              <select
-                value={viewType}
-                onChange={(e) => setViewType(e.target.value)}
-                className="border border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 p-3 rounded-lg outline-none transition"
-              >
-                <option value="Daily">Daily</option>
-                <option value="Weekly">Weekly</option>
-                <option value="Monthly">Monthly</option>
-              </select>
-            </div>
+{/* ---------- FILTERS ---------- */}
 
-            <button
-              onClick={fetchAnalytics}
-              disabled={loading}
-              className="mt-6 bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 text-white px-8 py-3 rounded-lg font-semibold transition disabled:opacity-50"
-            >
-              {loading ? "Loading..." : "Get Analytics"}
-            </button>
+<Filters
+setLast7Days={filters.setLast7Days}
+setLast30Days={filters.setLast30Days}
+from={filters.from}
+to={filters.to}
+setFrom={filters.setFrom}
+setTo={filters.setTo}
+selectedLink={filters.selectedLink}
+setSelectedLink={filters.setSelectedLink}
+selectedTag={filters.selectedTag}
+setSelectedTag={filters.setSelectedTag}
+allLinks={analytics.allLinks}
+allTags={analytics.allTags}
+exportCSV={exportCSV}
+/>
 
-            {error && (
-              <p className="text-red-500 mt-4 font-medium">{error}</p>
-            )}
-          </div>
+{/* ---------- SUMMARY ---------- */}
 
-          {/* Empty State */}
-          {!loading && data.length === 0 && !error && (
-            <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-500">
-              No analytics data available.
-            </div>
-          )}
+<SummarySection
+totalClicks={analytics.totalClicks}
+country={analytics.country}
+device={analytics.device}
+browser={analytics.browser}
+/>
 
-          {/* Results Table */}
-          {data.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-md overflow-hidden">
-              <div className="p-6 border-b">
-                <h2 className="text-2xl font-semibold text-gray-700">
-                  Analytics Results
-                </h2>
-              </div>
+{/* ---------- TOP TAGS ---------- */}
 
-              <table className="w-full text-left">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="p-4 font-semibold text-gray-600">
-                      Period
-                    </th>
-                    <th className="p-4 font-semibold text-gray-600">
-                      Clicks
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.map((item, index) => (
-                    <tr
-                      key={index}
-                      className="border-t hover:bg-gray-50 transition"
-                    >
-                      <td className="p-4">{item.period}</td>
-                      <td className="p-4 font-bold text-purple-600">
-                        {item.clicks}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+<TopTagsTable
+selectedLink={filters.selectedLink}
+selectedTag={filters.selectedTag}
+topLinks={analytics.topLinks}
+openTagPopup={async(tag:string)=>{
 
-        </div>
-      </div>
-    </>
-  );
+const data = await analytics.openTagPopup(tag)
+
+popup.setPopupTitle(`Links for tag: ${tag}`)
+popup.setPopupData(data)
+popup.setOpenPopup(true)
+
+}}
+/>
+
+{/* ---------- CLICKS CHART ---------- */}
+
+<ClicksChart
+clicks={analytics.clicks}
+openDataPopup={popup.openDataPopup}
+/>
+
+{/* ---------- CHARTS ---------- */}
+
+<ChartsSection
+referrer={analytics.referrer}
+country={analytics.country}
+device={analytics.device}
+os={analytics.os}
+browser={analytics.browser}
+language={analytics.language}
+openDataPopup={popup.openDataPopup}
+/>
+
+{/* ---------- HEATMAP ---------- */}
+
+<div id="heatmap" className="mt-12">
+<HeatmapChart/>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{/* ---------- POPUP ---------- */}
+
+<DataPopup
+openPopup={popup.openPopup}
+popupTitle={popup.popupTitle}
+popupData={popup.popupData}
+setOpenPopup={popup.setOpenPopup}
+/>
+
+</>
+
+);
+
 }

@@ -18,4 +18,5 @@ public class ClickLog
   public string? DeviceLanguage { get; set; }
   public string? IpAddress { get; set; }
   public string? RawHeaders { get; set; }
+  public string? UserAgent { get; set; }
 }

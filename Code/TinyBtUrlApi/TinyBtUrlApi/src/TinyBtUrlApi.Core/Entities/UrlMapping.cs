@@ -20,6 +20,6 @@ public class UrlMapping
   public DateTime? ExpirationDate { get; set; }
 
   public int? UserId { get; set; }              // 👈 ADD THIS
-  public User User { get; set; } = null!;
+  public User? User { get; set; } = null!;
   public ICollection<UrlTag> UrlTags { get; set; } = new List<UrlTag>();
 }

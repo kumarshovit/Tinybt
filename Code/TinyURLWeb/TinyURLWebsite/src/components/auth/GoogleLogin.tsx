@@ -26,7 +26,7 @@ const GoogleLogin = () => {
         {
           theme: "outline",
           size: "large",
-        }
+        },
       );
     };
 
@@ -43,9 +43,9 @@ const GoogleLogin = () => {
 
   const handleCredentialResponse = async (response: any) => {
     try {
-      const res = await axios.post(
-        "http://164.52.216.107:9008/api/auth/google-login",
-        { token: response.credential }
+      const res = await  axios.post(
+        `${import.meta.env.VITE_API_URL}/api/auth/google-login`,
+        { token: response.credential },
       );
 
       localStorage.setItem("token", res.data.accessToken);
