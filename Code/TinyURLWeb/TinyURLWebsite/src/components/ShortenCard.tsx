@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Select from "react-select";
+import CreatableSelect from "react-select/creatable";
 
 import {
   createUrl,
@@ -124,17 +124,30 @@ export default function ShortenCard({ onUrlCreated }: any) {
 
       {/* TAG DROPDOWN */}
 
-      <Select
+      <CreatableSelect
         isMulti
         options={tagOptions}
         value={tagOptions.filter((opt) => tags.includes(opt.value))}
         placeholder="Search or add tags..."
         className="mb-4"
+
         onChange={(selected) => {
           const values = selected
             ? selected.map((t: any) => t.value)
             : [];
           setTags(values);
+        }}
+
+        onCreateOption={(inputValue) => {
+
+          const newOption = {
+            value: inputValue,
+            label: inputValue
+          };
+
+          setTagOptions([...tagOptions, newOption]);
+          setTags([...tags, inputValue]);
+
         }}
       />
 
