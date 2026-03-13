@@ -4,5 +4,6 @@ html {
   overflow-y: scroll;
   scrollbar-gutter: stable;
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
