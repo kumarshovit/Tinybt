@@ -93,13 +93,15 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
                     x.ExpirationDate.Value <= DateTime.UtcNow)
         .CountAsync(ct);
 
+    var endInclusive = endDate.AddDays(1);
+
     var clickLogs =
        from c in context.ClickLogs
        join u in context.UrlMappings
            on c.ShortCode equals u.ShortCode
        where u.UserId == userId &&
              c.ClickedAt >= startDate &&
-             c.ClickedAt <= endDate
+             c.ClickedAt < endInclusive
        select c;
 
     var totalClicks = await clickLogs.CountAsync(ct);
@@ -134,13 +136,14 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
     string? link,
     string? tag)
   {
+    var endInclusive = end.AddDays(1);
     var query =
         from c in context.ClickLogs
         join u in context.UrlMappings
         on c.ShortCode equals u.ShortCode
-        where u.UserId == userId
-        && c.ClickedAt >= start
-        && c.ClickedAt <= end
+        where u.UserId == userId &&
+       c.ClickedAt >= start &&
+       c.ClickedAt < endInclusive
         select new { c, u };
 
     // LINK FILTER
@@ -254,13 +257,14 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
      string? tag,
      CancellationToken ct)
   {
+    var endInclusive = end.AddDays(1);
     var query =
         from c in context.ClickLogs
         join u in context.UrlMappings
         on c.ShortCode equals u.ShortCode
         where u.UserId == userId
         && c.ClickedAt >= start
-        && c.ClickedAt <= end
+        && c.ClickedAt < endInclusive
         select new { c, u };
 
     if (!string.IsNullOrEmpty(link))
@@ -304,13 +308,14 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
     string? tag,
     CancellationToken ct)
   {
+    var endInclusive = end.AddDays(1);
     var query =
         from c in context.ClickLogs
         join u in context.UrlMappings
         on c.ShortCode equals u.ShortCode
         where u.UserId == userId
         && c.ClickedAt >= start
-        && c.ClickedAt <= end
+        && c.ClickedAt <= endInclusive
         select new { c, u };
 
     if (!string.IsNullOrEmpty(link))
@@ -350,13 +355,14 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
     string? tag,
     CancellationToken ct)
   {
+    var endInclusive = end.AddDays(1);
     var query =
         from c in context.ClickLogs
         join u in context.UrlMappings
         on c.ShortCode equals u.ShortCode
         where u.UserId == userId
         && c.ClickedAt >= start
-        && c.ClickedAt <= end
+        && c.ClickedAt <= endInclusive
         select new { c, u };
 
     if (!string.IsNullOrEmpty(link))
