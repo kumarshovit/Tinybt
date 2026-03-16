@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import logo from '../assets/logo.png'
 
 export default function LandingNavbar() {
 
@@ -13,11 +14,12 @@ export default function LandingNavbar() {
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
 
         {/* Logo */}
-        <Link
-          to="/"
-          className="text-xl font-bold text-blue-600"
-        >
-          TinyURL
+        <Link to="/dashboard" className="flex items-center">
+          <img
+            src={logo}
+            alt="LinkBt Logo"
+            className="h-7 sm:h-9 md:h-10 w-auto object-contain"
+          />
         </Link>
 
         {/* Desktop Menu */}
