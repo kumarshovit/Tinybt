@@ -62,6 +62,7 @@ public class LoginHandler
     if (user == null ||
         !BCrypt.Net.BCrypt.Verify(dto.Password!, user.PasswordHash))
     {
+
       if (ipAttempt == null)
       {
         ipAttempt = new IpLoginAttempt
@@ -100,6 +101,13 @@ public class LoginHandler
       };
     }
 
+    if (!user.IsActive)
+    {
+      return new
+      {
+        message = "Your account has been disabled by admin"
+      };
+    }
     // 🔄 Reset IP attempts on success
     if (ipAttempt != null)
     {

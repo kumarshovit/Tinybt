@@ -38,7 +38,7 @@ public static class ServiceConfigs
     services.AddScoped<DeleteAccountHandler>();
     services.AddScoped<GetProfileHandler>();
     services.AddScoped<UpdateProfileHandler>();
-    services.AddScoped<DeleteUserHandler>();
+    services.AddScoped<ToggleUserStatusHandler>();
     services.AddScoped<GetAllUsersHandler>();
     services.AddScoped<UpdateUserRoleHandler>();
     services.AddScoped<GoogleLoginHandler>();

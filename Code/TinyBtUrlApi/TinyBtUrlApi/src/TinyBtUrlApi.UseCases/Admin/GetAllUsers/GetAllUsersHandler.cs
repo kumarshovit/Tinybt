@@ -20,7 +20,8 @@ public class GetAllUsersHandler
     {
       Id = u.Id,
       Email = u.Email,
-      Role = u.Role
+      Role = u.Role,
+      IsActive = u.IsActive
     }).ToList();
   }
 }

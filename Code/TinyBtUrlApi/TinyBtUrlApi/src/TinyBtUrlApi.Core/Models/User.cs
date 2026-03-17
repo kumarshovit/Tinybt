@@ -34,4 +34,5 @@ public class User : IAggregateRoot
   public string LoginProvider { get; set; } = "Local";
   public bool IsDeleted { get; set; } = false;
   public DateTime? DeletedAt { get; set; }
+  public bool IsActive { get; set; } = true;
 }

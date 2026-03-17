@@ -3,28 +3,30 @@ using TinyBtUrlApi.UseCases.Admin.DeleteUser;
 
 namespace TinyBtUrlApi.Web.Admin.Delete;
 
-public class DeleteUserEndpoint
-    : Endpoint<DeleteUserCommand, object>
+public class ToggleUserStatusEndpoint
+    : EndpointWithoutRequest<object>
 {
-  private readonly DeleteUserHandler _handler;
+  private readonly ToggleUserStatusHandler _handler;
 
-  public DeleteUserEndpoint(DeleteUserHandler handler)
+  public ToggleUserStatusEndpoint(ToggleUserStatusHandler handler)
   {
     _handler = handler;
   }
 
   public override void Configure()
   {
-    Delete("/api/admin/delete-user/{UserId}");
+    Put("/api/admin/toggle-user/{UserId}");
     Roles("Admin");
   }
 
-  public override async Task HandleAsync(
-      DeleteUserCommand req,
-      CancellationToken ct)
+  public override async Task HandleAsync(CancellationToken ct)
   {
-    var result = await _handler.Handle(req);
+    var userId = Route<int>("UserId");
 
-    Response = result;  // ✅ SAME STYLE
+    var result = await _handler.Handle(
+        new ToggleUserStatusCommand(userId)   // ✅ FIXED HERE
+    );
+
+    Response = result;
   }
 }
