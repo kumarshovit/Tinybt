@@ -10,6 +10,7 @@ interface User {
   id: number;
   email: string;
   role: string;
+  isActive: boolean;
 }
 
 const AdminPage = () => {
@@ -107,7 +108,7 @@ const AdminPage = () => {
 
   const deleteUser = async (userId: number) => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this user?"
+      "Are you sure you want to delete this user?",
     );
 
     if (!confirmDelete) return;
@@ -137,27 +138,35 @@ const AdminPage = () => {
   };
 
   const filteredUsers = users.filter((user) =>
-    user.email.toLowerCase().includes(search.toLowerCase())
+    user.email.toLowerCase().includes(search.toLowerCase()),
   );
 
+  const toggleUserStatus = async (userId: number) => {
+    try {
+      await api.put(`/admin/toggle-user/${userId}`);
+      fetchUsers();
+    } catch (err: any) {
+      if (err.response?.status === 403) {
+        alert("Access denied.");
+      } else {
+        alert("Failed to update user status.");
+      }
+    }
+  };
   return (
     <>
       <Navbar />
 
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-
         {/* PAGE TITLE */}
 
-        <h1 className="text-2xl sm:text-3xl font-bold">
-          Admin Dashboard 🔐
-        </h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard 🔐</h1>
 
         {error && <p className="text-red-500">{error}</p>}
 
         {/* ================= ANALYTICS CARDS ================= */}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
           <div className="bg-white shadow rounded-lg p-4">
             <p className="text-gray-500 text-sm">Total Users</p>
             <p className="text-2xl font-bold">{users.length}</p>
@@ -181,22 +190,17 @@ const AdminPage = () => {
             <p className="text-gray-500 text-sm">Search Results</p>
             <p className="text-2xl font-bold">{filteredUsers.length}</p>
           </div>
-
         </div>
 
         {/* ================= SYSTEM SETTINGS ================= */}
 
         <div className="bg-white shadow rounded-lg p-4 sm:p-6">
-
           <h2 className="text-lg sm:text-xl font-semibold mb-4">
             System Settings ⚙️
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-
-            <p className="font-medium">
-              Default expiration link
-            </p>
+            <p className="font-medium">Default expiration link</p>
 
             <input
               type="number"
@@ -205,9 +209,7 @@ const AdminPage = () => {
               placeholder="Default expiration (days)"
               className="px-4 py-2 border rounded-lg w-full"
               value={defaultExpiration}
-              onChange={(e) =>
-                setDefaultExpiration(Number(e.target.value))
-              }
+              onChange={(e) => setDefaultExpiration(Number(e.target.value))}
             />
 
             <button
@@ -217,9 +219,7 @@ const AdminPage = () => {
             >
               {settingLoading ? "Saving..." : "Save"}
             </button>
-
           </div>
-
         </div>
 
         {/* ================= SEARCH ================= */}
@@ -242,18 +242,14 @@ const AdminPage = () => {
                 <th className="py-3 px-4 text-center">Role</th>
                 <th className="py-3 px-4 text-center">Actions</th>
               </tr>
-
             </thead>
 
             <tbody>
-
               {/* LOADING */}
 
               {loading &&
                 Array.from({ length: 5 }).map((_, i) => (
-
                   <tr key={i} className="animate-pulse border-b">
-
                     <td className="py-3 px-4">
                       <div className="h-4 bg-gray-200 rounded w-56"></div>
                     </td>
@@ -269,59 +265,40 @@ const AdminPage = () => {
                         <div className="h-6 bg-gray-200 rounded w-16"></div>
                       </div>
                     </td>
-
                   </tr>
-
                 ))}
 
               {/* USERS */}
 
               {!loading &&
                 filteredUsers.map((user) => (
-
                   <tr
                     key={user.id}
                     className="border-b hover:bg-gray-50 transition"
                   >
-
                     <td className="py-3 px-4 break-words max-w-[250px]">
                       {user.email}
                     </td>
 
-                    <td className="py-3 px-4 text-center">
-                      {user.role}
-                    </td>
+                    <td className="py-3 px-4 text-center">{user.role}</td>
 
                     <td className="py-3 px-4">
-
                       <div className="flex flex-wrap md:flex-nowrap justify-center gap-2">
-
                         {user.role === "User" ? (
-
                           <button
                             onClick={() => updateRole(user.id, "Admin")}
                             className="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600"
                           >
                             Promote
                           </button>
-
                         ) : (
-
                           <button
                             onClick={() => updateRole(user.id, "User")}
                             className="bg-yellow-500 text-white px-3 py-1 rounded text-sm hover:bg-yellow-600"
                           >
                             Demote
                           </button>
-
                         )}
-
-                        <button
-                          onClick={() => deleteUser(user.id)}
-                          className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600"
-                        >
-                          Delete
-                        </button>
 
                         <button
                           onClick={() => fetchUserActivity(user.id)}
@@ -330,30 +307,33 @@ const AdminPage = () => {
                           Activity
                         </button>
 
+                         <button
+                          onClick={() => toggleUserStatus(user.id)}
+                          className={`px-3 py-1 rounded text-sm text-white 
+    ${
+      user.isActive
+        ? "bg-red-500 hover:bg-red-600"
+        : "bg-green-500 hover:bg-green-600"
+    }
+  `}
+                        >
+                          {user.isActive ? "Disable" : "Enable"}
+                        </button>
                       </div>
-
                     </td>
-
                   </tr>
-
                 ))}
 
               {!loading && filteredUsers.length === 0 && (
-
                 <tr>
                   <td colSpan={3} className="py-4 text-gray-500 text-center">
                     No users found.
                   </td>
                 </tr>
-
               )}
-
             </tbody>
-
           </table>
-
         </div>
-
       </div>
 
       {/* ACTIVITY MODAL */}
@@ -364,7 +344,6 @@ const AdminPage = () => {
           onClose={() => setShowActivity(false)}
         />
       )}
-
     </>
   );
 };

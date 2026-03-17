@@ -1,3 +1,3 @@
 ﻿namespace TinyBtUrlApi.UseCases.Admin.DeleteUser;
 
-public record DeleteUserCommand(int UserId);
+public record ToggleUserStatusCommand(int UserId);
