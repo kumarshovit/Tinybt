@@ -170,9 +170,17 @@ export const updateAlias = async (id: number, newAlias: string) => {
     body: JSON.stringify({ newAlias }),
   });
 
-   if (!res.ok) {
-    const msg = await res.text();
-    return { success: false, message: msg };
+  if (!res.ok) {
+    let message = "Something went wrong";
+
+    try {
+      const errorData = await res.json();
+      message = errorData.message || message;
+    } catch {
+      message = await res.text();
+    }
+
+    return { success: false, message };
   }
 
   const data = await res.json();

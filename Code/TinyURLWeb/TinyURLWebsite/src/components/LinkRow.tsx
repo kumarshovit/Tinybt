@@ -33,6 +33,8 @@ export default function LinkRow({
     const [hovered, setHovered] = useState(false);
     const [newAlias, setNewAlias] = useState("");
     const [newDestination, setNewDestination] = useState("");
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
     const cardRef = useRef<HTMLDivElement>(null);
 
@@ -55,13 +57,16 @@ export default function LinkRow({
     const handleAliasUpdate = async () => {
         if (!newAlias.trim()) return;
 
+        setError("");
+
         const result = await updateAlias(link.id, newAlias);
+
         if (!result.success) {
-            alert(result.message);
+            setError("Alias already exists. Try another."); // ✅ simple message
             return;
         }
 
-        setLinks((prev: any[]) =>
+        setLinks((prev) =>
             prev.map((l) =>
                 l.id === link.id
                     ? {
@@ -203,12 +208,18 @@ export default function LinkRow({
             {isEditingAlias && (
                 <div className="flex gap-2 mt-4">
 
+                   
                     <input
                         autoFocus
                         value={newAlias}
                         onChange={(e) => setNewAlias(e.target.value)}
                         className="border px-3 py-1 rounded flex-1"
                     />
+                     {error && (
+                        <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
+                            {error}
+                        </p>
+                    )}
 
                     <button
                         onClick={handleAliasUpdate}
