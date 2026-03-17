@@ -32,4 +32,6 @@ public class User : IAggregateRoot
   public DateTime? ResetTokenExpiry { get; set; }
   public string Role { get; set; } = "User";
   public string LoginProvider { get; set; } = "Local";
+  public bool IsDeleted { get; set; } = false;
+  public DateTime? DeletedAt { get; set; }
 }

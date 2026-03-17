@@ -36,7 +36,11 @@ public class GoogleLoginHandler
     // 2️⃣ Check if user already exists
     var spec = new UserByEmailSpec(googleUser.Email!);
     var user = await _repository.FirstOrDefaultAsync(spec);
-
+    // 🚨 BLOCK DELETED USERS
+    if (user != null && user.IsDeleted)
+    {
+      return null;
+    }
     // 3️⃣ If user not found → create new
     if (user == null)
     {

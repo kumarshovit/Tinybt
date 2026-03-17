@@ -1,6 +1,5 @@
 ﻿using Ardalis.SharedKernel;
 using TinyBtUrlApi.Core.Models;
-using TinyBtUrlApi.Core.Specifications;
 
 namespace TinyBtUrlApi.UseCases.Account.Delete;
 
@@ -20,7 +19,11 @@ public class DeleteAccountHandler
     if (user == null)
       return false;
 
-    await _repository.DeleteAsync(user);
+    // ✅ REAL-WORLD SAFE DELETE (Soft Delete)
+    user.IsDeleted = true;
+    user.DeletedAt = DateTime.UtcNow;
+
+    await _repository.UpdateAsync(user);
 
     return true;
   }

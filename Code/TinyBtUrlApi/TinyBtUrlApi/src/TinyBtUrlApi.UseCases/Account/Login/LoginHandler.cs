@@ -50,6 +50,14 @@ public class LoginHandler
     var user = await _userRepository
         .FirstOrDefaultAsync(new UserByEmailSpec(email));
 
+    if (user != null && user.IsDeleted)
+    {
+      return new
+      {
+        message = "Your account has been deleted. Please contact support."
+      };
+    }
+
     // ❌ Login Failure
     if (user == null ||
         !BCrypt.Net.BCrypt.Verify(dto.Password!, user.PasswordHash))

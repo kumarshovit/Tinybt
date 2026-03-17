@@ -19,7 +19,12 @@ public static class GoogleLoginEndpoint
               new GoogleLoginQuery(dto.Token));
 
       if (result == null)
-        return Results.Unauthorized();
+      {
+        return Results.BadRequest(new
+        {
+          message = "Your account has been deleted or login failed."
+        });
+      }
 
       var (token, refreshToken, expires) = result.Value;
 
