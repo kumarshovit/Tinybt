@@ -483,4 +483,89 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
         .OrderByDescending(x => x.ActivityTime)
         .ToList();
   }
+
+  //Admin analysis changes
+
+
+  public async Task<List<UsersOverTimeDto>> GetUsersOverTimeAsync(
+     DateTime start,
+     DateTime end,
+     string viewType,
+     CancellationToken ct)
+  {
+    var query =
+        from click in context.ClickLogs
+        join url in context.UrlMappings
+            on click.ShortCode equals url.ShortCode
+        where click.ClickedAt >= start && click.ClickedAt <= end
+        select new
+        {
+          click.ClickedAt,
+          url.UserId
+        };
+
+    // WEEKLY
+    if (viewType.ToLower() == "weekly")
+    {
+      return await query
+          .GroupBy(x => EF.Functions.DateDiffWeek(start, x.ClickedAt))
+          .OrderBy(g => g.Key)
+          .Select(g => new UsersOverTimeDto
+          {
+            Period = "Week " + g.Key,
+            Users = g.Select(x => x.UserId).Distinct().Count()
+          })
+          .ToListAsync(ct);
+    }
+
+    // DAILY
+    return await query
+        .GroupBy(x => x.ClickedAt.Date)
+        .OrderBy(g => g.Key)
+        .Select(g => new UsersOverTimeDto
+        {
+          Period = g.Key.ToString("yyyy-MM-dd"),
+          Users = g.Select(x => x.UserId).Distinct().Count()
+        })
+        .ToListAsync(ct);
+  }
+
+  public async Task<List<UsersByBrowserDto>> GetUsersByBrowserAsync(
+     DateTime startDate,
+     DateTime endDate,
+     CancellationToken ct)
+  {
+    var query =
+        from click in context.ClickLogs
+        join url in context.UrlMappings
+            on click.ShortCode equals url.ShortCode
+        where click.ClickedAt >= startDate &&
+              click.ClickedAt <= endDate
+        select new
+        {
+          click.Browser,
+          url.UserId
+        };
+
+    return await query
+        .GroupBy(x =>
+            string.IsNullOrEmpty(x.Browser)
+                ? "Unknown"
+                : x.Browser)
+        .Select(g => new UsersByBrowserDto
+        {
+          Browser = g.Key,
+          Users = g
+                .Select(x => x.UserId)
+                .Distinct()
+                .Count()
+        })
+        .OrderByDescending(x => x.Users)
+        .ToListAsync(ct);
+  }
 }
+
+
+//Admin analysis changes
+
+

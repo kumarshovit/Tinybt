@@ -7,13 +7,13 @@ interface Props {
 }
 
 const items = [
-  { id: "time", label: "Clicks Over Time", section: "chart-section" },
-  { id: "geo", label: "Clicks by Geography", section: "chart-section" },
-  { id: "lang", label: "Clicks by Language", section: "chart-section" },
+  { id: "time", label: "Users Over Time", section: "chart-section" },
+  { id: "geo", label: "Users by Geography", section: "chart-section" },
+  { id: "lang", label: "Users by Language", section: "chart-section" },
   { id: "popular", label: "Popular Days & Times", section: "chart-section" },
-  { id: "device", label: "Clicks by Device", section: "chart-section" },
-  { id: "os", label: "Clicks by OS", section: "chart-section" },
-  { id: "browser", label: "Clicks by Browser", section: "chart-section" },
+  { id: "device", label: "Users by Device", section: "chart-section" },
+  { id: "os", label: "Users by OS", section: "chart-section" },
+  { id: "browser", label: "Users by Browser", section: "chart-section" },
 ];
 
 export default function AnalysisSidebar({ active, setActive }: Props) {
