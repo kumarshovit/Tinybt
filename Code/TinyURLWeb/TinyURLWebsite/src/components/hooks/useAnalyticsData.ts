@@ -20,8 +20,11 @@ const [country,setCountry] = useState<any[]>([]);
 const [device,setDevice] = useState<any[]>([]);
 const [os,setOs] = useState<any[]>([]);
 const [browser,setBrowser] = useState<any[]>([]);
-const [topLinks,setTopLinks] = useState<any[]>([]);
 const [language,setLanguage] = useState<any[]>([]);
+
+const [topLinks,setTopLinks] = useState<any[]>([]);   // tags
+const [linkClicks,setLinkClicks] = useState<any[]>([]); // link wise clicks
+
 const [totalClicks,setTotalClicks] = useState(0);
 
 const token = localStorage.getItem("token");
@@ -35,9 +38,7 @@ Authorization:`Bearer ${token}`
 
 const fetchUserLinks = async()=>{
 
-const res = await fetch(`${API_BASE}/api/urls`,{
-headers
-});
+const res = await fetch(`${API_BASE}/api/urls`,{ headers });
 
 const data = await res.json();
 
@@ -70,7 +71,7 @@ tag:selectedTag
 
 try{
 
-/* clicks over time */
+/* ---------- clicks over time ---------- */
 
 const clicksRes = await fetch(
 `${API_BASE}/analytics/user/clicks-over-time`,
@@ -93,7 +94,7 @@ total += x.count;
 
 setTotalClicks(total);
 
-/* breakdown */
+/* ---------- breakdown ---------- */
 
 const breakdown = async(type:string)=>{
 
@@ -122,7 +123,7 @@ setDevice(await breakdown("device"));
 setOs(await breakdown("os"));
 setBrowser(await breakdown("browser"));
 
-/* language */
+/* ---------- language ---------- */
 
 const langRes = await fetch(
 `${API_BASE}/analytics/user/device-language`,
@@ -135,7 +136,7 @@ body:JSON.stringify(body)
 
 setLanguage(await langRes.json());
 
-/* top links */
+/* ---------- popular links ---------- */
 
 const linksRes = await fetch(
 `${API_BASE}/analytics/user/popular-links`,
@@ -148,7 +149,11 @@ body:JSON.stringify(body)
 
 const linksData = await linksRes.json();
 
-/* alias → clicks */
+/* save link wise clicks */
+
+setLinkClicks(linksData);
+
+/* alias → clicks map */
 
 const aliasClicks: Record<string, number> = {};
 
@@ -156,7 +161,7 @@ linksData.forEach((x:any)=>{
 aliasClicks[x.label] = x.count;
 });
 
-/* tag → clicks */
+/* ---------- tag aggregation ---------- */
 
 const tagCounts: Record<string, number> = {};
 
@@ -164,13 +169,15 @@ allLinks.forEach((link:any)=>{
 
 const clicks = aliasClicks[link.shortCode] || 0;
 
-if(link.tags){
+if(link.tags && link.tags.length){
+
+const share = clicks / link.tags.length;
 
 link.tags.forEach((tag:string)=>{
 
 if(!tagCounts[tag]) tagCounts[tag] = 0;
 
-tagCounts[tag] += clicks;
+tagCounts[tag] += share;
 
 });
 
@@ -195,7 +202,7 @@ console.error("Analytics error",err);
 
 };
 
-/* ---------- TAG POPUP LINKS ---------- */
+/* ---------- TAG POPUP ---------- */
 
 const openTagPopup = async(tag:string)=>{
 
@@ -226,7 +233,27 @@ clickCount: x.count
 
 };
 
-/* ---------- LOAD DEFAULT ---------- */
+/* ---------- ALL LINKS POPUP ---------- */
+
+const openAllLinksPopup = async()=>{
+
+const clickMap: Record<string, number> = {};
+
+linkClicks.forEach((x:any)=>{
+clickMap[x.label] = x.count;
+});
+
+return filteredLinks.map((link:any)=>({
+
+shortUrl: `${API_BASE}/${link.shortCode}`,
+shortCode: link.shortCode,
+clickCount: clickMap[link.shortCode] || 0
+
+}));
+
+};
+
+/* ---------- LOAD ---------- */
 
 useEffect(()=>{
 fetchUserLinks();
@@ -237,6 +264,25 @@ if(allLinks.length){
 fetchDashboard();
 }
 },[from,to,selectedLink,selectedTag,allLinks]);
+
+/* ---------- FILTERED LINKS ---------- */
+
+const filteredLinks = allLinks.filter((link:any)=>{
+
+const hasClicks = linkClicks.some(
+(x:any)=>x.label === link.shortCode
+);
+
+const linkMatch =
+!selectedLink || link.shortCode === selectedLink;
+
+const tagMatch =
+!selectedTag ||
+(link.tags && link.tags.includes(selectedTag));
+
+return hasClicks && linkMatch && tagMatch;
+
+});
 
 /* ---------- RETURN ---------- */
 
@@ -252,10 +298,15 @@ device,
 os,
 browser,
 language,
-topLinks,
-totalClicks,
 
-openTagPopup
+topLinks,
+linkClicks,
+
+totalClicks,
+totalUrls: filteredLinks.length,
+
+openTagPopup,
+openAllLinksPopup
 
 };
 

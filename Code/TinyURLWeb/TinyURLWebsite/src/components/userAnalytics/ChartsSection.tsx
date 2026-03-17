@@ -1,6 +1,24 @@
 import ChartPie from "./ChartPie";
 import ChartBar from "./ChartBar";
 
+const CardWrapper = ({children,onClick,id}:any)=>(
+<div
+id={id}   
+onClick={onClick}
+className="relative group cursor-pointer min-h-[320px] bg-white rounded-xl shadow p-4 hover:shadow-xl hover:scale-[1.02] transition duration-200"
+>
+{children}
+
+{/* 🔥 Overlay */}
+<div className="absolute inset-0 bg-black/0  flex items-center justify-center opacity-0 group-hover:opacity-100 transition rounded-xl">
+<span className="text-blue-400 text-sm font-semibold">
+View details
+</span>
+</div>
+
+</div>
+);
+
 export default function ChartsSection({
 referrer,
 country,
@@ -15,56 +33,30 @@ return(
 
 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 mb-10">
 
-<div
-id="traffic"
-onClick={()=>openDataPopup("Traffic Source",referrer)}
-className="cursor-pointer min-h-[320px]"
->
+<CardWrapper id="traffic" onClick={()=>openDataPopup("Traffic Source",referrer)}>
 <ChartPie title="Traffic Source" data={referrer}/>
-</div>
+</CardWrapper>
 
-<div
-id="country"
-onClick={()=>openDataPopup("Country Distribution",country)}
-className="cursor-pointer min-h-[320px]"
->
+<CardWrapper id="country" onClick={()=>openDataPopup("Country Distribution",country)}>
 <ChartPie title="Country Distribution" data={country}/>
-</div>
+</CardWrapper>
 
-<div
-id="device"
-onClick={()=>openDataPopup("Device Types",device)}
-className="cursor-pointer min-h-[320px]"
->
+<CardWrapper id="device" onClick={()=>openDataPopup("Device Types",device)}>
 <ChartBar title="Device Types" data={device}/>
-</div>
+</CardWrapper>
 
-<div
-id="os"
-onClick={()=>openDataPopup("Operating Systems",os)}
-className="cursor-pointer min-h-[320px]"
->
+<CardWrapper id="os" onClick={()=>openDataPopup("Operating Systems",os)}>
 <ChartBar title="Operating Systems" data={os}/>
-</div>
+</CardWrapper>
 
-<div
-id="browser"
-onClick={()=>openDataPopup("Browsers",browser)}
-className="cursor-pointer min-h-[320px]"
->
+<CardWrapper id="browser" onClick={()=>openDataPopup("Browsers",browser)}>
 <ChartBar title="Browsers" data={browser}/>
-</div>
+</CardWrapper>
 
-<div
-id="language"
-onClick={()=>openDataPopup("Device Language",language)}
-className="cursor-pointer min-h-[320px]"
->
+<CardWrapper id="language" onClick={()=>openDataPopup("Device Language",language)}>
 <ChartPie title="Device Language" data={language}/>
-</div>
+</CardWrapper>
 
 </div>
-
 )
-
 }

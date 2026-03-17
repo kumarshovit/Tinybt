@@ -20,14 +20,14 @@ return(
 
 <button
 onClick={setLast7Days}
-className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-200 w-full sm:w-auto"
+className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 w-full sm:w-auto"
 >
 Last 7 Days
 </button>
 
 <button
 onClick={setLast30Days}
-className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg hover:bg-purple-200 w-full sm:w-auto"
+className="bg-blue-100 text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-200 w-full sm:w-auto"
 >
 Last 30 Days
 </button>

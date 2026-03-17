@@ -8,7 +8,7 @@ Legend
 } from "recharts";
 
 const COLORS = [
-"#7c3aed",
+"#2563eb",
 "#22c55e",
 "#f97316",
 "#06b6d4",

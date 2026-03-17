@@ -48,7 +48,7 @@ tickLine={false}
 
 <Bar
 dataKey="count"
-fill="#7c3aed"
+fill="#2563eb"
 radius={[4,4,0,0]}
 />
 

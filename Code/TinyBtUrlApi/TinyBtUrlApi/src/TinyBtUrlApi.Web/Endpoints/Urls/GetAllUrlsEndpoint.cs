@@ -48,6 +48,7 @@ public class GetAllUrlsEndpoint
         ShortUrl = $"{baseUrl}/{x.ShortCode}",
         ExpirationDate = x.ExpirationDate,
         ClickCount = x.ClickCount,
+        CreatedAt = x.CreatedAt,
         Tags = x.Tags
       }).ToList();
 

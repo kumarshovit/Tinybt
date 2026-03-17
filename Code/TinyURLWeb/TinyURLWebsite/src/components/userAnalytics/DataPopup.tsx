@@ -1,123 +1,116 @@
 export default function DataPopup({
-openPopup,
-popupTitle,
-popupData,
-setOpenPopup
-}:any){
+  openPopup,
+  popupTitle,
+  popupData,
+  setOpenPopup
+}: any) {
 
-if(!openPopup) return null;
+  if (!openPopup) return null;
 
-return(
+  const BASE_URL = import.meta.env.VITE_API_URL;
 
-<div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+  return (
 
-<div className="bg-white rounded-xl p-4 sm:p-6 lg:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
 
-<h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">
-{popupTitle}
-</h2>
+      <div className="bg-white rounded-xl p-4 sm:p-6 lg:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
 
-<div className="overflow-x-auto">
+        <h2 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">
+          {popupTitle}
+        </h2>
 
-<table className="w-full text-left min-w-[400px]">
+        <div className="overflow-x-auto">
 
-<thead>
+          <table className="w-full text-left min-w-[400px]">
 
-<tr className="border-b text-gray-500">
+            <thead>
+              <tr className="border-b text-gray-500">
 
-{popupData[0]?.shortCode ? (
-<>
-<th className="py-2">Short URL</th>
-<th className="py-2">Short Alias</th>
-<th className="py-2">Clicks</th>
-</>
-) : (
-<>
-<th className="py-2">Label</th>
-<th className="py-2">Clicks</th>
-</>
-)}
+                {popupData[0]?.shortCode ? (
+                  <>
+                    <th className="py-2">Short URL</th>
+                    <th className="py-2">Short Alias</th>
+                    <th className="py-2">Clicks</th>
+                  </>
+                ) : (
+                  <>
+                    <th className="py-2">Label</th>
+                    <th className="py-2">Clicks</th>
+                  </>
+                )}
 
-</tr>
+              </tr>
+            </thead>
 
-</thead>
+            <tbody>
 
-<tbody>
+              {popupData.map((item: any, i: number) => {
 
-{popupData.map((item:any,i:number)=>{
+                if (item.shortCode) {
 
-if(item.shortCode){
-return(
+                  const url = `${BASE_URL}/${item.shortCode}`;
 
-<tr key={i} className="border-b">
+                  return (
+                    <tr key={i} className="border-b">
 
-<td className="py-2 text-purple-600">
+                      <td className="py-2 text-blue-600">
 
-<a
-href={item.shortUrl}
-target="_blank"
-rel="noopener noreferrer"
-className="underline break-all"
->
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline break-all hover:text-blue-800"
+                        >
+                          {url}
+                        </a>
 
-{item.shortUrl}
+                      </td>
 
-</a>
+                      <td className="py-2">
+                        {item.shortCode}
+                      </td>
 
-</td>
+                      <td className="py-2 font-semibold">
+                        {item.clickCount}
+                      </td>
 
-<td className="py-2">
-{item.shortCode}
-</td>
+                    </tr>
+                  );
+                }
 
-<td className="py-2 font-semibold">
-{item.clickCount}
-</td>
+                return (
+                  <tr key={i} className="border-b">
 
-</tr>
+                    <td className="py-2">
+                      {item.label}
+                    </td>
 
-)
-}
+                    <td className="py-2 font-semibold">
+                      {item.count}
+                    </td>
 
-return(
+                  </tr>
+                );
 
-<tr key={i} className="border-b">
+              })}
 
-<td className="py-2">
-{item.label}
-</td>
+            </tbody>
 
-<td className="py-2 font-semibold">
-{item.count}
-</td>
+          </table>
 
-<td></td>
+        </div>
 
-</tr>
+        <button
+          onClick={() => setOpenPopup(false)}
+          className="mt-6 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full sm:w-auto"
+        >
+          Close
+        </button>
 
-)
+      </div>
 
-})}
+    </div>
 
-</tbody>
-
-</table>
-
-</div>
-
-<button
-onClick={()=>setOpenPopup(false)}
-className="mt-6 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 w-full sm:w-auto"
->
-
-Close
-
-</button>
-
-</div>
-
-</div>
-
-)
+  );
 
 }

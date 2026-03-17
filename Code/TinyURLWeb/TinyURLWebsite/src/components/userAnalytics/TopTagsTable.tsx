@@ -38,7 +38,7 @@ className="border-b hover:bg-gray-50 cursor-pointer transition"
 onClick={()=>openTagPopup(tag.label)}
 >
 
-<td className="py-2 text-purple-600 font-medium">
+<td className="py-2 text-blue-600 font-medium underline cursor-pointer">
 {tag.label}
 </td>
 

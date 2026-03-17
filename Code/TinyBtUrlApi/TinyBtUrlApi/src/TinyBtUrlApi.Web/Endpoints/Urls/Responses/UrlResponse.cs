@@ -7,6 +7,7 @@ public class UrlResponse
   public string? ShortCode { get; set; }
   public string? ShortUrl { get; set; }
   public DateTime? ExpirationDate { get; set; }
+  public DateTime CreatedAt { get; set; }
   public int ClickCount { get; set; }
   public List<string>? Tags { get; set; }
 }

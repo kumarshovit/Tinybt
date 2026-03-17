@@ -65,7 +65,9 @@ return(
 <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-6 lg:mb-8">
 📊 My Analytics Dashboard
 </h1>
-
+<p className="text-sm text-gray-500 mb-4">
+💡 Tip: Click on any chart or card to view detailed data
+</p>
 {/* ---------- FILTERS ---------- */}
 
 <Filters
@@ -85,14 +87,15 @@ exportCSV={exportCSV}
 />
 
 {/* ---------- SUMMARY ---------- */}
-
 <SummarySection
-totalClicks={analytics.totalClicks}
-country={analytics.country}
-device={analytics.device}
-browser={analytics.browser}
+  totalClicks={analytics.clicks}   
+  totalLinks={analytics.linkClicks} 
+  country={analytics.country}
+  device={analytics.device}
+  browser={analytics.browser}
+  openDataPopup={popup.openDataPopup}
+  openAllLinksPopup={analytics.openAllLinksPopup}
 />
-
 {/* ---------- TOP TAGS ---------- */}
 
 <TopTagsTable

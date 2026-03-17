@@ -38,7 +38,7 @@ setOpen(false);
 const itemClass = (id:string)=>
 `flex items-center gap-3 cursor-pointer px-3 py-2 rounded-lg transition
 ${active===id
-? "bg-purple-100 text-purple-700 font-semibold"
+? "bg-blue-100 text-blue-600 font-semibold"
 : "text-gray-600 hover:bg-gray-100"}`;
 
 return(
@@ -58,7 +58,7 @@ onClick={()=>setOpen(false)}
 
 <button
 onClick={()=>setOpen(!open)}
-className="lg:hidden mt-1 ml-1 top-16 left-4 z-50 bg-purple-600 text-white p-1 rounded-lg shadow hover:bg-purple-700 transition"
+className="lg:hidden mt-1 ml-1 top-16 left-4 z-50 bg-blue-600 text-white p-1 rounded-lg shadow hover:bg-purple-700 transition"
 >
 <PanelLeft size={20}/>
 </button>
@@ -83,7 +83,7 @@ className="absolute top-4 right-4 text-gray-500 lg:hidden"
 
 {/* Sidebar Title */}
 
-<h2 className="text-xl font-bold text-purple-600 mb-6 flex items-center gap-2">
+<h2 className="text-xl font-bold text-blue-600 mb-6 flex items-center gap-2">
 <BarChart3 size={20}/>
 Analytics
 </h2>

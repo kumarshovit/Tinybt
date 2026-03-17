@@ -10,7 +10,7 @@ return(
 {title}
 </p>
 
-<h2 className="text-2xl sm:text-3xl font-bold text-purple-600">
+<h2 className="text-2xl sm:text-3xl font-bold text-blue-600">
 <CountUp end={value} duration={1.5}/>
 </h2>
 
