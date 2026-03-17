@@ -3,7 +3,7 @@ import { logoutUser } from "../services/authService";
 import { getUserRole } from "../utils/auth";
 import { BarChart3, Menu, X } from "lucide-react";
 import { useState } from "react";
-
+import logo from "../assets/logo.png"
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -16,15 +16,18 @@ const Navbar = () => {
     navigate("/"); // ✅ Redirect
   };
 
-   return (
-    <nav className="bg-white shadow-md px-6 py-4">
+  return (
+    <nav className="bg-white shadow-md px-4 sm:px-6 lg:px-10 py-3">
       <div className="flex justify-between items-center">
 
         {/* Logo */}
-        <h1 className="text-xl font-bold text-blue-600">
-          TinyURL
-        </h1>
-
+        <Link to="/dashboard" className="flex items-center">
+          <img
+            src={logo}
+            alt="LinkBt Logo"
+            className="h-7 sm:h-9 md:h-10 w-auto object-contain"
+          />
+        </Link>
         {/* Hamburger Button (Mobile Only) */}
         <button
           className="md:hidden"
