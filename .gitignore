@@ -75,8 +75,7 @@ bld/
 secrets.json
 
 # Local appsettings overrides (if you use them)
-appsettings.Local.json
-appsettings.Production.json
+
 
 # Environment files
 .env

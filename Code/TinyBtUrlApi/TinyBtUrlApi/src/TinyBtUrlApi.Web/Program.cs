@@ -27,16 +27,18 @@ builder.Services
        .AddAuthConfigs(builder);
 
 // ✅ Environment-based CORS
+var MyAllowSpecificOrigins = "AllowFrontend";
 builder.Services.AddCors(options =>
 {
-  options.AddPolicy("AllowFrontend",
-      policy =>
-      {
-        policy.WithOrigins("http://localhost:5173")
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials();
-      });
+  options.AddPolicy(name: MyAllowSpecificOrigins, policy =>
+  {
+    var urls = builder.Configuration.GetSection("policyurl:url").Get<string[]>();
+    policy
+          .WithOrigins(urls!)
+          .AllowAnyHeader()
+          .AllowAnyMethod()
+          .AllowCredentials();
+  });
 });
 
 // Mediator
