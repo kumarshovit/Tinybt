@@ -85,7 +85,7 @@ export default function ClicksByOS({ startDate, endDate }: Props) {
                 cursor="pointer"
                 onClick={handleClick}
               >
-                {data.map((entry, index) => (
+                {data.map((_, index) => (
                   <Cell
                     key={index}
                     fill={COLORS[index % COLORS.length]}

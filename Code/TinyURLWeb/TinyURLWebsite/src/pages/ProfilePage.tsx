@@ -18,12 +18,9 @@ const ProfilePage = () => {
 
   const [profile, setProfile] = useState<Profile | null>(null);
 
-  const [fullName, setFullName] = useState("");
-
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
 
-  const [editingName, setEditingName] = useState(false);
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -45,7 +42,6 @@ const ProfilePage = () => {
       const response = await api.get("/profile");
 
       setProfile(response.data);
-      setFullName(response.data.fullName || "");
 
       await new Promise((resolve) => setTimeout(resolve, 100));
 

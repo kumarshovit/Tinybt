@@ -108,7 +108,7 @@ export default function ClicksByLanguage({ startDate, endDate }: Props) {
                 cursor="pointer"
                 onClick={handleClick}
                 label={({ name, percent }) =>
-                  `${name} (${(percent * 100).toFixed(0)}%)`
+                  `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`
                 }
               >
 
@@ -128,14 +128,14 @@ export default function ClicksByLanguage({ startDate, endDate }: Props) {
                   borderRadius: "6px",
                   boxShadow: "0px 2px 6px rgba(0,0,0,0.15)",
                 }}
-                formatter={(value: any, name: any, props: any) => [
+                formatter={(value: any, props: any) => [
                   value,
                   props.payload.deviceLanguage,
                 ]}
               />
 
               <Legend
-                formatter={(value: any, entry: any) =>
+                formatter={(entry: any) =>
                   entry.payload.deviceLanguage
                 }
               />

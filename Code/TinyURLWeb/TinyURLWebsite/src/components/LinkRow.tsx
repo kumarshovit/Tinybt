@@ -34,7 +34,7 @@ export default function LinkRow({
     const [newAlias, setNewAlias] = useState("");
     const [newDestination, setNewDestination] = useState("");
     const [error, setError] = useState("");
-    const [success, setSuccess] = useState("");
+    
 
     const cardRef = useRef<HTMLDivElement>(null);
 

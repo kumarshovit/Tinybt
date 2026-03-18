@@ -7,19 +7,9 @@ interface Props {
 
 export default function ProfileAvatar({ name,email }: Props) {
 
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview] = useState<string | null>(null);
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-
-    const file = e.target.files?.[0];
-
-    if (!file) return;
-
-    const url = URL.createObjectURL(file);
-
-    setPreview(url);
-
-  };
+  
 
   return (
 

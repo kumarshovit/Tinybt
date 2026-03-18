@@ -104,26 +104,6 @@ const AdminPage = () => {
     }
   };
 
-  // ================= DELETE USER =================
-
-  const deleteUser = async (userId: number) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this user?",
-    );
-
-    if (!confirmDelete) return;
-
-    try {
-      await api.delete(`/admin/delete-user/${userId}`);
-      fetchUsers();
-    } catch (err: any) {
-      if (err.response?.status === 403) {
-        alert("Access denied.");
-      } else {
-        alert("Failed to delete user.");
-      }
-    }
-  };
 
   // ================= FETCH USER ACTIVITY =================
 

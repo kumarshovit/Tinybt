@@ -78,7 +78,7 @@ export default function ClicksByGeography({ startDate, endDate }: Props) {
                 cursor="pointer"
                 onClick={handleClick}
                 label={({ name, percent }) =>
-                  `${name} (${(percent * 100).toFixed(0)}%)`
+                  `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`
                 }
               >
                 {data.map((_, index) => (

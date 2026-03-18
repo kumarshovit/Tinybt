@@ -107,7 +107,7 @@ export default function ClicksByBrowser({ startDate, endDate }: Props) {
                 cursor="pointer"
                 onClick={handleClick}
                 label={({ name, percent }) =>
-                  `${name} (${(percent * 100).toFixed(0)}%)`
+                  `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`
                 }
               >
                 {data.map((_, index) => (
@@ -119,7 +119,7 @@ export default function ClicksByBrowser({ startDate, endDate }: Props) {
               </Pie>
 
               <Tooltip
-                formatter={(value: any, name: any, props: any) => [
+                formatter={(value: any,props: any) => [
                   value,
                   props.payload.browser,
                 ]}
