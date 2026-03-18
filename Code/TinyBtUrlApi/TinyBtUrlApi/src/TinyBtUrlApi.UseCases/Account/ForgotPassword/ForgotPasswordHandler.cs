@@ -12,15 +12,18 @@ public class ForgotPasswordHandler
   private readonly IRepository<User> _userRepo;
   private readonly IPasswordResetRepository _resetRepo;
   private readonly IEmailSender _emailSender;
+  private readonly string _frontendUrl;
 
   public ForgotPasswordHandler(
       IRepository<User> userRepo,
       IPasswordResetRepository resetRepo,
-       IEmailSender emailSender)
+       IEmailSender emailSender,
+        string frontendUrl)
   {
     _userRepo = userRepo;
     _resetRepo = resetRepo;
     _emailSender = emailSender;
+    _frontendUrl = frontendUrl;
   }
 
   public async Task Handle(ForgotPasswordQuery request)
@@ -44,13 +47,13 @@ public class ForgotPasswordHandler
     await _resetRepo.SaveChangesAsync();
 
     var resetLink =
-        $"http://localhost:5173/reset-password?email={request.Email}&token={tokenValue}";
+        $"{_frontendUrl}/reset-password?email={request.Email}&token={tokenValue}";
 
     await _emailSender.SendEmailAsync(
-      request.Email,                 // to
-      "kg834208@gmail.com",         // from
-      "Reset Your Password",         // subject
-      $"Click the link below:\n{resetLink}"  // body
-  );
+      request.Email,
+      "kg834208@gmail.com",
+      "Reset Your Password",
+      $"Click the link below:\n{resetLink}"
+    );
   }
 }

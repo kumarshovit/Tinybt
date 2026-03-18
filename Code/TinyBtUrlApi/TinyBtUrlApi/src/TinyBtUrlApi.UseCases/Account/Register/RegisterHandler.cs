@@ -10,13 +10,16 @@ public class RegisterHandler
 {
   private readonly IRepository<User> _repository;
   private readonly IEmailSender _emailSender;
+  private readonly string _frontendUrl;
 
   public RegisterHandler(
       IRepository<User> repository,
-      IEmailSender emailSender)
+      IEmailSender emailSender,
+      string frontendUrl)
   {
     _repository = repository;
     _emailSender = emailSender;
+    _frontendUrl = frontendUrl;
   }
 
   public async Task<string> Handle(RegisterQuery query)
@@ -56,18 +59,18 @@ public class RegisterHandler
 
     await _repository.AddAsync(user);
 
-    // ✅ Create verification link
+
+    // ✅ NEW (dynamic URL)
     var verificationLink =
-        $"http://localhost:5173/verify-email?token={verificationToken}";
+        $"{_frontendUrl}/verify-email?token={verificationToken}";
 
-    // ✅ Send verification email
+    // ✅ Send email
     await _emailSender.SendEmailAsync(
-    user.Email,
-    "kg834208@gmail.com",
-    "Verify Your Email",
-    $"Click here to verify: {verificationLink}"
-);
-
+      user.Email,
+      "kg834208@gmail.com",
+      "Verify Your Email",
+      $"Click here to verify: {verificationLink}"
+    );
     return "Registration successful. Please check your email to verify your account.";
   }
 }

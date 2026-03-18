@@ -1,4 +1,5 @@
 ﻿using Ardalis.SharedKernel;
+using System.Linq;
 using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Models;
 using TinyBtUrlApi.Core.Services;
@@ -28,11 +29,40 @@ public static class ServiceConfigs
       WebApplicationBuilder builder)
   {
     services.AddInfrastructureServices(builder.Configuration, logger);
+
+    // 🔥 ADD THIS
+    var urls = builder.Configuration
+        .GetSection("policyurl:url")
+        .Get<string[]>();
+
+    var frontendUrl = builder.Environment.IsDevelopment()
+    ? urls?.ElementAtOrDefault(0)
+    : urls?.ElementAtOrDefault(1);
+
+
     services.AddScoped<LoginHandler>();
     services.AddScoped<IJwtService, JwtService>();
-    services.AddScoped<RegisterHandler>();
+
+    // 🔥 UPDATED
+    services.AddScoped<RegisterHandler>(sp =>
+        new RegisterHandler(
+            sp.GetRequiredService<IRepository<User>>(),
+            sp.GetRequiredService<IEmailSender>(),
+            frontendUrl!
+        ));
+
     services.AddScoped<LogoutHandler>();
-    services.AddScoped<ForgotPasswordHandler>();
+
+    // 🔥 UPDATED
+    services.AddScoped<ForgotPasswordHandler>(sp =>
+        new ForgotPasswordHandler(
+            sp.GetRequiredService<IRepository<User>>(),
+            sp.GetRequiredService<IPasswordResetRepository>(),
+            sp.GetRequiredService<IEmailSender>(),
+            frontendUrl!
+        ));
+   
+   
     services.AddScoped<ResetPasswordHandler>();
     services.AddScoped<VerifyEmailHandler>();
     services.AddScoped<DeleteAccountHandler>();
@@ -44,7 +74,6 @@ public static class ServiceConfigs
     services.AddScoped<GoogleLoginHandler>();
     services.AddScoped<IGoogleAuthService, GoogleAuthService>();
     services.AddScoped<ChangePasswordHandler>();
-    services.AddScoped<DeleteAccountHandler>();
     // Email
     services.AddScoped<IEmailSender, EmailService>();
   
