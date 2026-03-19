@@ -648,7 +648,7 @@ export default function useAnalyticsData({
   userId
 }: any) {
 
-  /* ---------- STATES ---------- */
+  /* ---------- DATA STATES ---------- */
   const [allLinks, setAllLinks] = useState<any[]>([]);
   const [allTags, setAllTags] = useState<string[]>([]);
 
@@ -661,6 +661,8 @@ export default function useAnalyticsData({
   const [topLinks, setTopLinks] = useState<any[]>([]);
   const [language, setLanguage] = useState<any[]>([]);
   const [totalClicks, setTotalClicks] = useState(0);
+
+  // ✅ NEW (HEATMAP)
   const [heatmap, setHeatmap] = useState<any[]>([]);
 
   const token = localStorage.getItem("token");
@@ -670,50 +672,59 @@ export default function useAnalyticsData({
     Authorization: `Bearer ${token}`
   };
 
-  /* ---------- SAFE BODY BUILDER ---------- */
-  const buildBody = (extra: any = {}) => ({
-    from,
-    to,
-    link: selectedLink,
-    tag: selectedTag,
-    ...extra,
-    ...(userId !== undefined && userId !== null ? { userId } : {})
-  });
-
-  /* ---------- FETCH USER LINKS ---------- */
+  /* ---------- FETCH USER LINKS (UPDATED) ---------- */
   const fetchUserLinks = async () => {
-    try {
-      const res = await fetch(`${API_BASE}/api/urls`, { headers });
-      const data = await res.json();
 
-      setAllLinks(data);
+    const isAdminSelectingUser = userId !== undefined && userId !== null;
 
-      const tagSet = new Set<string>();
-      data.forEach((link: any) => {
-        if (link.tags) {
-          link.tags.forEach((tag: string) => tagSet.add(tag));
-        }
-      });
+    const url = isAdminSelectingUser
+      ? `${API_BASE}/api/admin/urls`   // ✅ admin route
+      : `${API_BASE}/api/urls`;        // ✅ normal user
 
-      setAllTags(Array.from(tagSet));
-    } catch (err) {
-      console.error("Links error:", err);
+    const options: any = {
+      method: isAdminSelectingUser ? "POST" : "GET",
+      headers
+    };
+
+    if (isAdminSelectingUser) {
+      options.body = JSON.stringify({ userId });
     }
+
+    const res = await fetch(url, options);
+    const data = await res.json();
+
+    setAllLinks(data);
+
+    const tagSet = new Set<string>();
+
+    data.forEach((link: any) => {
+      if (link.tags) {
+        link.tags.forEach((tag: string) => tagSet.add(tag));
+      }
+    });
+
+    setAllTags(Array.from(tagSet));
   };
 
   /* ---------- FETCH DASHBOARD ---------- */
   const fetchDashboard = async () => {
+
+    const body = {
+      from,
+      to,
+      link: selectedLink,
+      tag: selectedTag,
+      ...(userId && { userId })
+    };
+
     try {
 
       /* ---------- CLICKS ---------- */
-      const clicksRes = await fetch(
-        `${API_BASE}/analytics/user/clicks-over-time`,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify(buildBody())
-        }
-      );
+      const clicksRes = await fetch(`${API_BASE}/analytics/user/clicks-over-time`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+      });
 
       const clicksData = await clicksRes.json();
       setClicks(clicksData);
@@ -727,9 +738,15 @@ export default function useAnalyticsData({
         const res = await fetch(`${API_BASE}/analytics/breakdown`, {
           method: "POST",
           headers,
-          body: JSON.stringify(buildBody({ type }))
+          body: JSON.stringify({
+            from,
+            to,
+            type,
+            link: selectedLink,
+            tag: selectedTag,
+            ...(userId && { userId })
+          })
         });
-
         return res.json();
       };
 
@@ -740,26 +757,20 @@ export default function useAnalyticsData({
       setBrowser(await breakdown("browser"));
 
       /* ---------- LANGUAGE ---------- */
-      const langRes = await fetch(
-        `${API_BASE}/analytics/user/device-language`,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify(buildBody())
-        }
-      );
+      const langRes = await fetch(`${API_BASE}/analytics/user/device-language`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+      });
 
       setLanguage(await langRes.json());
 
       /* ---------- TOP LINKS ---------- */
-      const linksRes = await fetch(
-        `${API_BASE}/analytics/user/popular-links`,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify(buildBody())
-        }
-      );
+      const linksRes = await fetch(`${API_BASE}/analytics/user/popular-links`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(body)
+      });
 
       const linksData = await linksRes.json();
 
@@ -790,35 +801,29 @@ export default function useAnalyticsData({
 
       setTopLinks(tagData);
 
-      /* ---------- 🔥 HEATMAP ---------- */
-      const heatmapRes = await fetch(
-        `${API_BASE}/analytics/heatmap`,
-        {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            from,
-            to,
-            ...(userId !== undefined && userId !== null ? { userId } : {})
-          })
-        }
-      );
+      /* ---------- 🔥 HEATMAP (NEW) ---------- */
+      const heatmapRes = await fetch(`${API_BASE}/analytics/heatmap`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          from,
+          to,
+          ...(userId && { userId })
+        })
+      });
 
       const heatmapData = await heatmapRes.json();
-
-      console.log("🔥 Heatmap Data:", heatmapData); // DEBUG
-
       setHeatmap(heatmapData);
 
     } catch (err) {
-      console.error("Analytics error:", err);
+      console.error("Analytics error", err);
     }
   };
 
   /* ---------- LOAD ---------- */
   useEffect(() => {
     fetchUserLinks();
-  }, []);
+  }, [userId]); // ✅ IMPORTANT
 
   useEffect(() => {
     if (allLinks.length) {
@@ -839,6 +844,6 @@ export default function useAnalyticsData({
     language,
     topLinks,
     totalClicks,
-    heatmap
+    heatmap // ✅ NEW
   };
 }
