@@ -21,6 +21,7 @@ public class LoginEndpoint : Endpoint<LoginDto, object>
   {
     Post("/api/auth/login");
     AllowAnonymous();
+    Description(x => x.WithTags("Auth"));
   }
 
   public override async Task HandleAsync(LoginDto req, CancellationToken ct)

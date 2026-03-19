@@ -21,6 +21,7 @@ public class GetClicksOverTimeUserEndpoint
     Post("/analytics/user/clicks-over-time");
 
     Roles("User");
+    Description(x => x.WithTags("Analytics (User specific)"));
   }
 
   public override async Task HandleAsync(

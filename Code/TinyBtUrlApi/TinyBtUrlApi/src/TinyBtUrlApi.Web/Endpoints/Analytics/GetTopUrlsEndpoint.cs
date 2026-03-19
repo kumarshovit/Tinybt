@@ -12,6 +12,7 @@ public class GetTopUrlsEndpoint(IMediator mediator)
   {
     Get("/api/analytics/top-urls");
     AllowAnonymous();
+    Description(x => x.WithTags("Analytics"));
   }
 
   public override async Task HandleAsync(

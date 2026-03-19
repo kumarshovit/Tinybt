@@ -20,7 +20,7 @@ public static class ForgotPasswordEndpoint
             message = "If account exists, reset link sent."
           });
         })
-        .WithTags("Api")
+        .WithTags("Auth")
         .AllowAnonymous();
   }
 }

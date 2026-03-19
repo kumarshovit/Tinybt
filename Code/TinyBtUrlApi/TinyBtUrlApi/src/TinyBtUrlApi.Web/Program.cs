@@ -53,6 +53,7 @@ builder.Services
        .SwaggerDocument(o =>
        {
          o.ShortSchemaNames = true;
+         o.AutoTagPathSegmentIndex = 0;
        });
 
 // ---------------------------

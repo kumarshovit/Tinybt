@@ -18,6 +18,7 @@ public class DeleteUrlEndpoint
   {
     Delete("/api/urls/{id}");
     AllowAnonymous();
+    Description(x => x.WithTags("Url Management"));
   }
 
   public override async Task HandleAsync(CancellationToken ct)

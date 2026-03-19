@@ -20,6 +20,7 @@ public class UpdateAliasEndpoint
   {
     Put("/api/urls/{id}/alias");
     AllowAnonymous();
+    Description(x => x.WithTags("Url Management"));
   }
 
   public override async Task HandleAsync(UpdateAliasRequest req, CancellationToken ct)

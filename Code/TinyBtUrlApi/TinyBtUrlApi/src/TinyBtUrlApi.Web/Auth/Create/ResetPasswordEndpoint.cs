@@ -27,7 +27,7 @@ public static class ResetPasswordEndpoint
             message = "Password reset successful."
           });
         })
-        .WithTags("Api")
+        .WithTags("Auth")
         .AllowAnonymous();
   }
 }

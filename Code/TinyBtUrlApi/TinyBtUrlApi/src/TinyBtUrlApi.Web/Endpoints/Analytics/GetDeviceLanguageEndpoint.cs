@@ -20,6 +20,7 @@ public class GetDeviceLanguageEndpoint
     Post("/analytics/user/device-language");
 
     Roles("User");
+    Description(x => x.WithTags("Analytics (User specific)"));
   }
 
   public override async Task HandleAsync(

@@ -17,6 +17,7 @@ public class GetLinkClicksOverTimeEndpoint
   {
     Get("/api/analytics/{shortCode}/clicks-over-time");
     Roles("User");
+    Description(x => x.WithTags("Analytics"));
   }
 
   public override async Task HandleAsync(

@@ -17,6 +17,7 @@ public class GetDefaultExpirationEndpoint
   {
     Get("/api/admin/settings/expiration");
     Roles("Admin"); // 🔒 Admin only
+    Description(x => x.WithTags("Admin"));
   }
 
   public override async Task HandleAsync(CancellationToken ct)

@@ -17,6 +17,7 @@ public class RemoveTagEndpoint : EndpointWithoutRequest
   {
     Delete("/api/urls/{urlId}/tags/{tag}");
     AllowAnonymous();
+    Description(x => x.WithTags("Url Management"));
   }
 
   public override async Task HandleAsync(CancellationToken ct)

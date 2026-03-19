@@ -21,6 +21,7 @@ public class GetPopularLinksEndpoint
     Post("/analytics/user/popular-links");
 
     Roles("User");
+    Description(x => x.WithTags("Analytics (User specific)"));
   }
 
   public override async Task HandleAsync(

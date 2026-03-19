@@ -19,6 +19,7 @@ public class UpdateDefaultExpirationEndpoint
   {
     Put("/api/admin/settings/expiration");
     Roles("Admin"); // 🔒 Admin only
+    Description(x => x.WithTags("Admin"));
   }
 
   public override async Task HandleAsync(

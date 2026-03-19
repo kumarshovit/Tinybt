@@ -20,6 +20,7 @@ public class GetClicksHeatmapEndpoint : EndpointWithoutRequest
 
     // Require logged-in user
     AuthSchemes("Bearer");
+    Description(x => x.WithTags("Analytics (User specific)"));
   }
 
   public override async Task HandleAsync(CancellationToken ct)

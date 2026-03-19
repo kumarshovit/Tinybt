@@ -17,6 +17,7 @@ public class ToggleUserStatusEndpoint
   {
     Put("/api/admin/toggle-user/{UserId}");
     Roles("Admin");
+    Description(x => x.WithTags("Admin"));
   }
 
   public override async Task HandleAsync(CancellationToken ct)

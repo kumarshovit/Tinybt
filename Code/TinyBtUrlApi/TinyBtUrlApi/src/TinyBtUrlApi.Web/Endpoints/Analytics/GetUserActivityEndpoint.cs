@@ -23,6 +23,7 @@ public class GetUserActivityEndpoint(IMediator mediator)
   {
     Get("/api/analytics/users/{UserId}/activity");
     Roles("Admin");
+    Description(x => x.WithTags("Analytics"));
   }
 
   public override async Task HandleAsync(GetUserActivityRequest req, CancellationToken ct)

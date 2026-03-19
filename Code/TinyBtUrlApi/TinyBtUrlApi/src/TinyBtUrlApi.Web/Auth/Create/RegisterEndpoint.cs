@@ -17,6 +17,7 @@ public class RegisterEndpoint : Endpoint<RegisterDto, string>
   {
     Post("/api/auth/register");
     AllowAnonymous();
+    Description(x => x.WithTags("Auth"));
   }
 
   public override async Task HandleAsync(RegisterDto req, CancellationToken ct)

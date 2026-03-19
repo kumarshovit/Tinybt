@@ -17,6 +17,7 @@ public sealed class GetDashboardOverviewEndpoint
   {
     Get("/api/analytics/dashboard");
     AllowAnonymous();
+    Description(x => x.WithTags("Analytics"));
   }
 
   public override async Task HandleAsync(
