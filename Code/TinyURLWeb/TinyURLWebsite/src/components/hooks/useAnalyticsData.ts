@@ -171,13 +171,11 @@ const clicks = aliasClicks[link.shortCode] || 0;
 
 if(link.tags && link.tags.length){
 
-const share = clicks / link.tags.length;
-
 link.tags.forEach((tag:string)=>{
 
 if(!tagCounts[tag]) tagCounts[tag] = 0;
 
-tagCounts[tag] += share;
+tagCounts[tag] += clicks;
 
 });
 
