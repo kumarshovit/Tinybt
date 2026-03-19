@@ -38,6 +38,7 @@ public class GetClicksByDeviceLanguageEndpoint(IMediator mediator)
   {
     Get("/api/analytics/clicks-by-language");
     AllowAnonymous();
+    Description(x => x.WithTags("Analytics"));
   }
 
   public override async Task HandleAsync(

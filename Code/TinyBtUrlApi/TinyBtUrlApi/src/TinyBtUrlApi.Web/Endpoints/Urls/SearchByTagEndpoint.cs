@@ -19,6 +19,7 @@ public class SearchByTagEndpoint : EndpointWithoutRequest<List<UrlResponse>>
   {
     Get("/api/urls/by-tag/{tag}");
     AllowAnonymous();
+    Description(x => x.WithTags("Url Management"));
   }
 
   public override async Task HandleAsync(CancellationToken ct)

@@ -59,4 +59,16 @@ public interface IAnalyticsRepository
 
   Task<List<UserActivityDto>> GetUserActivityAsync(int userId, CancellationToken ct);
 
+  // 🔹 NEW METHOD (Users Over Time)
+  Task<List<UsersOverTimeDto>> GetUsersOverTimeAsync(
+     DateTime startDate,
+     DateTime endDate,
+     string viewType,
+     CancellationToken ct);
+
+  Task<List<UsersByBrowserDto>> GetUsersByBrowserAsync(
+    DateTime startDate,
+    DateTime endDate,
+    CancellationToken ct);
+
 }

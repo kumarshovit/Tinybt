@@ -30,6 +30,6 @@ public static class LogoutEndpoint
 
       return Results.Ok(new { message = "Logged out successfully" });
     })
-    .WithTags("Api");
+    .WithTags("Auth");
   }
 }

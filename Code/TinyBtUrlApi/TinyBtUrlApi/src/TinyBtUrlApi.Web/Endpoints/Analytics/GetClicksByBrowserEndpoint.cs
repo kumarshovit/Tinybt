@@ -49,6 +49,7 @@ public class GetClicksByBrowserEndpoint
   {
     Get("/api/analytics/clicks-by-browser");
     AllowAnonymous();
+    Description(x => x.WithTags("Analytics"));
   }
 
   public override async Task HandleAsync(

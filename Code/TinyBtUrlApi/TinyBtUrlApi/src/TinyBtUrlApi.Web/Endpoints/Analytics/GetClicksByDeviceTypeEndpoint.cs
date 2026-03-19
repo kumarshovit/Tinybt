@@ -13,6 +13,7 @@ public class GetClicksByDeviceTypeEndpoint(IMediator mediator)
   {
     Get("/api/analytics/device-type");
     AllowAnonymous();
+    Description(x => x.WithTags("Analytics"));
   }
 
   public override async Task HandleAsync(CancellationToken ct)

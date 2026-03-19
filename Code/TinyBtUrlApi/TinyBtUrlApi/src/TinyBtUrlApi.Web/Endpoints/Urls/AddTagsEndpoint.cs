@@ -19,6 +19,7 @@ public class AddTagsEndpoint
   {
     Post("/api/urls/{urlId}/tags");
     AllowAnonymous();
+    Description(x => x.WithTags("Url Management"));
   }
 
   public override async Task HandleAsync(AddTagsRequest req, CancellationToken ct)

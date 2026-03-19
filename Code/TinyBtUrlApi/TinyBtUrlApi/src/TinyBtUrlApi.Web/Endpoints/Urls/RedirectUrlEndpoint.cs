@@ -18,6 +18,7 @@ public class RedirectUrlEndpoint : EndpointWithoutRequest
     Get("/{shortCode}");
     AllowAnonymous();
     Options(x => x.WithOrder(int.MaxValue));
+    Description(x => x.WithTags("Url Management"));
   }
 
   public override async Task HandleAsync(CancellationToken ct)

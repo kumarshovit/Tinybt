@@ -12,6 +12,7 @@ public class GetClicksByCountryEndpoint(IMediator mediator)
   {
     Get("/api/analytics/clicks-by-country");
     AllowAnonymous();
+    Description(x => x.WithTags("Analytics"));
   }
 
   public override async Task HandleAsync(

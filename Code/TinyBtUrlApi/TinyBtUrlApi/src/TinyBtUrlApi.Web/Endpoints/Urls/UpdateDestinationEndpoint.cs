@@ -19,6 +19,7 @@ public class UpdateDestinationEndpoint
   {
     Put("/api/urls/{id}/destination");
     AllowAnonymous();
+    Description(x => x.WithTags("Url Management"));
   }
 
   public override async Task HandleAsync(UpdateDestinationRequest req, CancellationToken ct)

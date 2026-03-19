@@ -12,6 +12,7 @@ public class VerifyEmail(VerifyEmailHandler handler)
   {
     Get("/api/auth/verify-email");
     AllowAnonymous();
+    Description(x => x.WithTags("Auth"));
   }
 
   public override async Task<Results<Ok<string>, BadRequest<string>>>

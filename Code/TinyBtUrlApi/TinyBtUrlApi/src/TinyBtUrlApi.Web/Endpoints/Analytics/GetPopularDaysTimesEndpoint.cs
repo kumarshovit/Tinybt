@@ -52,6 +52,7 @@ public class GetPopularDaysTimesEndpoint
   {
     Get("/api/analytics/popular-times"); // no shortcode in URL
     AllowAnonymous();
+    Description(x => x.WithTags("Analytics"));
   }
 
   public override async Task HandleAsync(

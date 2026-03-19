@@ -22,6 +22,7 @@ public class GetUserDashboardEndpoint
 
     // login required
     Roles("User");
+    Description(x => x.WithTags("Analytics (User specific)"));
   }
 
   public override async Task HandleAsync(

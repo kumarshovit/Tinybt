@@ -12,6 +12,7 @@ public class GetTotalClicksEndpoint(IMediator mediator)
   {
     Get("/api/analytics/total-clicks");
     AllowAnonymous(); // remove if you want auth
+    Description(x => x.WithTags("Analytics"));
   }
 
   public override async Task HandleAsync(CancellationToken ct)

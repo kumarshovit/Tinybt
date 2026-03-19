@@ -17,6 +17,7 @@ public class GetAllUsersEndpoint
   {
     Get("/api/admin/all-users");
     Roles("Admin");   // 🔥 role restriction
+    Description(x => x.WithTags("Admin"));
   }
 
   public override async Task HandleAsync(CancellationToken ct)

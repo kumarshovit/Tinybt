@@ -8,4 +8,6 @@ public class PopularLinksRequest
   public string? Link { get; set; }
 
   public string? Tag { get; set; }
+
+  public int? UserId { get; set; }
 }

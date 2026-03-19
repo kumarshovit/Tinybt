@@ -35,7 +35,7 @@ public static class GoogleLoginEndpoint
         expires
       });
     })
-    .WithTags("Api")
+    .WithTags("Auth")
     .AllowAnonymous();
   }
 }

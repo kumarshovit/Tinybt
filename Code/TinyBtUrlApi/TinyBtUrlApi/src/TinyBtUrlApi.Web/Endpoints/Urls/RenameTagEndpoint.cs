@@ -19,6 +19,7 @@ public class RenameTagEndpoint
   {
     Put("/api/urls/{urlId}/tags/{oldTag}");
     AllowAnonymous();
+    Description(x => x.WithTags("Url Management"));
   }
 
   public override async Task HandleAsync(RenameTagRequest req, CancellationToken ct)

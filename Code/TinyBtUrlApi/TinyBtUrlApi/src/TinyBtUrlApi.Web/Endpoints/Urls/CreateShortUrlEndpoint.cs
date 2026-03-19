@@ -19,6 +19,7 @@ public class CreateShortUrlEndpoint
   {
     Post("/api/urls");
     Roles("User", "Admin");
+    Description(x => x.WithTags("Url Management"));
   }
 
   public override async Task HandleAsync(

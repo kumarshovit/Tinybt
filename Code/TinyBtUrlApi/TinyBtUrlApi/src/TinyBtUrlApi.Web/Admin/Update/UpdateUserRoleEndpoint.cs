@@ -17,6 +17,7 @@ public class UpdateUserRoleEndpoint
   {
     Put("/api/admin/update-role");
     Roles("Admin");
+    Description(x => x.WithTags("Admin"));
   }
 
   public override async Task HandleAsync(

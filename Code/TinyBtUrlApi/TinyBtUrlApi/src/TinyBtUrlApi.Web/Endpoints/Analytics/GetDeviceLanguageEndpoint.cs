@@ -18,13 +18,13 @@ public class GetDeviceLanguageEndpoint
   public override void Configure()
   {
     Post("/analytics/user/device-language");
+    Roles("User", "Admin"); // 👈 UPDATED
+    Description(x => x.WithTags("Analytics (User specific)"));
 
-    Roles("User");
-  }
 
   public override async Task HandleAsync(
-      DeviceLanguageRequest req,
-      CancellationToken ct)
+    DeviceLanguageRequest req,
+    CancellationToken ct)
   {
     var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
@@ -34,14 +34,24 @@ public class GetDeviceLanguageEndpoint
       return;
     }
 
-    int userId = int.Parse(userIdClaim.Value);
+    int loggedInUserId = int.Parse(userIdClaim.Value);
+
+    // ✅ Check if admin
+    bool isAdmin = User.IsInRole("Admin");
+
+    // 🔥 MAIN FIX → use selected user if admin
+    int finalUserId = isAdmin && req.UserId.HasValue
+        ? req.UserId.Value
+        : loggedInUserId;
 
     var result = await _mediator.Send(
         new GetDeviceLanguageByUserQuery(
-            userId,
+            finalUserId,   // ✅ FIXED
             req.From,
-            req.To, req.Link,
-    req.Tag),
+            req.To,
+            req.Link,
+            req.Tag
+        ),
         ct);
 
     await Send.OkAsync(result);

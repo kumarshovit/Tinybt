@@ -1,11 +1,13 @@
-﻿using FastEndpoints;
+﻿using System.Security.Claims;
+using FastEndpoints;
 using Mediator;
-using System.Security.Claims;
+using TinyBtUrlApi.Core.DTOs;
 using TinyBtUrlApi.UseCases.Urls.Analytics.GetUserDashboard;
 
 namespace TinyBtUrlApi.Web.Endpoints.Analytics;
 
-public class GetClicksHeatmapEndpoint : EndpointWithoutRequest
+public class GetClicksHeatmapEndpoint
+    : Endpoint<GetAnalyticsRequest, List<HeatmapDto>>
 {
   private readonly IMediator mediator;
 
@@ -16,29 +18,51 @@ public class GetClicksHeatmapEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Get("/analytics/heatmap");
-
-    // Require logged-in user
-    AuthSchemes("Bearer");
+     Post("/analytics/heatmap");
+     Roles("User", "Admin");
+    Description(x => x.WithTags("Analytics (User specific)"));
+   
   }
 
-  public override async Task HandleAsync(CancellationToken ct)
+  public override async Task HandleAsync(GetAnalyticsRequest req, CancellationToken ct)
   {
-    var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+    var claim = User.FindFirst(ClaimTypes.NameIdentifier);
 
-    if (userIdClaim == null)
+    if (claim == null)
     {
-      await Send.UnauthorizedAsync();
+      await Send.UnauthorizedAsync(ct);
       return;
     }
 
-    var userId = int.Parse(userIdClaim.Value);
+    int loggedInUserId = int.Parse(claim.Value);
 
-    var start = DateTime.UtcNow.AddDays(-30);
-    var end = DateTime.UtcNow;
+    int finalUserId;
+
+    // ✅ FIXED ROLE LOGIC
+    if (User.IsInRole("Admin"))
+    {
+      // Admin → own data by default OR selected user
+      finalUserId = req.UserId.HasValue && req.UserId > 0
+          ? req.UserId.Value
+          : loggedInUserId;
+    }
+    else
+    {
+      // 🔥 USER → ALWAYS OWN DATA (ignore req.UserId completely)
+      finalUserId = loggedInUserId;
+    }
+
+    // ✅ DEFAULT DATE RANGE
+    var from = req.From == default
+        ? DateTime.UtcNow.AddDays(-7)
+        : req.From;
+
+    var to = req.To == default
+        ? DateTime.UtcNow
+        : req.To;
 
     var data = await mediator.Send(
-        new GetClicksHeatmapQuery(userId, start, end),
+        new GetClicksHeatmapQuery(finalUserId, from, to),
         ct);
 
     await Send.OkAsync(data);

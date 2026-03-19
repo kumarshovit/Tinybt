@@ -12,6 +12,7 @@ public class GetClicksOverTimeEndpoint(IMediator mediator)
   {
     Get("/api/analytics/clicks-over-time");
     AllowAnonymous();
+    Description(x => x.WithTags("Analytics"));
   }
 
   public override async Task HandleAsync(
