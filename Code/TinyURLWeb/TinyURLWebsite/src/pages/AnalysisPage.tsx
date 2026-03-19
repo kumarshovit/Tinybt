@@ -1424,7 +1424,7 @@ const UserDropdown: React.FC<{ onUserSelect: (user: User | null) => void }> = ({
         onChange={handleChange}
         className="border border-gray-300 rounded px-3 py-2 w-full"
       >
-        <option value="">All / Default</option>
+        <option value="">All Users</option>
         {users.map(user => (
           <option key={user.id} value={user.id}>
             {user.email}
@@ -1482,12 +1482,12 @@ export default function AdminAnalytics() {
             {/* ---------- USER DROPDOWN + CSV BUTTON ---------- */}
             <div className="flex flex-wrap items-center mb-4 gap-4">
               <UserDropdown onUserSelect={setSelectedUser} />
-              <button
+              {/* <button
                 onClick={exportCSV}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
               >
                 Export CSV
-              </button>
+              </button> */}
             </div>
 
             {/* ---------- FILTERS ---------- */}
