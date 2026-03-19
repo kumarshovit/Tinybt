@@ -31,13 +31,13 @@ public static class ServiceConfigs
     services.AddInfrastructureServices(builder.Configuration, logger);
 
     // 🔥 ADD THIS
-    var urls = builder.Configuration
-        .GetSection("policyurl:url")
-        .Get<string[]>();
 
-    var frontendUrl = builder.Environment.IsDevelopment()
-    ? urls?.ElementAtOrDefault(0)
-    : urls?.ElementAtOrDefault(1);
+
+    string frontendUrl = builder.Configuration["BaseUrl:Domain"]!;
+
+    //var frontendUrl = builder.Environment.IsDevelopment()
+    //? urls?.ElementAtOrDefault(0)
+    //: urls?.ElementAtOrDefault(1);
 
 
     services.AddScoped<LoginHandler>();
