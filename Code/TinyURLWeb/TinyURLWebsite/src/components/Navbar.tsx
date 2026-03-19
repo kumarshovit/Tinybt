@@ -10,10 +10,9 @@ const Navbar = () => {
   const role = getUserRole();
   const [menuOpen, setMenuOpen] = useState(false);
 
-
   const handleLogout = async () => {
-    await logoutUser(); // ✅ Call service
-    navigate("/"); // ✅ Redirect
+    await logoutUser();
+    navigate("/");
   };
 
   return (
@@ -28,7 +27,8 @@ const Navbar = () => {
             className="h-7 sm:h-9 md:h-10 w-auto object-contain"
           />
         </Link>
-        {/* Hamburger Button (Mobile Only) */}
+
+        {/* Mobile Button */}
         <button
           className="md:hidden"
           onClick={() => setMenuOpen(!menuOpen)}
@@ -39,19 +39,18 @@ const Navbar = () => {
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-6">
 
-          {role === "Admin" && (
-            <Link
-              to="/analysis"
-              className="flex items-center gap-1 hover:text-blue-600"
-            >
-              <BarChart3 size={18} />
-              Analysis
-            </Link>
-          )}
+          {/* ✅ COMMON ANALYTICS LINK */}
+          <Link
+            to="/analytics"
+            className="flex items-center gap-1 hover:text-blue-600"
+          >
+            <BarChart3 size={18} />
+            Analytics
+          </Link>
 
           <Link
             to="/dashboard"
-            className="text-gray-700 hover:text-blue-600 transition"
+            className="text-gray-700 hover:text-blue-600"
           >
             Dashboard
           </Link>
@@ -59,7 +58,7 @@ const Navbar = () => {
           {role === "Admin" && (
             <Link
               to="/admin"
-              className="text-gray-700 hover:text-blue-600 transition"
+              className="text-gray-700 hover:text-blue-600"
             >
               Admin Panel
             </Link>
@@ -67,23 +66,14 @@ const Navbar = () => {
 
           <Link
             to="/profile"
-            className="text-gray-700 hover:text-blue-600 transition"
+            className="text-gray-700 hover:text-blue-600"
           >
             Profile
           </Link>
 
-          {role === "User" && (
-            <Link
-              to="/my-analytics"
-              className="text-gray-700 hover:text-blue-600"
-            >
-              My Analytics
-            </Link>
-          )}
-
           <button
             onClick={handleLogout}
-            className="bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition"
+            className="bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700"
           >
             Logout
           </button>
@@ -95,15 +85,11 @@ const Navbar = () => {
       {menuOpen && (
         <div className="flex flex-col gap-4 mt-4 md:hidden">
 
-          {role === "Admin" && (
-            <Link
-              to="/analysis"
-              className="flex items-center gap-2"
-            >
-              <BarChart3 size={18} />
-              Analysis
-            </Link>
-          )}
+          {/* ✅ SAME HERE */}
+          <Link to="/analytics" className="flex items-center gap-2">
+            <BarChart3 size={18} />
+            Analytics 📊
+          </Link>
 
           <Link to="/dashboard">Dashboard</Link>
 
@@ -112,10 +98,6 @@ const Navbar = () => {
           )}
 
           <Link to="/profile">Profile</Link>
-
-          {role === "User" && (
-            <Link to="/my-analytics">My Analytics 📊</Link>
-          )}
 
           <button
             onClick={handleLogout}

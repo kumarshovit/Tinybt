@@ -24,6 +24,7 @@ const CardWrapper = ({ children, onClick, hoverText }: any) => (
 
 export default function SummarySection({
   totalClicks,
+  clicks,
   totalLinks,
   country,
   device,
@@ -32,9 +33,11 @@ export default function SummarySection({
   openAllLinksPopup   // ⭐ ADD THIS
 }: any){
 
-  const totalClicksValue = totalClicks?.reduce(
-    (sum:any,x:any)=>sum+x.count,0
-  ) || 0;
+  const totalClicksValue = Array.isArray(totalClicks)
+  ? totalClicks.reduce((sum: any, x: any) => sum + (x?.count || 0), 0)
+  : typeof totalClicks === "object"
+  ? totalClicks?.count || 0
+  : totalClicks || 0;
 
   return(
 
@@ -42,7 +45,7 @@ export default function SummarySection({
 
       {/* ---------- Total Clicks ---------- */}
       <CardWrapper
-        onClick={() => openDataPopup("Daily Click Breakdown", totalClicks)}
+        onClick={() => openDataPopup("Daily Click Breakdown", clicks)}
         hoverText="View click trends"
       >
         <SummaryCard

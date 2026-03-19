@@ -23,8 +23,7 @@ export default function useAnalyticsData({
   const [topLinks, setTopLinks] = useState<any[]>([]);
   const [language, setLanguage] = useState<any[]>([]);
   const [totalClicks, setTotalClicks] = useState(0);
-
-  // ✅ NEW (HEATMAP)
+  const [linkClicks, setLinkClicks] = useState<any[]>([]);
   const [heatmap, setHeatmap] = useState<any[]>([]);
 
   const token = localStorage.getItem("token");
@@ -34,14 +33,14 @@ export default function useAnalyticsData({
     Authorization: `Bearer ${token}`
   };
 
-  /* ---------- FETCH USER LINKS (UPDATED) ---------- */
+  /* ---------- FETCH USER LINKS ---------- */
   const fetchUserLinks = async () => {
 
     const isAdminSelectingUser = userId !== undefined && userId !== null;
 
     const url = isAdminSelectingUser
-      ? `${API_BASE}/api/admin/urls`   // ✅ admin route
-      : `${API_BASE}/api/urls`;        // ✅ normal user
+      ? `${API_BASE}/api/admin/urls`
+      : `${API_BASE}/api/urls`;
 
     const options: any = {
       method: isAdminSelectingUser ? "POST" : "GET",
@@ -136,6 +135,9 @@ export default function useAnalyticsData({
 
       const linksData = await linksRes.json();
 
+      // ✅ IMPORTANT FIX
+      setLinkClicks(linksData);
+
       const aliasClicks: Record<string, number> = {};
       linksData.forEach((x: any) => {
         aliasClicks[x.label] = x.count;
@@ -163,7 +165,7 @@ export default function useAnalyticsData({
 
       setTopLinks(tagData);
 
-      /* ---------- 🔥 HEATMAP (NEW) ---------- */
+      /* ---------- 🔥 HEATMAP ---------- */
       const heatmapRes = await fetch(`${API_BASE}/analytics/heatmap`, {
         method: "POST",
         headers,
@@ -185,7 +187,7 @@ export default function useAnalyticsData({
   /* ---------- LOAD ---------- */
   useEffect(() => {
     fetchUserLinks();
-  }, [userId]); // ✅ IMPORTANT
+  }, [userId]);
 
   useEffect(() => {
     if (allLinks.length) {
@@ -193,6 +195,71 @@ export default function useAnalyticsData({
     }
   }, [from, to, selectedLink, selectedTag, allLinks, userId]);
 
+  /* ---------- FILTERED LINKS ---------- */
+  const filteredLinks = allLinks.filter((link: any) => {
+
+    const hasClicks = linkClicks.some(
+      (x: any) => x.label === link.shortCode
+    );
+
+    const linkMatch =
+      !selectedLink || link.shortCode === selectedLink;
+
+    const tagMatch =
+      !selectedTag ||
+      (link.tags && link.tags.includes(selectedTag));
+
+    return hasClicks && linkMatch && tagMatch;
+  });
+
+  /* ---------- ALL LINKS POPUP ---------- */
+  const openAllLinksPopup = async () => {
+
+    const clickMap: Record<string, number> = {};
+
+    linkClicks.forEach((x: any) => {
+      clickMap[x.label] = x.count;
+    });
+
+    return filteredLinks.map((link: any) => ({
+      shortUrl: `${API_BASE}/${link.shortCode}`,
+      shortCode: link.shortCode,
+      clickCount: clickMap[link.shortCode] || 0
+    }));
+  };
+
+const openTagPopup = async (tag: string) => {
+
+  const body = {
+    from,
+    to,
+    tag,
+    ...(userId && { userId })
+  };
+
+  const res = await fetch(
+    `${API_BASE}/analytics/user/popular-links`,
+    {
+      method: "POST",
+      headers,
+      body: JSON.stringify(body)
+    }
+  );
+
+  const data = await res.json();
+
+  // ✅ FIX: ensure array
+  if (!Array.isArray(data)) {
+    console.error("Invalid popup data:", data);
+    return [];
+  }
+
+  return data.map((x: any) => ({
+    shortUrl: `${API_BASE}/${x.label}`,
+    shortCode: x.label,
+    clickCount: x.count
+  }));
+};
   /* ---------- RETURN ---------- */
   return {
     allLinks,
@@ -206,6 +273,10 @@ export default function useAnalyticsData({
     language,
     topLinks,
     totalClicks,
-    heatmap // ✅ NEW
+    linkClicks,
+    totalUrls: filteredLinks.length,
+    heatmap,
+    openAllLinksPopup,
+    openTagPopup
   };
 }
