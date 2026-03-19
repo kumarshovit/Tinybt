@@ -18,12 +18,13 @@ public class GetAnalyticsEndpoint
   {
     Post("/analytics/breakdown");
 
-    Roles("User");
+    Roles("User", "Admin");
   }
 
+
   public override async Task HandleAsync(
-      GetAnalyticsRequest req,
-      CancellationToken ct)
+    GetAnalyticsRequest req,
+    CancellationToken ct)
   {
     var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
@@ -33,17 +34,20 @@ public class GetAnalyticsEndpoint
       return;
     }
 
-    int userId = int.Parse(userIdClaim.Value);
+    int loggedInUserId = int.Parse(userIdClaim.Value);
+
+    // 🔥 MAIN FIX
+    int finalUserId = req.UserId ?? loggedInUserId;
 
     var result = await _mediator.Send(
         new GetAnalyticsQuery(
-    userId,
-    req.From,
-    req.To,
-    req.Type,
-    req.Link,
-    req.Tag
-),
+            finalUserId,   // ✅ use selected user if present
+            req.From,
+            req.To,
+            req.Type,
+            req.Link,
+            req.Tag
+        ),
         ct);
 
     await Send.OkAsync(result);

@@ -394,28 +394,63 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
   }
 
 
+  //public async Task<List<HeatmapDto>> GetClicksHeatmapAsync(
+  //    int userId,
+  //    DateTime start,
+  //    DateTime end,
+  //    CancellationToken ct)
+  //{
+  //  // 1️⃣ user ke shortcodes
+  //  var userShortCodes = await context.UrlMappings
+  //      .Where(u => u.UserId == userId)
+  //      .Select(u => u.ShortCode)
+  //      .ToListAsync(ct);
+
+  //  // 2️⃣ relevant click logs
+  //  var clickLogs = await context.ClickLogs
+  //      .Where(c =>
+  //          c.ClickedAt >= start &&
+  //          c.ClickedAt <= end &&
+  //          userShortCodes.Contains(c.ShortCode))
+  //      .ToListAsync(ct);
+
+  //  // 3️⃣ memory me grouping
+  //  return clickLogs
+  //      .GroupBy(c => new
+  //      {
+  //        Day = (int)c.ClickedAt.DayOfWeek,
+  //        Hour = c.ClickedAt.Hour
+  //      })
+  //      .Select(g => new HeatmapDto
+  //      {
+  //        Day = g.Key.Day,
+  //        Hour = g.Key.Hour,
+  //        Count = g.Count()
+  //      }).ToList();
+  //}
+
   public async Task<List<HeatmapDto>> GetClicksHeatmapAsync(
       int userId,
       DateTime start,
       DateTime end,
       CancellationToken ct)
   {
-    // 1️⃣ user ke shortcodes
-    var userShortCodes = await context.UrlMappings
-        .Where(u => u.UserId == userId)
-        .Select(u => u.ShortCode)
-        .ToListAsync(ct);
+    // ✅ Step 1: Fetch raw data from DB (ONLY translatable parts)
+    var data = await (
+        from c in context.ClickLogs
+        join u in context.UrlMappings
+            on c.ShortCode equals u.ShortCode
+        where u.UserId == userId
+              && c.ClickedAt >= start
+              && c.ClickedAt <= end
+        select new
+        {
+          c.ClickedAt
+        }
+    ).ToListAsync(ct);
 
-    // 2️⃣ relevant click logs
-    var clickLogs = await context.ClickLogs
-        .Where(c =>
-            c.ClickedAt >= start &&
-            c.ClickedAt <= end &&
-            userShortCodes.Contains(c.ShortCode))
-        .ToListAsync(ct);
-
-    // 3️⃣ memory me grouping
-    return clickLogs
+    // ✅ Step 2: Do grouping in memory (NO EF issues)
+    return data
         .GroupBy(c => new
         {
           Day = (int)c.ClickedAt.DayOfWeek,
@@ -426,7 +461,8 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
           Day = g.Key.Day,
           Hour = g.Key.Hour,
           Count = g.Count()
-        }).ToList();
+        })
+        .ToList();
   }
 
   public async Task<List<UserActivityDto>> GetUserActivityAsync(int userId, CancellationToken ct)

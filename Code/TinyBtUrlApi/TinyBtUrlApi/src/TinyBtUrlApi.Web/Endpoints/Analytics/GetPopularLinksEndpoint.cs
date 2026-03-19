@@ -20,12 +20,12 @@ public class GetPopularLinksEndpoint
   {
     Post("/analytics/user/popular-links");
 
-    Roles("User");
+    Roles("User", "Admin");
   }
 
   public override async Task HandleAsync(
-      PopularLinksRequest req,
-      CancellationToken ct)
+    PopularLinksRequest req,
+    CancellationToken ct)
   {
     var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
 
@@ -35,14 +35,24 @@ public class GetPopularLinksEndpoint
       return;
     }
 
-    int userId = int.Parse(userIdClaim.Value);
+    int loggedInUserId = int.Parse(userIdClaim.Value);
+
+    // ✅ Check if Admin
+    bool isAdmin = User.IsInRole("Admin");
+
+    // 🔥 MAIN FIX
+    int finalUserId = isAdmin && req.UserId.HasValue
+        ? req.UserId.Value
+        : loggedInUserId;
 
     var result = await _mediator.Send(
         new GetPopularLinksByUserQuery(
-            userId,
+            finalUserId,   // ✅ FIXED
             req.From,
-            req.To, req.Link,
-    req.Tag),
+            req.To,
+            req.Link,
+            req.Tag
+        ),
         ct);
 
     await Send.OkAsync(result);
