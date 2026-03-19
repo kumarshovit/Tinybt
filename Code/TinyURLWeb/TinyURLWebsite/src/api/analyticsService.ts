@@ -1,16 +1,18 @@
 import axios from "axios";
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}/api/analytics`;
+// const BASE_URLS = `${import.meta.env.VITE_API_URL}/api/admin/analytics`;
 
-export const getClicksOverTime = (
-  startDate: string,
-  endDate: string,
+export const getUsersOverTime = (
+  start: string,
+  end: string,
   viewType: string
 ) =>
-  axios.get(`${BASE_URL}/clicks-over-time`, {
-    params: { startDate, endDate, viewType },
+  axios.get(`${BASE_URL}/users-over-time`, {
+    params: { start, end, viewType },
     withCredentials: true,
   });
+
 
 export const getClicksByCountry = (
   startDate: string,
@@ -62,7 +64,7 @@ export const getClicksByBrowser = async (
   endDate?: string
 ) => {
   return await axios.get(
-    `${import.meta.env.VITE_API_URL}/api/analytics/clicks-by-browser`,
+    `${import.meta.env.VITE_API_URL}/api/admin/analytics/users-by-browser`,
     {
       params: {
         startDate,

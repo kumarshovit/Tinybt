@@ -8,11 +8,11 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
-import { getClicksOverTime } from "../../api/analyticsService";
+import { getUsersOverTime } from "../../api/analyticsService";
 
 interface ClickData {
   period: string;
-  clicks: number;
+  users: number;
 }
 
 interface Props {
@@ -20,7 +20,7 @@ interface Props {
   endDate: string;
 }
 
-export default function ClicksOverTime({ startDate, endDate }: Props) {
+export default function UsersOverTime({ startDate, endDate }: Props) {
 
   const [data, setData] = useState<ClickData[]>([]);
   const [viewType, setViewType] = useState<"daily" | "weekly">("daily");
@@ -36,12 +36,12 @@ export default function ClicksOverTime({ startDate, endDate }: Props) {
     try {
       setLoading(true);
 
-      const res = await getClicksOverTime(startDate, endDate, viewType);
+      const res = await getUsersOverTime(startDate, endDate, viewType);
 
       setData(res.data);
 
     } catch (err) {
-      console.error("Error loading clicks data", err);
+      console.error("Error loading users data", err);
     } finally {
       setLoading(false);
     }
@@ -68,7 +68,7 @@ export default function ClicksOverTime({ startDate, endDate }: Props) {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
 
         <h2 className="text-lg sm:text-xl font-bold">
-          Clicks Over Time
+          Users Over Time
         </h2>
 
         <div className="flex gap-2">
@@ -130,7 +130,7 @@ export default function ClicksOverTime({ startDate, endDate }: Props) {
 
             <Line
               type="monotone"
-              dataKey="clicks"
+              dataKey="users"
               stroke="#2563eb"
               strokeWidth={3}
               dot={{ r: 4 }}

@@ -400,28 +400,63 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
   }
 
 
+  //public async Task<List<HeatmapDto>> GetClicksHeatmapAsync(
+  //    int userId,
+  //    DateTime start,
+  //    DateTime end,
+  //    CancellationToken ct)
+  //{
+  //  // 1️⃣ user ke shortcodes
+  //  var userShortCodes = await context.UrlMappings
+  //      .Where(u => u.UserId == userId)
+  //      .Select(u => u.ShortCode)
+  //      .ToListAsync(ct);
+
+  //  // 2️⃣ relevant click logs
+  //  var clickLogs = await context.ClickLogs
+  //      .Where(c =>
+  //          c.ClickedAt >= start &&
+  //          c.ClickedAt <= end &&
+  //          userShortCodes.Contains(c.ShortCode))
+  //      .ToListAsync(ct);
+
+  //  // 3️⃣ memory me grouping
+  //  return clickLogs
+  //      .GroupBy(c => new
+  //      {
+  //        Day = (int)c.ClickedAt.DayOfWeek,
+  //        Hour = c.ClickedAt.Hour
+  //      })
+  //      .Select(g => new HeatmapDto
+  //      {
+  //        Day = g.Key.Day,
+  //        Hour = g.Key.Hour,
+  //        Count = g.Count()
+  //      }).ToList();
+  //}
+
   public async Task<List<HeatmapDto>> GetClicksHeatmapAsync(
       int userId,
       DateTime start,
       DateTime end,
       CancellationToken ct)
   {
-    // 1️⃣ user ke shortcodes
-    var userShortCodes = await context.UrlMappings
-        .Where(u => u.UserId == userId)
-        .Select(u => u.ShortCode)
-        .ToListAsync(ct);
+    // ✅ Step 1: Fetch raw data from DB (ONLY translatable parts)
+    var data = await (
+        from c in context.ClickLogs
+        join u in context.UrlMappings
+            on c.ShortCode equals u.ShortCode
+        where u.UserId == userId
+              && c.ClickedAt >= start
+              && c.ClickedAt <= end
+        select new
+        {
+          c.ClickedAt
+        }
+    ).ToListAsync(ct);
 
-    // 2️⃣ relevant click logs
-    var clickLogs = await context.ClickLogs
-        .Where(c =>
-            c.ClickedAt >= start &&
-            c.ClickedAt <= end &&
-            userShortCodes.Contains(c.ShortCode))
-        .ToListAsync(ct);
-
-    // 3️⃣ memory me grouping
-    return clickLogs
+    // ✅ Step 2: Do grouping in memory (NO EF issues)
+    return data
         .GroupBy(c => new
         {
           Day = (int)c.ClickedAt.DayOfWeek,
@@ -432,7 +467,8 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
           Day = g.Key.Day,
           Hour = g.Key.Hour,
           Count = g.Count()
-        }).ToList();
+        })
+        .ToList();
   }
 
   public async Task<List<UserActivityDto>> GetUserActivityAsync(int userId, CancellationToken ct)
@@ -489,4 +525,89 @@ public sealed class AnalyticsRepository : IAnalyticsRepository
         .OrderByDescending(x => x.ActivityTime)
         .ToList();
   }
+
+  //Admin analysis changes
+
+
+  public async Task<List<UsersOverTimeDto>> GetUsersOverTimeAsync(
+     DateTime start,
+     DateTime end,
+     string viewType,
+     CancellationToken ct)
+  {
+    var query =
+        from click in context.ClickLogs
+        join url in context.UrlMappings
+            on click.ShortCode equals url.ShortCode
+        where click.ClickedAt >= start && click.ClickedAt <= end
+        select new
+        {
+          click.ClickedAt,
+          url.UserId
+        };
+
+    // WEEKLY
+    if (viewType.ToLower() == "weekly")
+    {
+      return await query
+          .GroupBy(x => EF.Functions.DateDiffWeek(start, x.ClickedAt))
+          .OrderBy(g => g.Key)
+          .Select(g => new UsersOverTimeDto
+          {
+            Period = "Week " + g.Key,
+            Users = g.Select(x => x.UserId).Distinct().Count()
+          })
+          .ToListAsync(ct);
+    }
+
+    // DAILY
+    return await query
+        .GroupBy(x => x.ClickedAt.Date)
+        .OrderBy(g => g.Key)
+        .Select(g => new UsersOverTimeDto
+        {
+          Period = g.Key.ToString("yyyy-MM-dd"),
+          Users = g.Select(x => x.UserId).Distinct().Count()
+        })
+        .ToListAsync(ct);
+  }
+
+  public async Task<List<UsersByBrowserDto>> GetUsersByBrowserAsync(
+     DateTime startDate,
+     DateTime endDate,
+     CancellationToken ct)
+  {
+    var query =
+        from click in context.ClickLogs
+        join url in context.UrlMappings
+            on click.ShortCode equals url.ShortCode
+        where click.ClickedAt >= startDate &&
+              click.ClickedAt <= endDate
+        select new
+        {
+          click.Browser,
+          url.UserId
+        };
+
+    return await query
+        .GroupBy(x =>
+            string.IsNullOrEmpty(x.Browser)
+                ? "Unknown"
+                : x.Browser)
+        .Select(g => new UsersByBrowserDto
+        {
+          Browser = g.Key,
+          Users = g
+                .Select(x => x.UserId)
+                .Distinct()
+                .Count()
+        })
+        .OrderByDescending(x => x.Users)
+        .ToListAsync(ct);
+  }
 }
+
+
+//Admin analysis changes
+
+

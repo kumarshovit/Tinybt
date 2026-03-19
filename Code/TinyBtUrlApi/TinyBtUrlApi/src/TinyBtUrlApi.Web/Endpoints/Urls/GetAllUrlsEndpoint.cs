@@ -20,7 +20,9 @@ public class GetAllUrlsEndpoint
   public override void Configure()
   {
     Get("/api/urls");
+    Roles("User", "Admin"); // 👈 UPDATED
     Description(x => x.WithTags("Url Management"));
+
   }
 
   public override async Task HandleAsync(CancellationToken ct)

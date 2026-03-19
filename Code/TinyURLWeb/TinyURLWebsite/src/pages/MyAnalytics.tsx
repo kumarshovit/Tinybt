@@ -135,7 +135,7 @@ openDataPopup={popup.openDataPopup}
 {/* ---------- HEATMAP ---------- */}
 
 <div id="heatmap" className="mt-8 lg:mt-12 overflow-x-auto">
-<HeatmapChart/>
+  <HeatmapChart data={analytics.heatmap} />
 </div>
 
 </div>
