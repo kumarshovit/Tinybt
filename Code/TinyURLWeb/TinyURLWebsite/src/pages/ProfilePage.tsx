@@ -7,6 +7,7 @@ import ProfileAvatar from "../components/profile/ProfileAvatar";
 import ProfileInfoCard from "../components/profile/ProfileInfoCard";
 import ProfileSecurityCard from "../components/profile/ProfileSecurityCard";
 import DangerZoneCard from "../components/profile/DangerZoneCard";
+import Footer from "../components/Footer";
 
 interface Profile {
   email: string;
@@ -194,7 +195,7 @@ const ProfilePage = () => {
         </div>
 
       </div>
-
+      <Footer/>
     </>
   );
 };

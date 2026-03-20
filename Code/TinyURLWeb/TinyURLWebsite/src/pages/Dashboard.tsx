@@ -4,7 +4,7 @@ import HeroSection from "../components/HeroSection";
 import RecentLinks from "../components/RecentLinks";
 import { searchByTag, getAllUrls } from "../api/urlService";
 import api from "../utils/api";
-
+import Footer from "../components/Footer";
 export default function Dashboard() {
 
   const [links, setLinks] = useState<any[]>([]);
@@ -95,6 +95,9 @@ export default function Dashboard() {
         setActiveEdit={setActiveEdit}
         loading={loading}
       />
+
+      <Footer/>
+
     </div>
   );
 }

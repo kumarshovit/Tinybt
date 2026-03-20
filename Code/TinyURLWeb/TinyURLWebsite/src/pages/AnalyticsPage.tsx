@@ -12,6 +12,7 @@ import useAnalyticsFilters from "../components/hooks/useAnalyticsFilters";
 import useAnalyticsData from "../components/hooks/useAnalyticsData";
 import useAnalyticsPopup from "../components/hooks/useAnalyticsPopup";
 import { getUserRole } from "../utils/auth";
+import Footer from "../components/Footer";
 
 // ---------------- USER DROPDOWN ----------------
 interface User {
@@ -222,6 +223,8 @@ export default function AnalyticsPage() {
         popupData={popup.popupData}
         setOpenPopup={popup.setOpenPopup}
       />
+
+      <Footer/>
     </>
   );
 }
