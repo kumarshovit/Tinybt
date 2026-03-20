@@ -5,6 +5,7 @@ import Navbar from "../components/Navbar";
 import ActivityModal from "../components/ActivityModal";
 import { getUserActivity } from "../api/activityService";
 import type { Activity } from "../types/activity";
+import Footer from "../components/Footer";
 
 interface User {
   id: number;
@@ -324,7 +325,9 @@ const AdminPage = () => {
           onClose={() => setShowActivity(false)}
         />
       )}
+    <Footer/>
     </>
+
   );
 };
 
