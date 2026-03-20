@@ -82,6 +82,7 @@ export default function AnalyticsPage() {
 
   const filters = useAnalyticsFilters();
   const popup = useAnalyticsPopup();
+
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const analytics = useAnalyticsData({

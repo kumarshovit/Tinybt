@@ -105,7 +105,6 @@ const AdminPage = () => {
     }
   };
 
-
   // ================= FETCH USER ACTIVITY =================
 
   const fetchUserActivity = async (userId: number) => {
@@ -288,7 +287,7 @@ const AdminPage = () => {
                           Activity
                         </button>
 
-                         <button
+                        <button
                           onClick={() => toggleUserStatus(user.id)}
                           className={`px-3 py-1 rounded text-sm text-white 
     ${
@@ -325,9 +324,9 @@ const AdminPage = () => {
           onClose={() => setShowActivity(false)}
         />
       )}
-    <Footer/>
-    </>
 
+      <Footer />
+    </>
   );
 };
 
