@@ -153,9 +153,22 @@ export default function ShortenCard({ onUrlCreated }: any) {
 
       {/* Expiration */}
 
+      <div className="flex items-start gap-2 bg-blue-50 border border-blue-200 rounded-md px-3 py-2 mt-2 mb-2">
+
+        <span className="text-blue-500 text-sm mt-[2px]">ℹ️</span>
+
+        <div className="text-xs text-blue-700 mb">
+          <p>Select an expiration date if needed.</p>
+          <p className="text-blue-600 font-medium">
+            Default: 10 days
+          </p>
+        </div>
+
+      </div>
       <input
         type="datetime-local"
         value={expirationDate}
+        placeholder="Select expiration date (optional)"
         onChange={(e) => setExpirationDate(e.target.value)}
         min={new Date().toISOString().slice(0, 16)}
         className="w-full border rounded-lg px-4 py-2 mb-4"
