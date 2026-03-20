@@ -63,13 +63,36 @@ public class RegisterHandler
     // ✅ NEW (dynamic URL)
     var verificationLink =
         $"{_frontendUrl}/verify-email?token={verificationToken}";
+    var emailBody = $@"
+<html>
+  <body style='font-family: Arial; background-color:#f4f6f8; padding:20px;'>
+    <div style='max-width:600px; margin:auto; background:white; padding:30px; border-radius:10px;'>
+
+      <h2>Verify Your Email</h2>
+
+      <p>Hello,</p>
+
+      <p>Thank you for registering. Please verify your email by clicking the button below.</p>
+
+      <div style='text-align:center; margin:30px 0;'>
+        <a href='{verificationLink}' 
+           style='background-color:#4CAF50; color:white; padding:12px 20px; text-decoration:none; border-radius:5px;'>
+           Verify Email
+        </a>
+      </div>
+
+      <p>If you didn’t create this account, ignore this email.</p>
+
+    </div>
+  </body>
+</html>";
 
     // ✅ Send email
     await _emailSender.SendEmailAsync(
       user.Email,
       "kg834208@gmail.com",
       "Verify Your Email",
-      $"Click here to verify: {verificationLink}"
+      emailBody
     );
     return "Registration successful. Please check your email to verify your account.";
   }

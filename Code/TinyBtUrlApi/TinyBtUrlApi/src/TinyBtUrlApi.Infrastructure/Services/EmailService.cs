@@ -30,7 +30,7 @@ public class EmailService : IEmailSender
     client.EnableSsl = true;
 
     var mailMessage = new MailMessage(from, to, subject, body);
-
+    mailMessage.IsBodyHtml = true;
     await client.SendMailAsync(mailMessage);
   }
 }
