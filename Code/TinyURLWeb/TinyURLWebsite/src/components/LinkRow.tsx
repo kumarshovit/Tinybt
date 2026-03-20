@@ -34,7 +34,7 @@ export default function LinkRow({
     const [newAlias, setNewAlias] = useState("");
     const [newDestination, setNewDestination] = useState("");
     const [error, setError] = useState("");
-    
+    const [copied, setCopied] = useState(false);
 
     const cardRef = useRef<HTMLDivElement>(null);
 
@@ -53,6 +53,13 @@ export default function LinkRow({
         () => setActiveEdit(null),
         isEditingAlias || isEditingDestination
     );
+   const handleCopy = () => {
+    const urlToCopy = link.shortUrl || `${window.location.origin}/${link.shortCode}`;
+    navigator.clipboard.writeText(urlToCopy);
+    setCopied(true);
+
+    setTimeout(() => setCopied(false), 2000);
+};
 
     const handleAliasUpdate = async () => {
         if (!newAlias.trim()) return;
@@ -149,12 +156,10 @@ export default function LinkRow({
 
                 <div className="flex gap-3">
                     <button
-                        onClick={() =>
-                            navigator.clipboard.writeText(link.shortUrl)
-                        }
+                        onClick={handleCopy}
                         className="bg-gray-200 px-3 py-1 rounded text-sm"
                     >
-                        Copy
+                        {copied ? "Copied!" : "Copy"}
                     </button>
 
                     <button
@@ -208,14 +213,14 @@ export default function LinkRow({
             {isEditingAlias && (
                 <div className="flex gap-2 mt-4">
 
-                   
+
                     <input
                         autoFocus
                         value={newAlias}
                         onChange={(e) => setNewAlias(e.target.value)}
                         className="border px-3 py-1 rounded flex-1"
                     />
-                     {error && (
+                    {error && (
                         <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
                             {error}
                         </p>
