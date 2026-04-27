@@ -489,7 +489,7 @@ public class LoginHandler
 
       if (ipAttempt.AttemptCount >= 5)
       {
-        ipAttempt.BlockedUntil = now.AddMinutes(1);
+        ipAttempt.BlockedUntil = now.AddMinutes(10);
       }
 
       await _ipRepository.UpdateAsync(ipAttempt);
