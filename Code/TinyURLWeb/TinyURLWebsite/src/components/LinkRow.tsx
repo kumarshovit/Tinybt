@@ -78,7 +78,7 @@ export default function LinkRow({
                 l.id === link.id
                     ? {
                         ...l,
-                        shortUrl: `${window.location.origin}/${result.data.shortCode}`,
+                        shortUrl: `https://link.bt/${result.data.shortCode}`,
                     }
                     : l
             )
