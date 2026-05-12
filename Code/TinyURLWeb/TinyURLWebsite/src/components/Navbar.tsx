@@ -1,12 +1,13 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { logoutUser } from "../services/authService";
 import { getUserRole } from "../utils/auth";
 import { BarChart3, Menu, X } from "lucide-react";
 import { useState } from "react";
-import logo from "../assets/logo.png"
+import logo from "../assets/logo.png";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // ✅ current route
   const role = getUserRole();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -14,6 +15,14 @@ const Navbar = () => {
     await logoutUser();
     navigate("/");
   };
+
+  // ✅ Active Link Style
+  const navLinkClass = (path: string) =>
+    `transition-colors ${
+      location.pathname === path
+        ? "text-blue-600 font-semibold"
+        : "text-gray-700 hover:text-blue-600"
+    }`;
 
   return (
     <nav className="bg-white shadow-md px-4 sm:px-6 lg:px-10 py-3">
@@ -39,10 +48,9 @@ const Navbar = () => {
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-6">
 
-          {/* ✅ COMMON ANALYTICS LINK */}
           <Link
             to="/analytics"
-            className="flex items-center gap-1 hover:text-blue-600"
+            className={`flex items-center gap-1 ${navLinkClass("/analytics")}`}
           >
             <BarChart3 size={18} />
             Analytics
@@ -50,7 +58,7 @@ const Navbar = () => {
 
           <Link
             to="/dashboard"
-            className="text-gray-700 hover:text-blue-600"
+            className={navLinkClass("/dashboard")}
           >
             Dashboard
           </Link>
@@ -58,7 +66,7 @@ const Navbar = () => {
           {role === "Admin" && (
             <Link
               to="/admin"
-              className="text-gray-700 hover:text-blue-600"
+              className={navLinkClass("/admin")}
             >
               Admin Panel
             </Link>
@@ -66,7 +74,7 @@ const Navbar = () => {
 
           <Link
             to="/profile"
-            className="text-gray-700 hover:text-blue-600"
+            className={navLinkClass("/profile")}
           >
             Profile
           </Link>
@@ -85,19 +93,36 @@ const Navbar = () => {
       {menuOpen && (
         <div className="flex flex-col gap-4 mt-4 md:hidden">
 
-          {/* ✅ SAME HERE */}
-          <Link to="/analytics" className="flex items-center gap-2">
+          <Link
+            to="/analytics"
+            className={`flex items-center gap-2 ${navLinkClass("/analytics")}`}
+          >
             <BarChart3 size={18} />
             Analytics 📊
           </Link>
 
-          <Link to="/dashboard">Dashboard</Link>
+          <Link
+            to="/dashboard"
+            className={navLinkClass("/dashboard")}
+          >
+            Dashboard
+          </Link>
 
           {role === "Admin" && (
-            <Link to="/admin">Admin Panel 🔐</Link>
+            <Link
+              to="/admin"
+              className={navLinkClass("/admin")}
+            >
+              Admin Panel 🔐
+            </Link>
           )}
 
-          <Link to="/profile">Profile</Link>
+          <Link
+            to="/profile"
+            className={navLinkClass("/profile")}
+          >
+            Profile
+          </Link>
 
           <button
             onClick={handleLogout}

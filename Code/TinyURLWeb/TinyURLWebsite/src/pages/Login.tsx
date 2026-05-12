@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import { loginUser } from "../services/authService";
 import GoogleLogin from "../components/auth/GoogleLogin";
 
@@ -8,6 +9,9 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // ✅ Show/Hide Password State
+  const [showPassword, setShowPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -36,21 +40,27 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center  px-4">
+    <div className="min-h-screen flex items-center justify-center px-4">
       <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl">
+
+        {/* Heading */}
         <h2 className="text-3xl font-bold text-center text-gray-800">
           Welcome Back 👋
         </h2>
+
         <p className="text-center text-gray-500 mt-2 mb-6">
           Login to manage your short links
         </p>
 
+        {/* Form */}
         <form onSubmit={handleLogin} className="space-y-4">
+
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1">
               Email
             </label>
+
             <input
               type="email"
               placeholder="Enter your email"
@@ -66,16 +76,33 @@ const Login = () => {
             <label className="block text-sm font-medium text-gray-600 mb-1">
               Password
             </label>
-            <input
-              type="password"
-              placeholder="Enter your password"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                className="w-full px-4 py-2 pr-12 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+
+              {/* Eye Button */}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? (
+                  <EyeOff size={20} />
+                ) : (
+                  <Eye size={20} />
+                )}
+              </button>
+            </div>
           </div>
-          {/* Forgot Password Link */}
+
+          {/* Forgot Password */}
           <div className="text-right">
             <Link
               to="/forgot-password"
@@ -86,7 +113,11 @@ const Login = () => {
           </div>
 
           {/* Error Message */}
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+          {error && (
+            <p className="text-red-500 text-sm text-center">
+              {error}
+            </p>
+          )}
 
           {/* Login Button */}
           <button
@@ -98,7 +129,7 @@ const Login = () => {
           </button>
         </form>
 
-        {/* Register Link */}
+        {/* Register */}
         <p className="text-center text-sm text-gray-500 mt-6">
           Don't have an account?{" "}
           <Link
@@ -108,6 +139,7 @@ const Login = () => {
             Register
           </Link>
         </p>
+
         {/* Divider */}
         <div className="flex items-center my-4">
           <hr className="flex-grow border-gray-300" />
@@ -119,6 +151,7 @@ const Login = () => {
         <div className="flex justify-center">
           <GoogleLogin />
         </div>
+
       </div>
     </div>
   );
