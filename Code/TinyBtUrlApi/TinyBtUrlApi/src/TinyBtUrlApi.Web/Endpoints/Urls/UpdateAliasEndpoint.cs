@@ -38,7 +38,9 @@ public class UpdateAliasEndpoint
       return;
     }
 
-    var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+    var baseUrl = HttpContext.Request.Host.Host.Contains("localhost")
+      ? $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}"
+      : "https://link.bt";
 
     var response = new UrlResponse
     {

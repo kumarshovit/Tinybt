@@ -38,8 +38,9 @@ public class GetUserUrlsByAdminEndpoint
     int userId = req.UserId ?? loggedInUserId;
 
     var result = await _mediator.Send(new GetAllUrlsQuery(userId), ct);
-
-    var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+    var baseUrl = HttpContext.Request.Host.Host.Contains("localhost")
+        ? $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}"
+        : "https://link.bt";
 
     var response = result.Select(x => new UrlResponse
     {

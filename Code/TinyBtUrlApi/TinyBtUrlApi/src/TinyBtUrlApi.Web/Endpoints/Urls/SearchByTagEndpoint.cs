@@ -34,7 +34,9 @@ public class SearchByTagEndpoint : EndpointWithoutRequest<List<UrlResponse>>
 
     var result = await _mediator.Send(new SearchByTagQuery(tag), ct);
 
-    var baseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+    var baseUrl = HttpContext.Request.Host.Host.Contains("localhost")
+       ? $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}"
+       : "https://link.bt";
 
     var response = result?.Select(m => new UrlResponse
     {
