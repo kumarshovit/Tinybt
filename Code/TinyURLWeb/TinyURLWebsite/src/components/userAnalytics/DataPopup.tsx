@@ -6,7 +6,10 @@ export default function DataPopup({
 }: any) {
   if (!openPopup) return null;
 
-  const BASE_URL = import.meta.env.VITE_API_URL;
+  const BASE_URL =
+  window.location.hostname === "localhost"
+    ? window.location.origin
+    : "https://link.bt";
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
