@@ -22,18 +22,26 @@ public class RegisterHandler
     _frontendUrl = frontendUrl;
   }
 
-  public async Task<string> Handle(RegisterQuery query)
+  public async Task<RegisterResponse> Handle(RegisterQuery query)
   {
     var dto = query.Dto;
 
     // ✅ Email format validation
     if (!Regex.IsMatch(dto.Email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
-      return "Invalid email format.";
+      return new RegisterResponse
+      {
+        Success = false,
+        Message = "Invalid email format."
+      };
 
     // ✅ Password strength validation
     if (!Regex.IsMatch(dto.Password,
         @"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d).{8,}$"))
-      return "Password must be at least 8 characters, include 1 uppercase, 1 lowercase and 1 number.";
+      return new RegisterResponse
+      {
+        Success = false,
+        Message = "Password must be at least 8 characters, include 1 uppercase, 1 lowercase and 1 number."
+      };
 
     // ✅ Duplicate email check
     var existingUser = await _repository.FirstOrDefaultAsync(
@@ -41,7 +49,11 @@ public class RegisterHandler
     );
 
     if (existingUser != null)
-      return "Email already exists.";
+      return new RegisterResponse
+      {
+        Success = false,
+        Message = "Email already exists."
+      };
 
     // ✅ Generate verification token
     var verificationToken = Guid.NewGuid().ToString();
@@ -94,6 +106,10 @@ public class RegisterHandler
       "Verify Your Email",
       emailBody
     );
-    return "Registration successful. Please check your email to verify your account.";
+    return new RegisterResponse
+    {
+      Success = true,
+      Message = "Registration successful. Please check your email to verify your account."
+    };
   }
 }

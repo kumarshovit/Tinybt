@@ -4,7 +4,7 @@ using TinyBtUrlApi.UseCases.Account.Register;
 
 namespace TinyBtUrlApi.Web.Authentication.Create;
 
-public class RegisterEndpoint : Endpoint<RegisterDto, string>
+public class RegisterEndpoint : Endpoint<RegisterDto, RegisterResponse>
 {
   private readonly RegisterHandler _handler;
 
@@ -24,6 +24,17 @@ public class RegisterEndpoint : Endpoint<RegisterDto, string>
   {
     var result = await _handler.Handle(new RegisterQuery(req));
 
-    Response = result; // ✅ THIS IS THE FIX
+    if (!result.Success)
+    {
+      await Send.ResultAsync(
+          Results.BadRequest(result)
+      );
+
+      return;
+    }
+
+    await Send.ResultAsync(
+        Results.Ok(result)
+    );
   }
 }
