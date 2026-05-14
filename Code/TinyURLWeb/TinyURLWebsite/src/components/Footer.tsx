@@ -1,48 +1,163 @@
-
+import { Link, useNavigate } from "react-router-dom";
 
 const Footer = () => {
+
+  const navigate = useNavigate();
+
+  // ✅ Check login token
+  const token = localStorage.getItem("token");
+
+  // ✅ Logout handler
+  const handleLogout = () => {
+
+    localStorage.removeItem("token");
+
+    navigate("/");
+  };
+
   return (
-    <div>
-         <footer className="bg-gray-900 text-gray-300 py-10">
 
-        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-4 gap-8">
+    <footer className="bg-[#07142B] text-gray-300 pt-12 pb-6 mt-20">
 
-          <div>
-            <h3 className="text-white font-bold mb-3">
-              TinyURL
-            </h3>
-            <p>
-              Modern link management platform
-              built for developers and marketers.
-            </p>
-          </div>
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10">
 
-          <div>
-            <h4 className="text-white mb-3">Product</h4>
-            <p>Features</p>
-            <p>Analytics</p>
-            <p>API</p>
-          </div>
+        {/* Brand */}
+        <div>
 
-          <div>
-            <h4 className="text-white mb-3">Company</h4>
-            <p>About</p>
-            <p>Blog</p>
-            <p>Careers</p>
-          </div>
+          <h2 className="text-2xl font-bold text-white mb-4">
+            LINKBT
+          </h2>
 
-          <div>
-            <h4 className="text-white mb-3">Legal</h4>
-            <p>Privacy</p>
-            <p>Terms</p>
-          </div>
+          <p className="text-sm leading-6 text-gray-400">
+            Smart URL shortening platform to create,
+            manage, and track your short links securely.
+          </p>
+
+          <p className="text-sm text-gray-500 mt-4">
+            Secure • Fast • Simple
+          </p>
 
         </div>
 
-      </footer>
+        {/* Navigation */}
+        <div>
 
-    </div>
-  )
-}
+          <h3 className="text-white font-semibold mb-4">
+            Navigation
+          </h3>
 
-export default Footer
+          <ul className="space-y-3 text-sm">
+
+            {/* ✅ Before Login */}
+            {!token && (
+              <>
+                <li>
+                  <Link
+                    to="/"
+                    className="hover:text-white transition"
+                  >
+                    Home
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    to="/login"
+                    className="hover:text-white transition"
+                  >
+                    Login
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    to="/register"
+                    className="hover:text-white transition"
+                  >
+                    Register
+                  </Link>
+                </li>
+              </>
+            )}
+
+            {/* ✅ After Login */}
+            {token && (
+              <>
+                <li>
+                  <Link
+                    to="/dashboard"
+                    className="hover:text-white transition"
+                  >
+                    Dashboard
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    to="/profile"
+                    className="hover:text-white transition"
+                  >
+                    Profile
+                  </Link>
+                </li>
+
+                <li>
+
+                  <button
+                    onClick={handleLogout}
+                    className="hover:text-white transition"
+                  >
+                    Logout
+                  </button>
+
+                </li>
+              </>
+            )}
+
+          </ul>
+
+        </div>
+
+        {/* Support */}
+        <div>
+
+          <h3 className="text-white font-semibold mb-4">
+            Support
+          </h3>
+
+          <ul className="space-y-3 text-sm">
+
+            <li className="hover:text-white transition cursor-pointer">
+              Contact Us
+            </li>
+
+            <li className="hover:text-white transition cursor-pointer">
+              Privacy Policy
+            </li>
+
+            <li className="hover:text-white transition cursor-pointer">
+              Terms & Conditions
+            </li>
+
+          </ul>
+
+          <p className="text-sm text-gray-500 mt-4">
+           
+          </p>
+
+        </div>
+
+      </div>
+
+      {/* Bottom */}
+      <div className="border-t border-gray-800 mt-10 pt-5 text-center text-sm text-gray-500 px-6">
+
+      
+
+      </div>
+
+    </footer>
+  );
+};
+
+export default Footer;
