@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { loginUser } from "../services/authService";
@@ -9,6 +9,17 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
+
+  const timerRef = useRef<number | null>(null);
+  useEffect(() => {
+
+    if (error) {
+      setSuccess("");
+    }
+
+  }, [error]);
+
 
   // ✅ Show/Hide Password State
   const [showPassword, setShowPassword] = useState(false);
@@ -18,6 +29,14 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
+
+    // ✅ Stop previous timer
+    if (timerRef.current !== null) {
+      clearInterval(timerRef.current);
+    }
+
+
     setLoading(true);
 
     try {
@@ -25,16 +44,80 @@ const Login = () => {
 
       navigate("/dashboard");
     } catch (err: any) {
+
       console.log(err.response);
 
-      if (typeof err.response?.data === "string") {
-        setError(err.response.data);
-      } else if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
+      const data = err.response?.data;
+
+      // ✅ If blockedUntil exists
+      if (data?.blockedUntil) {
+
+        setSuccess("");
+
+        const blockedTime = new Date(data.blockedUntil);
+
+        const updateCountdown = () => {
+
+          const now = new Date();
+
+          const diff = blockedTime.getTime() - now.getTime();
+
+          // ✅ Unblocked
+          if (diff <= 0) {
+            clearInterval(timerRef.current!);
+            setError("");
+            setSuccess("You can login now.");
+            return;
+          }
+
+          const minutes = Math.floor(diff / 60000);
+
+          const seconds = Math.floor((diff % 60000) / 1000);
+
+          setError(
+            `Too many attempts. Try again in ${minutes}m ${seconds}s`
+          );
+        };
+
+        updateCountdown();
+
+        timerRef.current = setInterval(() => {
+
+          const now = new Date();
+
+          const diff = blockedTime.getTime() - now.getTime();
+
+          if (diff <= 0) {
+            clearInterval(timerRef.current!);
+            setError("");
+            setSuccess("You can login now.");
+            return;
+          }
+
+          updateCountdown();
+
+        }, 1000);
+
+      }
+
+      // ✅ Normal backend message
+      else if (typeof data === "string") {
+
+        setSuccess("");
+
+        setError(data);
+      }
+
+      else if (data?.message) {
+        setError(data.message);
+      }
+
+      // ✅ Fallback
+      else {
         setError("Login failed. Please try again.");
       }
-    } finally {
+    }
+    finally {
       setLoading(false);
     }
   };
@@ -116,6 +199,11 @@ const Login = () => {
           {error && (
             <p className="text-red-500 text-sm text-center">
               {error}
+            </p>
+          )}
+          {success && (
+            <p className="text-green-600 text-sm text-center">
+              {success}
             </p>
           )}
 

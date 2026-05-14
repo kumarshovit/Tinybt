@@ -375,7 +375,8 @@ public class LoginHandler
     {
       return new
       {
-        message = $"Too many attempts. Try again after {ipAttempt.BlockedUntil}",
+        message = "Too many attempts.",
+        blockedUntil = ipAttempt.BlockedUntil,
         requireCaptcha = true
       };
     }
@@ -407,9 +408,26 @@ public class LoginHandler
 
     // ❌ Wrong password
     if (user.PasswordHash == null ||
-        !BCrypt.Net.BCrypt.Verify(dto.Password!, user.PasswordHash))
+     !BCrypt.Net.BCrypt.Verify(dto.Password!, user.PasswordHash))
     {
       await HandleFailedAttempt(ipAttempt, ip, now);
+
+      // ✅ Reload latest attempt data
+      ipAttempt = await _ipRepository
+          .FirstOrDefaultAsync(new IpLoginAttemptByIpSpec(ip));
+
+      // ✅ If blocked after 5 attempts
+      if (ipAttempt != null &&
+          ipAttempt.BlockedUntil != null &&
+          ipAttempt.BlockedUntil > now)
+      {
+        return new
+        {
+          message = "Too many attempts.",
+          blockedUntil = ipAttempt.BlockedUntil,
+          requireCaptcha = true
+        };
+      }
 
       return new
       {
@@ -489,7 +507,7 @@ public class LoginHandler
 
       if (ipAttempt.AttemptCount >= 5)
       {
-        ipAttempt.BlockedUntil = now.AddMinutes(10);
+        ipAttempt.BlockedUntil = now.AddMinutes(1);
       }
 
       await _ipRepository.UpdateAsync(ipAttempt);
