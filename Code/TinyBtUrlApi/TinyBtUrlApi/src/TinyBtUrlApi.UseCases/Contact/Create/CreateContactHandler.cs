@@ -11,12 +11,16 @@ public class CreateContactHandler
     : IRequestHandler<CreateContactCommand, bool>
 {
   private readonly IContactRepository _contactRepository;
-
+  private readonly IContactEmailService _contactEmailService;
   public CreateContactHandler(
-      IContactRepository contactRepository
+      IContactRepository contactRepository,
+        IContactEmailService contactEmailService
+
   )
   {
     _contactRepository = contactRepository;
+    _contactEmailService = contactEmailService;
+
   }
 
   public async ValueTask<bool> Handle(
@@ -42,6 +46,13 @@ public class CreateContactHandler
     };
 
     await _contactRepository.AddAsync(contactMessage);
+
+    await _contactEmailService.SendContactEmailToAdminsAsync(
+        command.Name,
+        command.Email,
+        command.Subject,
+        command.Message
+    );
 
     return true;
   }

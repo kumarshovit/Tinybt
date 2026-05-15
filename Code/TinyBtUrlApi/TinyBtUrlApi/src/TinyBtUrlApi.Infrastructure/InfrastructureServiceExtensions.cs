@@ -2,6 +2,7 @@
 using TinyBtUrlApi.Core.Services;
 using TinyBtUrlApi.Infrastructure.Data;
 using TinyBtUrlApi.Infrastructure.Repositories;
+using TinyBtUrlApi.Infrastructure.Services;
 
 namespace TinyBtUrlApi.Infrastructure;
 public static class InfrastructureServiceExtensions
@@ -24,7 +25,9 @@ public static class InfrastructureServiceExtensions
     services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();
     services.AddScoped<ISettingsRepository, SettingsRepository>();
     services.AddScoped<IContactRepository, ContactRepository>();
+    services.AddScoped<IContactEmailService, ContactEmailService>();
 
+    services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
     services.AddDbContext<AppDbContext>((provider, options) =>
     {
       var eventDispatchInterceptor = provider.GetRequiredService<EventDispatchInterceptor>();
