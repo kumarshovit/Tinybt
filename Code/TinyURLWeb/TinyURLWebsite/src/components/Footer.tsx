@@ -1,158 +1,55 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
 
-  const navigate = useNavigate();
-
-  // ✅ Check login token
-  const token = localStorage.getItem("token");
-
-  // ✅ Logout handler
-  const handleLogout = () => {
-
-    localStorage.removeItem("token");
-
-    navigate("/");
-  };
-
   return (
 
-    <footer className="bg-[#07142B] text-gray-300 pt-12 pb-6 mt-20">
+    <footer className="bg-[#07142B] text-gray-300 pt-10 pb-6 mt-20">
 
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10">
+      <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
 
         {/* Brand */}
         <div>
 
-          <h2 className="text-2xl font-bold text-white mb-4">
+          <h2 className="text-2xl font-bold text-white mb-3">
             LINKBT
           </h2>
 
-          <p className="text-sm leading-6 text-gray-400">
+          <p className="text-sm text-gray-400 max-w-md leading-6">
+
             Smart URL shortening platform to create,
             manage, and track your short links securely.
-          </p>
 
-          <p className="text-sm text-gray-500 mt-4">
-            Secure • Fast • Simple
           </p>
 
         </div>
 
-        {/* Navigation */}
-        <div>
+        {/* Quick Links */}
+        <div className="flex flex-wrap items-center gap-6 text-sm">
 
-          <h3 className="text-white font-semibold mb-4">
-            Navigation
-          </h3>
+          <Link
+            to="/contact"
+            className="hover:text-white transition"
+          >
+            Contact Us
+          </Link>
 
-          <ul className="space-y-3 text-sm">
+          <button className="hover:text-white transition">
+            Terms & Conditions
+          </button>
 
-            {/* ✅ Before Login */}
-            {!token && (
-              <>
-                <li>
-                  <Link
-                    to="/"
-                    className="hover:text-white transition"
-                  >
-                    Home
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    to="/login"
-                    className="hover:text-white transition"
-                  >
-                    Login
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    to="/register"
-                    className="hover:text-white transition"
-                  >
-                    Register
-                  </Link>
-                </li>
-              </>
-            )}
-
-            {/* ✅ After Login */}
-            {token && (
-              <>
-                <li>
-                  <Link
-                    to="/dashboard"
-                    className="hover:text-white transition"
-                  >
-                    Dashboard
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    to="/profile"
-                    className="hover:text-white transition"
-                  >
-                    Profile
-                  </Link>
-                </li>
-
-                <li>
-
-                  <button
-                    onClick={handleLogout}
-                    className="hover:text-white transition"
-                  >
-                    Logout
-                  </button>
-
-                </li>
-              </>
-            )}
-
-          </ul>
-
-        </div>
-
-        {/* Support */}
-        <div>
-
-          <h3 className="text-white font-semibold mb-4">
-            Support
-          </h3>
-
-          <ul className="space-y-3 text-sm">
-
-            <li className="hover:text-white transition cursor-pointer">
-              Contact Us
-            </li>
-
-            <li className="hover:text-white transition cursor-pointer">
-              Privacy Policy
-            </li>
-
-            <li className="hover:text-white transition cursor-pointer">
-              Terms & Conditions
-            </li>
-
-          </ul>
-
-          <p className="text-sm text-gray-500 mt-4">
-           
-          </p>
+          <button className="hover:text-white transition">
+            Privacy Policy
+          </button>
 
         </div>
 
       </div>
 
       {/* Bottom */}
-      <div className="border-t border-gray-800 mt-10 pt-5 text-center text-sm text-gray-500 px-6">
+      <div className="border-t border-gray-800 mt-8 pt-5 text-center text-sm text-gray-500 px-6">
 
-      
+        © 2026 LINKBT • Powered by Intellisoft Technology
 
       </div>
 

@@ -27,6 +27,7 @@ public class AppDbContext : DbContext
   public DbSet<SystemSettings> SystemSettings { get; set; }
 
   public DbSet<ClickLog> ClickLogs { get; set; }
+  public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     base.OnModelCreating(modelBuilder);

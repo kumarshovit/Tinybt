@@ -10,6 +10,8 @@ import AdminPage from "./pages/AdminPage";
 import ProfilePage from "./pages/ProfilePage";
 import TagManagement from "./pages/TagManagement";
 import LandingPage from "./pages/LandingPage";
+import ContactPage from "./pages/ContactPage";
+
 
 // ✅ NEW MERGED PAGE
 import AnalyticsPage from "./pages/AnalyticsPage";
@@ -44,6 +46,10 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
 
+        <Route
+          path="/contact"
+          element={<ContactPage />}
+        />
         {/* Protected Routes */}
         <Route
           path="/dashboard"

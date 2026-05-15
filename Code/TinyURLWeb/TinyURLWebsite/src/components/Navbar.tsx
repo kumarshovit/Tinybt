@@ -6,13 +6,21 @@ import { useState } from "react";
 import logo from "../assets/logo.png";
 
 const Navbar = () => {
+
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ current route
+
+  const location = useLocation();
+
+  const token = localStorage.getItem("token");
+
   const role = getUserRole();
+
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = async () => {
+
     await logoutUser();
+
     navigate("/");
   };
 
@@ -25,11 +33,16 @@ const Navbar = () => {
     }`;
 
   return (
+
     <nav className="bg-white shadow-md px-4 sm:px-6 lg:px-10 py-3">
+
       <div className="flex justify-between items-center">
 
         {/* Logo */}
-        <Link to="/dashboard" className="flex items-center">
+        <Link
+          to={token ? "/dashboard" : "/"}
+          className="flex items-center"
+        >
           <img
             src={logo}
             alt="LinkBt Logo"
@@ -48,91 +61,162 @@ const Navbar = () => {
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-6">
 
-          <Link
-            to="/analytics"
-            className={`flex items-center gap-1 ${navLinkClass("/analytics")}`}
-          >
-            <BarChart3 size={18} />
-            Analytics
-          </Link>
+          {/* ================= BEFORE LOGIN ================= */}
+          {!token ? (
+            <>
 
-          <Link
-            to="/dashboard"
-            className={navLinkClass("/dashboard")}
-          >
-            Dashboard
-          </Link>
+              <Link
+                to="/"
+                className={navLinkClass("/")}
+              >
+                Home
+              </Link>
 
-          {role === "Admin" && (
-            <Link
-              to="/admin"
-              className={navLinkClass("/admin")}
-            >
-              Admin Panel
-            </Link>
+              <Link
+                to="/login"
+                className={navLinkClass("/login")}
+              >
+                Login
+              </Link>
+
+              <Link
+                to="/register"
+                className="bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition"
+              >
+                Register
+              </Link>
+
+            </>
+          ) : (
+
+            /* ================= AFTER LOGIN ================= */
+            <>
+
+              <Link
+                to="/analytics"
+                className={`flex items-center gap-1 ${navLinkClass("/analytics")}`}
+              >
+                <BarChart3 size={18} />
+                Analytics
+              </Link>
+
+              <Link
+                to="/dashboard"
+                className={navLinkClass("/dashboard")}
+              >
+                Dashboard
+              </Link>
+
+              {role === "Admin" && (
+                <Link
+                  to="/admin"
+                  className={navLinkClass("/admin")}
+                >
+                  Admin Panel
+                </Link>
+              )}
+
+              <Link
+                to="/profile"
+                className={navLinkClass("/profile")}
+              >
+                Profile
+              </Link>
+
+              <button
+                onClick={handleLogout}
+                className="bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition"
+              >
+                Logout
+              </button>
+
+            </>
           )}
-
-          <Link
-            to="/profile"
-            className={navLinkClass("/profile")}
-          >
-            Profile
-          </Link>
-
-          <button
-            onClick={handleLogout}
-            className="bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700"
-          >
-            Logout
-          </button>
 
         </div>
+
       </div>
 
-      {/* Mobile Menu */}
+      {/* ================= MOBILE MENU ================= */}
       {menuOpen && (
+
         <div className="flex flex-col gap-4 mt-4 md:hidden">
 
-          <Link
-            to="/analytics"
-            className={`flex items-center gap-2 ${navLinkClass("/analytics")}`}
-          >
-            <BarChart3 size={18} />
-            Analytics 📊
-          </Link>
+          {/* ================= BEFORE LOGIN ================= */}
+          {!token ? (
+            <>
 
-          <Link
-            to="/dashboard"
-            className={navLinkClass("/dashboard")}
-          >
-            Dashboard
-          </Link>
+              <Link
+                to="/"
+                className={navLinkClass("/")}
+              >
+                Home
+              </Link>
 
-          {role === "Admin" && (
-            <Link
-              to="/admin"
-              className={navLinkClass("/admin")}
-            >
-              Admin Panel 🔐
-            </Link>
+              <Link
+                to="/login"
+                className={navLinkClass("/login")}
+              >
+                Login
+              </Link>
+
+              <Link
+                to="/register"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-center"
+              >
+                Register
+              </Link>
+
+            </>
+          ) : (
+
+            /* ================= AFTER LOGIN ================= */
+            <>
+
+              <Link
+                to="/analytics"
+                className={`flex items-center gap-2 ${navLinkClass("/analytics")}`}
+              >
+                <BarChart3 size={18} />
+                Analytics
+              </Link>
+
+              <Link
+                to="/dashboard"
+                className={navLinkClass("/dashboard")}
+              >
+                Dashboard
+              </Link>
+
+              {role === "Admin" && (
+                <Link
+                  to="/admin"
+                  className={navLinkClass("/admin")}
+                >
+                  Admin Panel
+                </Link>
+              )}
+
+              <Link
+                to="/profile"
+                className={navLinkClass("/profile")}
+              >
+                Profile
+              </Link>
+
+              <button
+                onClick={handleLogout}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+              >
+                Logout
+              </button>
+
+            </>
           )}
-
-          <Link
-            to="/profile"
-            className={navLinkClass("/profile")}
-          >
-            Profile
-          </Link>
-
-          <button
-            onClick={handleLogout}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg"
-          >
-            Logout
-          </button>
 
         </div>
       )}
+
     </nav>
   );
 };

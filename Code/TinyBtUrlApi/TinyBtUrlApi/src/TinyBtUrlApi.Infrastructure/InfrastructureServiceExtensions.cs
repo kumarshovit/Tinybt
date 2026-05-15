@@ -23,7 +23,7 @@ public static class InfrastructureServiceExtensions
     services.AddScoped<EventDispatchInterceptor>();
     services.AddScoped<IDomainEventDispatcher, MediatorDomainEventDispatcher>();
     services.AddScoped<ISettingsRepository, SettingsRepository>();
-
+    services.AddScoped<IContactRepository, ContactRepository>();
 
     services.AddDbContext<AppDbContext>((provider, options) =>
     {
