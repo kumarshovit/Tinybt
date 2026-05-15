@@ -11,6 +11,8 @@ import ProfilePage from "./pages/ProfilePage";
 import TagManagement from "./pages/TagManagement";
 import LandingPage from "./pages/LandingPage";
 import ContactPage from "./pages/ContactPage";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 
 
 // ✅ NEW MERGED PAGE
@@ -50,6 +52,15 @@ export default function App() {
           path="/contact"
           element={<ContactPage />}
         />
+        <Route
+          path="/terms"
+          element={<TermsPage />}
+        />
+        <Route
+          path="/privacy-policy"
+          element={<PrivacyPolicyPage />}
+        />
+
         {/* Protected Routes */}
         <Route
           path="/dashboard"

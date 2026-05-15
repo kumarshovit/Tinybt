@@ -34,14 +34,19 @@ const Footer = () => {
             Contact Us
           </Link>
 
-          <button className="hover:text-white transition">
+          <Link
+            to="/terms"
+            className="hover:text-white transition"
+          >
             Terms & Conditions
-          </button>
+          </Link>
 
-          <button className="hover:text-white transition">
+          <Link
+            to="/privacy-policy"
+            className="hover:text-white transition"
+          >
             Privacy Policy
-          </button>
-
+          </Link>
         </div>
 
       </div>
