@@ -237,6 +237,33 @@ public class UrlRepository : IUrlRepository
         .ToListAsync(cancellationToken);
   }
 
+  private async Task<string> GetCountryFromIpAsync(string ip)
+  {
+    try
+    {
+      if (ip == "::1" || ip == "127.0.0.1")
+      {
+        return "India";
+      }
+
+      using var client = new HttpClient();
+
+      var response = await client.GetStringAsync(
+          $"http://ip-api.com/json/{ip}");
+
+      using var doc =
+          System.Text.Json.JsonDocument.Parse(response);
+
+      return doc.RootElement
+          .GetProperty("country")
+          .GetString() ?? "Unknown";
+    }
+    catch
+    {
+      return "Unknown";
+    }
+  }
+
   public async Task<List<TopUrlDto>> GetTopUrlsAsync(
     int topCount,
     CancellationToken cancellationToken)
@@ -354,11 +381,23 @@ public class UrlRepository : IUrlRepository
         .OrderByDescending(x => x.Clicks)
         .ToListAsync(cancellationToken);
   }
+  //public async Task LogClickAsync(
+  //  ClickLog clickLog,
+  //  CancellationToken cancellationToken)
+  //{
+  //  _context.ClickLogs.Add(clickLog);
+  //  await _context.SaveChangesAsync(cancellationToken);
+  //}
+
   public async Task LogClickAsync(
     ClickLog clickLog,
     CancellationToken cancellationToken)
   {
+    clickLog.Country = await GetCountryFromIpAsync(
+        clickLog.IpAddress ?? "");
+
     _context.ClickLogs.Add(clickLog);
+
     await _context.SaveChangesAsync(cancellationToken);
   }
 
