@@ -13,7 +13,7 @@ import LandingPage from "./pages/LandingPage";
 import ContactPage from "./pages/ContactPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
-
+import ExpiredLinkPage from "./pages/ExpiredLinkPage";
 
 // ✅ NEW MERGED PAGE
 import AnalyticsPage from "./pages/AnalyticsPage";
@@ -51,6 +51,10 @@ export default function App() {
         <Route
           path="/contact"
           element={<ContactPage />}
+        />
+        <Route
+          path="/expired-link"
+          element={<ExpiredLinkPage />}
         />
         <Route
           path="/terms"

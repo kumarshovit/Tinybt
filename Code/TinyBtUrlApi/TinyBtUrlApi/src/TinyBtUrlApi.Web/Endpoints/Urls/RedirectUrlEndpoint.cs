@@ -7,10 +7,14 @@ namespace TinyBtUrlApi.Web.Endpoints.Urls;
 public class RedirectUrlEndpoint : EndpointWithoutRequest
 {
   private readonly IMediator _mediator;
+  private readonly IConfiguration _configuration;
 
-  public RedirectUrlEndpoint(IMediator mediator)
+  public RedirectUrlEndpoint(
+    IMediator mediator,
+    IConfiguration configuration)
   {
     _mediator = mediator;
+    _configuration = configuration;
   }
 
   public override void Configure()
@@ -51,11 +55,25 @@ public class RedirectUrlEndpoint : EndpointWithoutRequest
 
     var url = await _mediator.Send(query, ct);
 
+
+
     if (url == null)
     {
-      HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+      var frontendBaseUrl =
+          _configuration["BaseUrl:Domain"];
+
+      HttpContext.Response.Redirect(
+          $"{frontendBaseUrl}/expired-link",
+          false,
+          false
+      );
+
+      await HttpContext.Response.CompleteAsync();
+
       return;
     }
+
+
 
     HttpContext.Response.StatusCode = StatusCodes.Status302Found;
     HttpContext.Response.Headers.Location = url.LongUrl;
