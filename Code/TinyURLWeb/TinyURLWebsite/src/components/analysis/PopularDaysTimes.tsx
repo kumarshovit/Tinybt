@@ -67,7 +67,7 @@ export default function PopularDaysTimes({ startDate, endDate }: Props) {
 
   return (
 
-    <div className="w-full">
+    <div id="heatmap" className="w-full">
 
       <h2 className="text-lg sm:text-xl font-bold mb-6">
         Clicks by Popular Days & Times
