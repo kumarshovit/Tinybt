@@ -197,7 +197,7 @@ export default function HeatmapChart({ data }: Props) {
   /* ---------- UI ---------- */
 
   return (
-    <div className="mt-10 bg-white rounded-xl shadow p-4 sm:p-6">
+    <div id="heatmap" className="mt-10 bg-white rounded-xl shadow p-4 sm:p-6">
 
       <h3 className="text-base sm:text-lg font-semibold mb-4">
         🔥 Clicks by Popular Days & Times
