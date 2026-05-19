@@ -10,7 +10,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
-
+  const [isBlocked, setIsBlocked] = useState(false);
   const timerRef = useRef<number | null>(null);
   useEffect(() => {
 
@@ -26,8 +26,15 @@ const Login = () => {
 
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (e?: React.FormEvent) => {
+
+    if (e) {
+      e.preventDefault();
+    }
+
+    if (isBlocked) {
+      return;
+    }
     setError("");
     setSuccess("");
 
@@ -51,7 +58,7 @@ const Login = () => {
 
       // ✅ If blockedUntil exists
       if (data?.blockedUntil) {
-
+        setIsBlocked(true);
         setSuccess("");
 
         const blockedTime = new Date(data.blockedUntil);
@@ -65,6 +72,7 @@ const Login = () => {
           // ✅ Unblocked
           if (diff <= 0) {
             clearInterval(timerRef.current!);
+            setIsBlocked(false);
             setError("");
             setSuccess("You can login now.");
             return;
@@ -89,6 +97,7 @@ const Login = () => {
 
           if (diff <= 0) {
             clearInterval(timerRef.current!);
+            setIsBlocked(false);
             setError("");
             setSuccess("You can login now.");
             return;
@@ -136,7 +145,7 @@ const Login = () => {
         </p>
 
         {/* Form */}
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form className="space-y-4">
 
           {/* Email */}
           <div>
@@ -209,8 +218,9 @@ const Login = () => {
 
           {/* Login Button */}
           <button
-            type="submit"
-            disabled={loading}
+            type="button"
+            onClick={handleLogin}
+            disabled={loading || isBlocked}
             className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-60"
           >
             {loading ? "Logging in..." : "Login"}
