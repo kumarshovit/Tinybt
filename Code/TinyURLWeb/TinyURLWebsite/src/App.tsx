@@ -14,6 +14,7 @@ import ContactPage from "./pages/ContactPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import ExpiredLinkPage from "./pages/ExpiredLinkPage";
+import ShortUrlRedirect from "./pages/ShortUrlRedirect";
 
 // ✅ NEW MERGED PAGE
 import AnalyticsPage from "./pages/AnalyticsPage";
@@ -113,8 +114,12 @@ export default function App() {
           }
         />
 
+        <Route path="/:shortCode" element={<ShortUrlRedirect />} />
+
+
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" />} />
+
 
       </Routes>
 
