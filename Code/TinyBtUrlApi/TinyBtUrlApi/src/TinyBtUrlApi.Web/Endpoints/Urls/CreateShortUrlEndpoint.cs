@@ -1,5 +1,6 @@
 ﻿using FastEndpoints;
 using Mediator;
+using Microsoft.Extensions.Configuration;
 using TinyBtUrlApi.UseCases.Urls.CreateShortUrl;
 using System.Security.Claims;
 
@@ -9,10 +10,12 @@ public class CreateShortUrlEndpoint
     : Endpoint<CreateShortUrlCommand>
 {
   private readonly IMediator _mediator;
+  private readonly IConfiguration _config;
 
-  public CreateShortUrlEndpoint(IMediator mediator)
+  public CreateShortUrlEndpoint(IMediator mediator, IConfiguration config)
   {
     _mediator = mediator;
+    _config = config;
   }
 
   public override void Configure()
@@ -55,8 +58,8 @@ public class CreateShortUrlEndpoint
 
     // ✅ Success case
     var baseUrl = HttpContext.Request.Host.Host.Contains("localhost")
-    ? $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}"
-    : "https://link.bt";
+      ? $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}"
+      : (_config["BaseUrl:ShortUrlDomain"] ?? "https://link.bt");
     var shortUrl = $"{baseUrl}/{result.ShortCode}";
 
     HttpContext.Response.StatusCode = StatusCodes.Status201Created;

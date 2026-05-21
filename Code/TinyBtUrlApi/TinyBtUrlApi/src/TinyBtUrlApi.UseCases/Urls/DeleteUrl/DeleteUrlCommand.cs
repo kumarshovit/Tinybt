@@ -5,4 +5,4 @@ using Mediator;
 
 namespace TinyBtUrlApi.UseCases.Urls.DeleteUrl;
 
-public record DeleteUrlCommand(int Id) : IRequest<bool>;
+public record DeleteUrlCommand(int Id, int UserId, bool IsAdmin = false) : IRequest<bool>;

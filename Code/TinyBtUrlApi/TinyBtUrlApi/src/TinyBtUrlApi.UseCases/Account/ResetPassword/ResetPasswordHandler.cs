@@ -43,6 +43,8 @@ public class ResetPasswordHandler
     user.PasswordHash =
         BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
 
+    await _userRepo.UpdateAsync(user);
+
     resetToken.IsUsed = true;
 
     await _resetRepo.SaveChangesAsync();

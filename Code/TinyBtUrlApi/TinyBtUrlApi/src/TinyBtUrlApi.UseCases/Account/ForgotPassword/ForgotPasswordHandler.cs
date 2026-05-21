@@ -96,17 +96,20 @@ public class ForgotPasswordHandler
   private readonly IPasswordResetRepository _resetRepo;
   private readonly IEmailSender _emailSender;
   private readonly string _frontendUrl;
+  private readonly string _smtpFrom;
 
   public ForgotPasswordHandler(
       IRepository<User> userRepo,
       IPasswordResetRepository resetRepo,
       IEmailSender emailSender,
-      string frontendUrl)
+      string frontendUrl,
+      string smtpFrom)
   {
     _userRepo = userRepo;
     _resetRepo = resetRepo;
     _emailSender = emailSender;
     _frontendUrl = frontendUrl;
+    _smtpFrom = smtpFrom;
   }
 
   public async Task<ForgotPasswordResult> Handle(ForgotPasswordQuery request)
@@ -167,7 +170,7 @@ public class ForgotPasswordHandler
 
     await _emailSender.SendEmailAsync(
       request.Email,
-      "kg834208@gmail.com",
+      _smtpFrom,
       "Reset Your Password",
       emailBody
     );

@@ -19,6 +19,8 @@ public class DeleteUrlHandler : IRequestHandler<DeleteUrlCommand, bool>
 
     if (url.IsDeleted) return false;
 
+    if (url.UserId != request.UserId && !request.IsAdmin) return false;
+
     url.IsDeleted = true;
     url.DeletedAt = DateTime.UtcNow;
 

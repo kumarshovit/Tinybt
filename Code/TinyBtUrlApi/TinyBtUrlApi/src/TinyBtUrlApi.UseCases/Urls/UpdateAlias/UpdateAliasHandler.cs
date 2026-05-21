@@ -24,6 +24,9 @@ public class UpdateAliasHandler : IRequestHandler<UpdateAliasCommand, UrlDto?>
 
     var url = await _repo.GetByIdAsync(request.Id);
     if (url == null) return null;
+
+    if (url.UserId != request.UserId && !request.IsAdmin) return null;
+
     url.ShortCode = request.NewAlias;
     await _repo.UpdateAsync(url);
 

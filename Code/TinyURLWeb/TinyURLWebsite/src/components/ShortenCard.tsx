@@ -53,6 +53,18 @@ export default function ShortenCard({ onUrlCreated }: any) {
     setError("");
     setResult(null);
 
+    if (!longUrl.trim()) {
+      setError("Please enter a URL.");
+      return;
+    }
+
+    try {
+      new URL(longUrl);
+    } catch {
+      setError("Please enter a valid URL (e.g. https://example.com).");
+      return;
+    }
+
     try {
 
       const response = await createUrl(

@@ -5,4 +5,4 @@ using Mediator;
 
 namespace TinyBtUrlApi.UseCases.Urls.UpdateDestination;
 
-public record UpdateDestinationCommand(int Id, string NewLongUrl) : IRequest<bool>;
+public record UpdateDestinationCommand(int Id, string NewLongUrl, int UserId, bool IsAdmin = false) : IRequest<bool>;

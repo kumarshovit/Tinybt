@@ -6,4 +6,4 @@ using TinyBtUrlApi.Core.DTOs;
 
 namespace TinyBtUrlApi.UseCases.Urls.UpdateAlias;
 
-public record UpdateAliasCommand(int Id, string NewAlias) : IRequest<UrlDto?>;
+public record UpdateAliasCommand(int Id, string NewAlias, int UserId, bool IsAdmin = false) : IRequest<UrlDto?>;

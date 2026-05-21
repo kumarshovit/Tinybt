@@ -51,20 +51,28 @@ export default function useAnalyticsData({
       options.body = JSON.stringify({ userId });
     }
 
-    const res = await fetch(url, options);
-    const data = await res.json();
+    try {
+      const res = await fetch(url, options);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
 
-    setAllLinks(data);
-
-    const tagSet = new Set<string>();
-
-    data.forEach((link: any) => {
-      if (link.tags) {
-        link.tags.forEach((tag: string) => tagSet.add(tag));
+      if (!Array.isArray(data)) {
+        console.error("Unexpected response format for user links");
+        return;
       }
-    });
 
-    setAllTags(Array.from(tagSet));
+      setAllLinks(data);
+
+      const tagSet = new Set<string>();
+      data.forEach((link: any) => {
+        if (link.tags) {
+          link.tags.forEach((tag: string) => tagSet.add(tag));
+        }
+      });
+      setAllTags(Array.from(tagSet));
+    } catch (err) {
+      console.error("Failed to fetch user links", err);
+    }
   };
 
   /* ---------- FETCH DASHBOARD ---------- */
@@ -166,12 +174,16 @@ export default function useAnalyticsData({
       setTopLinks(tagData);
 
       /* ---------- 🔥 HEATMAP ---------- */
+      const heatmapToDate = new Date(to);
+      heatmapToDate.setDate(heatmapToDate.getDate() + 1);
+      const heatmapTo = heatmapToDate.toISOString().split("T")[0];
+
       const heatmapRes = await fetch(`${API_BASE}/analytics/heatmap`, {
         method: "POST",
         headers,
         body: JSON.stringify({
           from,
-          to,
+          to: heatmapTo,
           ...(userId && { userId })
         })
       });

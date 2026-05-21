@@ -37,7 +37,9 @@ const ResetPassword = () => {
       setMessage("Password reset successful! Redirecting...");
       setTimeout(() => navigate("/login"), 2000);
     } catch (error: any) {
-      setMessage(error.response?.data || "Reset failed. Try again.");
+      const data = error.response?.data;
+      const msg = typeof data === "string" ? data : data?.message ?? "Reset failed. Try again.";
+      setMessage(msg);
     } finally {
       setLoading(false);
     }

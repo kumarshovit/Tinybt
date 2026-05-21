@@ -113,11 +113,19 @@ const ProfilePage = () => {
 
     if (!confirmDelete) return;
 
-    await api.delete("/profile");
+    try {
 
-    localStorage.removeItem("token");
+      await api.delete("/profile");
 
-    window.location.href = "/login";
+      localStorage.removeItem("token");
+
+      window.location.href = "/login";
+
+    } catch {
+
+      setError("Failed to delete account. Please try again.");
+
+    }
 
   };
 

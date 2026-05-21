@@ -84,12 +84,14 @@ export default function Filters({
       {userDropdown && <div className="min-w-[200px]">{userDropdown}</div>}
 
       {/* ---------- CSV Export ---------- */}
-      <button
-        onClick={exportCSV}
-        className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg w-full sm:w-auto"
-      >
-        Export CSV
-      </button>
+      {exportCSV && (
+        <button
+          onClick={exportCSV}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg w-full sm:w-auto"
+        >
+          Export CSV
+        </button>
+      )}
     </div>
   );
 }

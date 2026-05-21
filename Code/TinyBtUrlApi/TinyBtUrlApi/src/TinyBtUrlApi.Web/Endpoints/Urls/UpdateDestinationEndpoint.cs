@@ -1,5 +1,6 @@
 ﻿using FastEndpoints;
 using Mediator;
+using System.Security.Claims;
 using TinyBtUrlApi.UseCases.Urls.UpdateDestination;
 using TinyBtUrlApi.Web.Endpoints.Urls.Requests;
 
@@ -18,15 +19,17 @@ public class UpdateDestinationEndpoint
   public override void Configure()
   {
     Put("/api/urls/{id}/destination");
-    AllowAnonymous();
+    Roles("User", "Admin");
     Description(x => x.WithTags("Url Management"));
   }
 
   public override async Task HandleAsync(UpdateDestinationRequest req, CancellationToken ct)
   {
     var id = Route<int>("id");
+    var userId = int.Parse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    var isAdmin = HttpContext.User.IsInRole("Admin");
 
-    var command = new UpdateDestinationCommand(id, req.NewLongUrl);
+    var command = new UpdateDestinationCommand(id, req.NewLongUrl, userId, isAdmin);
 
     var result = await _mediator.Send(command, ct);
 

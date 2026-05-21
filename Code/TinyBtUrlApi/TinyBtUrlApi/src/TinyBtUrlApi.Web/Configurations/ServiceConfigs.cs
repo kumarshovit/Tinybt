@@ -34,32 +34,28 @@ public static class ServiceConfigs
 
 
     string frontendUrl = builder.Configuration["BaseUrl:Domain"]!;
-
-    //var frontendUrl = builder.Environment.IsDevelopment()
-    //? urls?.ElementAtOrDefault(0)
-    //: urls?.ElementAtOrDefault(1);
-
+    string smtpFrom = builder.Configuration["Smtp:From"]!;
 
     services.AddScoped<LoginHandler>();
     services.AddScoped<IJwtService, JwtService>();
 
-    // 🔥 UPDATED
     services.AddScoped<RegisterHandler>(sp =>
         new RegisterHandler(
             sp.GetRequiredService<IRepository<User>>(),
             sp.GetRequiredService<IEmailSender>(),
-            frontendUrl!
+            frontendUrl!,
+            smtpFrom!
         ));
 
     services.AddScoped<LogoutHandler>();
 
-    // 🔥 UPDATED
     services.AddScoped<ForgotPasswordHandler>(sp =>
         new ForgotPasswordHandler(
             sp.GetRequiredService<IRepository<User>>(),
             sp.GetRequiredService<IPasswordResetRepository>(),
             sp.GetRequiredService<IEmailSender>(),
-            frontendUrl!
+            frontendUrl!,
+            smtpFrom!
         ));
    
    

@@ -16,7 +16,7 @@ public class RemoveTagEndpoint : EndpointWithoutRequest
   public override void Configure()
   {
     Delete("/api/urls/{urlId}/tags/{tag}");
-    AllowAnonymous();
+    Roles("User", "Admin");
     Description(x => x.WithTags("Url Management"));
   }
 

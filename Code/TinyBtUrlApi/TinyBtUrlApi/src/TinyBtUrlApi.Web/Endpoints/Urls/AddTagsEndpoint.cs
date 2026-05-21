@@ -18,7 +18,7 @@ public class AddTagsEndpoint
   public override void Configure()
   {
     Post("/api/urls/{urlId}/tags");
-    AllowAnonymous();
+    Roles("User", "Admin");
     Description(x => x.WithTags("Url Management"));
   }
 

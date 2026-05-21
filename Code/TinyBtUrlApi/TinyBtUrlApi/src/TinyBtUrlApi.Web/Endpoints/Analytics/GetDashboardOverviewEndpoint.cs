@@ -16,7 +16,7 @@ public sealed class GetDashboardOverviewEndpoint
   public override void Configure()
   {
     Get("/api/analytics/dashboard");
-    AllowAnonymous();
+    Roles("Admin");
     Description(x => x.WithTags("Analytics"));
   }
 

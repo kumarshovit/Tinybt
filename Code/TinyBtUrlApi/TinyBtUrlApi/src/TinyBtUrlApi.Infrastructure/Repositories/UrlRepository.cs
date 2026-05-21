@@ -81,22 +81,42 @@ public class UrlRepository : IUrlRepository
         .Include(u => u.UrlTags)
         .FirstAsync(u => u.Id == urlId);
 
-    foreach (var tagName in tags)
-    {
-      var normalized = tagName.Trim().ToLower();
+    var normalizedNames = tags.Select(t => t.Trim().ToLower()).Distinct().ToList();
 
-      var tag = await _context.Tags.FirstOrDefaultAsync(t => t.Name == normalized);
-      if (tag == null)
+    var existingTags = await _context.Tags
+        .Where(t => normalizedNames.Contains(t.Name))
+        .ToListAsync();
+
+    var existingNames = existingTags.Select(t => t.Name).ToHashSet();
+
+    foreach (var name in normalizedNames)
+    {
+      Tag tag;
+      if (!existingNames.Contains(name))
       {
-        tag = new Tag { Name = normalized };
+        tag = new Tag { Name = name };
         _context.Tags.Add(tag);
-        await _context.SaveChangesAsync();
+        existingTags.Add(tag);
+        existingNames.Add(name);
+      }
+      else
+      {
+        tag = existingTags.First(t => t.Name == name);
       }
 
-      if (!url.UrlTags.Any(x => x.TagId == tag.Id))
+      if (tag.Id != 0 && !url.UrlTags.Any(x => x.TagId == tag.Id))
       {
         url.UrlTags.Add(new UrlTag { UrlMappingId = urlId, TagId = tag.Id });
       }
+    }
+
+    // Single save for all new tags + associations
+    await _context.SaveChangesAsync();
+
+    // Now link any tags that were just inserted (Id assigned after SaveChanges)
+    foreach (var tag in existingTags.Where(t => !url.UrlTags.Any(x => x.TagId == t.Id)))
+    {
+      url.UrlTags.Add(new UrlTag { UrlMappingId = urlId, TagId = tag.Id });
     }
 
     await _context.SaveChangesAsync();

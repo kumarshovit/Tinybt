@@ -20,6 +20,8 @@ public class UpdateDestinationHandler : IRequestHandler<UpdateDestinationCommand
     var url = await _repo.GetByIdAsync(request.Id);
     if (url == null) return false;
 
+    if (url.UserId != request.UserId && !request.IsAdmin) return false;
+
     url.LongUrl = request.NewLongUrl;
     await _repo.UpdateAsync(url);
 

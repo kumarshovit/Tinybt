@@ -47,11 +47,14 @@ export default function Dashboard() {
   const loadLinks = async () => {
     setLoading(true);
 
-    const result = await api.get("/urls");
-
-    setLinks(result.data);
-
-    setLoading(false);
+    try {
+      const result = await api.get("/urls");
+      setLinks(result.data);
+    } catch (err) {
+      console.error("Failed to load links", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSearch = async () => {

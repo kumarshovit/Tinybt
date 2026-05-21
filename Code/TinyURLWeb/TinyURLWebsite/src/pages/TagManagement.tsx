@@ -13,9 +13,15 @@ export default function TagManagement() {
   const [editingTag, setEditingTag] = useState<string | null>(null);
   const [newTag, setNewTag] = useState("");
 
-  const linkId = Number(id);
+  const linkId = id ? Number(id) : NaN;
 
   const loadTags = async () => {
+    if (isNaN(linkId)) {
+      alert("Invalid link ID.");
+      navigate("/dashboard");
+      return;
+    }
+
     const result = await getAllUrls();
 
     if (!result.success) {

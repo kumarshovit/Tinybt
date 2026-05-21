@@ -12,12 +12,19 @@ const Login = () => {
   const [success, setSuccess] = useState("");
   const [isBlocked, setIsBlocked] = useState(false);
   const timerRef = useRef<number | null>(null);
-  useEffect(() => {
 
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== null) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (error) {
       setSuccess("");
     }
-
   }, [error]);
 
 

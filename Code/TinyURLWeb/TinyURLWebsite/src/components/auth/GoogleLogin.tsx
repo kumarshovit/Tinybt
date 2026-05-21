@@ -16,8 +16,7 @@ const GoogleLogin = () => {
       if (!window.google) return;
 
       window.google.accounts.id.initialize({
-        client_id:
-          "725373686810-9mo94l5dlhfl56u1am3cu3um4suknriq.apps.googleusercontent.com",
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
         callback: handleCredentialResponse,
       });
 

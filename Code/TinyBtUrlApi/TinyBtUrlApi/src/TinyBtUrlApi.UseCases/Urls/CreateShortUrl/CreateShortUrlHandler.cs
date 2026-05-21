@@ -89,7 +89,7 @@ public class CreateShortUrlHandler
     {
       var settings = await _settingsRepo.GetAsync();
 
-      if (settings?.DefaultExpirationDays is int days)
+      if (settings?.DefaultExpirationDays is int days && days > 0)
       {
         expirationDate = DateTime.UtcNow.AddDays(days);
       }

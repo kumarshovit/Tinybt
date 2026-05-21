@@ -163,7 +163,7 @@ export default function AnalyticsPage() {
               setSelectedTag={filters.setSelectedTag}
               allLinks={analytics.allLinks}
               allTags={analytics.allTags}
-              exportCSV={role === "User" ? exportCSV : undefined}
+              exportCSV={exportCSV}
             />
 
             {/* SUMMARY */}
