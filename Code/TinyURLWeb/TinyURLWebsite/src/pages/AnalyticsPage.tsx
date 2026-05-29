@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
+import SEO from "../components/SEO";
 import AnalyticsSidebar from "../components/AnalyticsSidebar";
 import HeatmapChart from "../components/analysis/HeatmapChart";
 import Filters from "../components/userAnalytics/Filters";
@@ -58,8 +59,9 @@ const UserDropdown: React.FC<{ onUserSelect: (user: User | null) => void }> = ({
 
   return (
     <div className="mb-4 w-64 min-w-[200px]">
-      <label className="block mb-1 font-medium">Select User</label>
+      <label htmlFor="user-select" className="block mb-1 font-medium">Select User</label>
       <select
+        id="user-select"
         value={selectedUserId}
         onChange={handleChange}
         className="border border-gray-300 rounded px-3 py-2 w-full"
@@ -118,6 +120,11 @@ export default function AnalyticsPage() {
 
   return (
     <>
+      <SEO
+        title="Analytics – LinkBT"
+        description="View detailed click analytics for your short links."
+        noindex={true}
+      />
       <Navbar />
 
       <div className="flex flex-col lg:flex-row bg-gray-100 min-h-screen">

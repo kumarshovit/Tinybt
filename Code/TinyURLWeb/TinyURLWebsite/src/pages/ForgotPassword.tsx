@@ -90,6 +90,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import api from "../utils/api";
 import { Link } from "react-router-dom";
+import SEO from "../components/SEO";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState<string>("");
@@ -129,6 +130,12 @@ const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
+      <SEO
+        title="Forgot Password – LinkBT"
+        description="Reset your LinkBT password. Enter your email and we'll send you a secure password reset link."
+        canonical="/forgot-password"
+      />
+
       <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl">
         <h2 className="text-3xl font-bold text-center text-gray-800">
           Forgot Password 🔐

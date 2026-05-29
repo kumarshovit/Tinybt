@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import SEO from "../components/SEO";
 
 
 import {
@@ -89,7 +90,13 @@ const ContactPage = () => {
 
         <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-white">
 
-            {/* Navbar */}
+            <SEO
+            title="Contact Us – LinkBT"
+            description="Get in touch with the LinkBT team. Have questions about URL shortening, analytics, or your account? We're here to help."
+            canonical="/contact"
+        />
+
+        {/* Navbar */}
             <Navbar />
 
             {/* Main Content */}

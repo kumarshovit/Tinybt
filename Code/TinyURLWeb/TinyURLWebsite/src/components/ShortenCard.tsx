@@ -118,6 +118,7 @@ export default function ShortenCard({ onUrlCreated }: any) {
       {/* URL */}
 
       <input
+        aria-label="Long URL"
         placeholder="Enter long URL"
         value={longUrl}
         onChange={(e) => setLongUrl(e.target.value)}
@@ -127,6 +128,7 @@ export default function ShortenCard({ onUrlCreated }: any) {
       {/* Alias */}
 
       <input
+        aria-label="Custom alias (optional)"
         placeholder="Custom alias (optional)"
         value={alias}
         onChange={(e) => setAlias(e.target.value)}
@@ -179,6 +181,7 @@ export default function ShortenCard({ onUrlCreated }: any) {
       </div>
       <input
         type="datetime-local"
+        aria-label="Expiration date (optional)"
         value={expirationDate}
         placeholder="Select expiration date (optional)"
         onChange={(e) => setExpirationDate(e.target.value)}

@@ -21,7 +21,6 @@ public class RedirectUrlHandler(IUrlRepository repo)
         url.ExpirationDate.Value < DateTime.UtcNow)
       return null;
 
-    // ✅ Increment Click Count
     url.ClickCount++;
 
     var userAgent = request.Browser ?? string.Empty;
@@ -69,7 +68,6 @@ public class RedirectUrlHandler(IUrlRepository repo)
                         ? "Safari"
                         : "Unknown";
 
-    var userAgentString = request.Browser ?? "Unknown";
     // =========================
     // TRAFFIC SOURCE DETECTION
     // =========================
@@ -111,7 +109,7 @@ public class RedirectUrlHandler(IUrlRepository repo)
       Referrer = trafficSource,
       DeviceType = deviceType,
       IpAddress = request.IpAddress ?? "Unknown",
-      UserAgent = userAgentString,
+      UserAgent = request.Browser ?? "Unknown",
       RawHeaders = request.RawHeaders ?? "N/A"
     };
 

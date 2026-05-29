@@ -5,6 +5,7 @@ import RecentLinks from "../components/RecentLinks";
 import { searchByTag, getAllUrls } from "../api/urlService";
 import api from "../utils/api";
 import Footer from "../components/Footer";
+import SEO from "../components/SEO";
 export default function Dashboard() {
 
   const [links, setLinks] = useState<any[]>([]);
@@ -85,6 +86,11 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <SEO
+        title="Dashboard – LinkBT"
+        description="Manage your short links from the LinkBT dashboard."
+        noindex={true}
+      />
       <Navbar />
       <HeroSection onUrlCreated={loadLinks} />
       <RecentLinks

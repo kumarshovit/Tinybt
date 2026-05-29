@@ -2,6 +2,40 @@ import LandingNavbar from "../components/LandingNavbar";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Footer from "../components/Footer";
+import SEO from "../components/SEO";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://link.bt/#website",
+      "url": "https://link.bt/",
+      "name": "LinkBT",
+      "description": "Free URL shortener with analytics, custom aliases, and link management.",
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://link.bt/#organization",
+      "name": "LinkBT",
+      "url": "https://link.bt/",
+      "logo": "https://link.bt/fevicon.svg",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "support@linkbt.com",
+        "contactType": "customer support"
+      }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "LinkBT – URL Shortener",
+      "applicationCategory": "UtilitiesApplication",
+      "operatingSystem": "Web",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "description": "Create branded short URLs, track click analytics by device, browser and location, and manage all your links in one dashboard."
+    }
+  ]
+};
 
 export default function LandingPage() {
 
@@ -24,6 +58,13 @@ export default function LandingPage() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
+
+      <SEO
+        title="Link it short"
+        description="Create branded short links, track clicks by device, browser & location, and manage all your links from one powerful dashboard. Free forever."
+        canonical="/"
+        jsonLd={jsonLd}
+      />
 
       <LandingNavbar />
 
@@ -67,6 +108,7 @@ export default function LandingPage() {
         <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md">
 
           <input
+            aria-label="Long URL"
             placeholder="Enter long URL"
             value={longUrl}
             onChange={(e) => setLongUrl(e.target.value)}
@@ -74,24 +116,23 @@ export default function LandingPage() {
           />
 
           <input
+            aria-label="Custom alias (optional)"
             placeholder="Custom alias (optional)"
             value={alias}
             onChange={(e) => setAlias(e.target.value)}
             className="w-full border rounded-lg px-4 py-2 mb-4"
           />
 
-          {/* Tags preview */}
-
           <input
+            aria-label="Tags"
             placeholder="Search or add tags..."
             disabled
             className="w-full border rounded-lg px-4 py-2 mb-4 bg-gray-100"
           />
 
-          {/* Expiration preview */}
-
           <input
             type="datetime-local"
+            aria-label="Expiration date (optional)"
             disabled
             className="w-full border rounded-lg px-4 py-2 mb-4 bg-gray-100"
           />

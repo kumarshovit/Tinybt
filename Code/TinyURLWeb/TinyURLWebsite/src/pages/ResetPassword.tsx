@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import api from "../utils/api";
 import { useLocation, useNavigate, Link } from "react-router-dom";
+import SEO from "../components/SEO";
 
 const ResetPassword = () => {
   const location = useLocation();
@@ -47,6 +48,13 @@ const ResetPassword = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
+      <SEO
+        title="Reset Password – LinkBT"
+        description="Set a new password for your LinkBT account using your secure reset link."
+        canonical="/reset-password"
+        noindex={true}
+      />
+
       <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl">
         <h2 className="text-3xl font-bold text-center text-gray-800">
           Reset Password 🔑

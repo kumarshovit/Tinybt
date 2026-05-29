@@ -1,23 +1,25 @@
+import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-import Register from "./pages/Register";
+// Eagerly loaded: pages visible before login + redirect handler
+import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
-import VerifyEmail from "./pages/Verify";
-import Dashboard from "./pages/Dashboard";
+import Register from "./pages/Register";
+import ShortUrlRedirect from "./pages/ShortUrlRedirect";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
-import AdminPage from "./pages/AdminPage";
-import ProfilePage from "./pages/ProfilePage";
-import TagManagement from "./pages/TagManagement";
-import LandingPage from "./pages/LandingPage";
+import VerifyEmail from "./pages/Verify";
+import ExpiredLinkPage from "./pages/ExpiredLinkPage";
 import ContactPage from "./pages/ContactPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
-import ExpiredLinkPage from "./pages/ExpiredLinkPage";
-import ShortUrlRedirect from "./pages/ShortUrlRedirect";
 
-// ✅ NEW MERGED PAGE
-import AnalyticsPage from "./pages/AnalyticsPage";
+// Lazily loaded: authenticated / heavy pages (recharts, react-select, etc.)
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const TagManagement = lazy(() => import("./pages/TagManagement"));
+const AdminPage = lazy(() => import("./pages/AdminPage"));
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./components/auth/AdminRoute";
@@ -28,7 +30,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-
+      <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
       <Routes>
 
         {/* Landing */}
@@ -76,7 +78,6 @@ export default function App() {
           }
         />
 
-        {/* ✅ SINGLE ANALYTICS ROUTE */}
         <Route
           path="/analytics"
           element={
@@ -122,6 +123,7 @@ export default function App() {
 
 
       </Routes>
+      </Suspense>
 
     </BrowserRouter>
   );

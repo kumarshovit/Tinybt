@@ -57,6 +57,7 @@ export default function RecentLinks({
                 <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
 
                     <input
+                        aria-label="Search links by tag"
                         value={searchTag}
                         onChange={(e) => setSearchTag(e.target.value)}
                         onKeyDown={(e) => {

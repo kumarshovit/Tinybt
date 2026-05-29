@@ -45,7 +45,9 @@ const Navbar = () => {
         >
           <img
             src={logo}
-            alt="LinkBt Logo"
+            alt="LinkBT"
+            width={768}
+            height={260}
             className="h-7 sm:h-9 md:h-10 w-auto object-contain"
           />
         </Link>
@@ -53,6 +55,8 @@ const Navbar = () => {
         {/* Mobile Button */}
         <button
           className="md:hidden"
+          aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={menuOpen}
           onClick={() => setMenuOpen(!menuOpen)}
         >
           {menuOpen ? <X size={24} /> : <Menu size={24} />}

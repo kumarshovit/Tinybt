@@ -4,6 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { registerUser } from "../services/authService";
 import { validateEmail, validatePassword } from "../utils/validators";
 import GoogleLogin from "../components/auth/GoogleLogin";
+import SEO from "../components/SEO";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -54,6 +55,12 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
+      <SEO
+        title="Create Account – LinkBT"
+        description="Sign up for a free LinkBT account and start shortening URLs, creating custom branded links, and tracking click analytics in seconds."
+        canonical="/register"
+      />
+
       <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl">
         {/* Heading */}
         <h2 className="text-3xl font-bold text-center text-gray-800">

@@ -2,12 +2,19 @@
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import SEO from "../components/SEO";
 
 const PrivacyPolicyPage = () => {
 
   return (
 
     <div className="min-h-screen flex flex-col bg-gray-50">
+
+      <SEO
+        title="Privacy Policy – LinkBT"
+        description="Learn how LinkBT collects, stores, and protects your personal data. We are committed to keeping your information safe and transparent."
+        canonical="/privacy-policy"
+      />
 
       {/* Navbar */}
       <Navbar />

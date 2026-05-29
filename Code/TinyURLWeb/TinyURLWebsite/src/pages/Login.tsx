@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { loginUser } from "../services/authService";
 import GoogleLogin from "../components/auth/GoogleLogin";
+import SEO from "../components/SEO";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -140,6 +141,12 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
+      <SEO
+        title="Login – LinkBT"
+        description="Log in to your LinkBT account to manage your short links, view analytics, and create new branded URLs."
+        canonical="/login"
+      />
+
       <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl">
 
         {/* Heading */}

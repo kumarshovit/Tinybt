@@ -52,6 +52,7 @@ export default function ProfileInfoCard({
         <div className="space-y-3 mb-4">
 
           <input
+            aria-label="Full name"
             value={value}
             onChange={(e) => setValue(e.target.value)}
             className="w-full border px-4 py-2 rounded-lg"

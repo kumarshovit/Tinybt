@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /analytics
+Disallow: /profile
+Disallow: /admin
+Disallow: /tags/
+
+Sitemap: https://link.bt/sitemap.xml

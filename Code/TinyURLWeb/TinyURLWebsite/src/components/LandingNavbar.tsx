@@ -17,7 +17,10 @@ export default function LandingNavbar() {
         <Link to="/dashboard" className="flex items-center">
           <img
             src={logo}
-            alt="LinkBt Logo"
+            alt="LinkBT"
+            width={768}
+            height={260}
+            fetchPriority="high"
             className="h-7 sm:h-9 md:h-10 w-auto object-contain"
           />
         </Link>
@@ -52,6 +55,8 @@ export default function LandingNavbar() {
         {/* Mobile Button */}
         <button
           className="md:hidden"
+          aria-label={open ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={open}
           onClick={() => setOpen(!open)}
         >
           {open ? <X size={24} /> : <Menu size={24} />}

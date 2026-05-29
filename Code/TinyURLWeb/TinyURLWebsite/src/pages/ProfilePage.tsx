@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../utils/api";
 import Navbar from "../components/Navbar";
+import SEO from "../components/SEO";
 
 import ProfileSidebar from "../components/profile/ProfileSidebar";
 import ProfileAvatar from "../components/profile/ProfileAvatar";
@@ -132,6 +133,11 @@ const ProfilePage = () => {
   return (
 
     <>
+      <SEO
+        title="Profile – LinkBT"
+        description="Manage your LinkBT account profile and security settings."
+        noindex={true}
+      />
       <Navbar />
 
       <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 overflow-x-hidden">

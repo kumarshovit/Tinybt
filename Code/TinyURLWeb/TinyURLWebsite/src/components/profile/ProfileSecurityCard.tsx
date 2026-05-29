@@ -42,11 +42,12 @@ export default function ProfileSecurityCard({
 
         <div>
 
-          <label className="block text-sm font-medium mb-1">
+          <label htmlFor="current-password" className="block text-sm font-medium mb-1">
             Current Password
           </label>
 
           <input
+            id="current-password"
             type="password"
             value={currentPassword}
             onChange={(e) => setCurrentPassword(e.target.value)}
@@ -57,13 +58,14 @@ export default function ProfileSecurityCard({
 
         <div>
 
-          <label className="block text-sm font-medium mb-1">
+          <label htmlFor="new-password" className="block text-sm font-medium mb-1">
             New Password
           </label>
 
           <div className="flex gap-2">
 
             <input
+              id="new-password"
               type={showPassword ? "text" : "password"}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}

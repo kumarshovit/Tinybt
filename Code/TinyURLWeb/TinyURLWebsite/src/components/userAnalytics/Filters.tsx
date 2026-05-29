@@ -35,12 +35,14 @@ export default function Filters({
 
       <input
         type="date"
+        aria-label="From date"
         value={from}
         onChange={(e) => setFrom(e.target.value)}
         className="border p-2 rounded-lg w-full sm:w-auto"
       />
       <input
         type="date"
+        aria-label="To date"
         value={to}
         onChange={(e) => setTo(e.target.value)}
         className="border p-2 rounded-lg w-full sm:w-auto"
@@ -48,10 +50,11 @@ export default function Filters({
 
       {/* ---------- Alias Dropdown ---------- */}
       <select
+        aria-label="Filter by alias"
         value={selectedLink}
         onChange={(e) => {
           setSelectedLink(e.target.value);
-          setSelectedTag(""); // reset tag if alias changes
+          setSelectedTag("");
         }}
         className="border p-2 rounded-lg w-full sm:w-auto"
       >
@@ -65,10 +68,11 @@ export default function Filters({
 
       {/* ---------- Tag Dropdown ---------- */}
       <select
+        aria-label="Filter by tag"
         value={selectedTag}
         onChange={(e) => {
           setSelectedTag(e.target.value);
-          setSelectedLink(""); // reset alias if tag changes
+          setSelectedLink("");
         }}
         className="border p-2 rounded-lg w-full sm:w-auto"
       >

@@ -215,6 +215,7 @@ export default function LinkRow({
 
 
                     <input
+                        aria-label="New alias"
                         autoFocus
                         value={newAlias}
                         onChange={(e) => setNewAlias(e.target.value)}
@@ -248,6 +249,7 @@ export default function LinkRow({
                 <div className="flex gap-2 mt-4">
 
                     <input
+                        aria-label="New destination URL"
                         value={newDestination}
                         onChange={(e) =>
                             setNewDestination(e.target.value)
