@@ -60,7 +60,7 @@ export default function LandingPage() {
     <div className="bg-gray-50 min-h-screen">
 
       <SEO
-        title="Link it short"
+        title="LinkBT – Free URL Shortener & Link Analytics"
         description="Create branded short links, track clicks by device, browser & location, and manage all your links from one powerful dashboard. Free forever."
         canonical="/"
         jsonLd={jsonLd}
