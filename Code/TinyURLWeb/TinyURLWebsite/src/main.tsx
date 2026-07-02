@@ -4,6 +4,10 @@ import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
 import "./index.css";
 
+import { initializeAnalytics } from "./services/analytics";
+
+initializeAnalytics();
+
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <HelmetProvider>

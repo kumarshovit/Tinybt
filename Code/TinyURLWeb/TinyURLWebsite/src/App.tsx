@@ -13,6 +13,7 @@ import ExpiredLinkPage from "./pages/ExpiredLinkPage";
 import ContactPage from "./pages/ContactPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import AnalyticsTracker from "./components/AnalyticsTracker";
 
 // Lazily loaded: authenticated / heavy pages (recharts, react-select, etc.)
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -30,6 +31,9 @@ export default function App() {
 
   return (
     <BrowserRouter>
+    
+     <AnalyticsTracker />
+     
       <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
       <Routes>
 
