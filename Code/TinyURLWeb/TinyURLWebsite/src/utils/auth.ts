@@ -1,4 +1,6 @@
 export const isSessionValid = () => {
+  if (typeof window === "undefined") return false;
+
   const expiry = localStorage.getItem("expiry");
   if (!expiry) return false;
 
@@ -7,6 +9,8 @@ export const isSessionValid = () => {
 import { jwtDecode } from "jwt-decode";
 
 export const getUserRole = () => {
+  if (typeof window === "undefined") return null;
+
   const token = localStorage.getItem("token");
   if (!token) return null;
 

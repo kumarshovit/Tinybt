@@ -11,7 +11,8 @@ const Navbar = () => {
 
   const location = useLocation();
 
-  const token = localStorage.getItem("token");
+  const token =
+    typeof window === "undefined" ? null : localStorage.getItem("token");
 
   const role = getUserRole();
 
