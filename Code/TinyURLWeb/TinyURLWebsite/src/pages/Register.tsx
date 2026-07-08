@@ -59,6 +59,7 @@ const Register = () => {
         title="Create Account – LinkBT"
         description="Sign up for a free LinkBT account and start shortening URLs, creating custom branded links, and tracking click analytics in seconds."
         canonical="/register"
+        noindex
       />
 
       <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl">

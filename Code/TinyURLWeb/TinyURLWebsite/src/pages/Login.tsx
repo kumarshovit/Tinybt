@@ -145,6 +145,7 @@ const Login = () => {
         title="Login – LinkBT"
         description="Log in to your LinkBT account to manage your short links, view analytics, and create new branded URLs."
         canonical="/login"
+        noindex
       />
 
       <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl">

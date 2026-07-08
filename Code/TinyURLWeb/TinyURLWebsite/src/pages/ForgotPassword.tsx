@@ -134,6 +134,7 @@ const ForgotPassword = () => {
         title="Forgot Password – LinkBT"
         description="Reset your LinkBT password. Enter your email and we'll send you a secure password reset link."
         canonical="/forgot-password"
+        noindex
       />
 
       <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl">

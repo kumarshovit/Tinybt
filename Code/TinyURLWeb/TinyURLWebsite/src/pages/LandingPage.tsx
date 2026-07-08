@@ -60,13 +60,21 @@ export default function LandingPage() {
         <div>
 
           <h1 className="text-5xl font-bold mb-6 leading-tight">
-            Shorten & Manage
-            <span className="text-blue-600"> Your Links</span>
+            Create
+            <span className="text-blue-600"> Short URLs</span>,
+            <br />
+            Track Analytics &
+            <br />
+            Manage Links
           </h1>
 
-          <p className="text-gray-600 text-lg mb-8">
-            Create branded short URLs, track analytics, and manage
-            your links from one powerful dashboard.
+          <p className="text-gray-600 text-lg mb-8 leading-8">
+            Create branded short URLs, customize memorable aliases, monitor
+            real-time click analytics, manage link expiration, organize links
+            with smart tags, and securely share links from one powerful
+            dashboard. LinkBT helps businesses, developers, marketers, and
+            content creators simplify link management while gaining valuable
+            insights into link performance.
           </p>
 
           <div className="flex gap-4">
@@ -110,22 +118,69 @@ export default function LandingPage() {
 
 
       {/* CTA */}
-      <section className="bg-blue-600 text-white py-20 text-center">
+      {/* CTA */}
+      <section className="bg-blue-600 text-white py-24">
 
-        <h2 className="text-3xl font-bold mb-4">
-          Ready to create smarter links?
-        </h2>
+        <div className="max-w-5xl mx-auto text-center px-6">
 
-        <p className="mb-8">
-          Join thousands of users managing their links with LinkBt.
-        </p>
+          <h2 className="text-4xl font-bold leading-tight mb-6">
+            Ready to Create Smarter, Faster & Branded Short Links?
+          </h2>
 
-        <Link
-          to="/register"
-          className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold"
-        >
-          Create Free Account
-        </Link>
+          <p className="text-xl text-blue-100 leading-9 max-w-4xl mx-auto">
+            Join thousands of professionals, businesses, developers, marketers,
+            educators, and content creators who trust LinkBT to simplify URL
+            management. Create branded short links, organize URLs with smart
+            tagging, monitor click analytics, customize memorable aliases,
+            control link expiration, and manage everything from one intuitive
+            dashboard. Whether you're running digital marketing campaigns,
+            sharing educational resources, promoting products, or managing
+            business communications.
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-4 mt-10">
+
+            <Link
+              to="/register"
+              className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition"
+            >
+              Create Free Account
+            </Link>
+
+            <Link
+              to="/login"
+              className="border border-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition"
+            >
+              Sign In
+            </Link>
+
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-6 mt-14 text-center">
+
+            <div>
+              <h3 className="text-3xl font-bold">✓</h3>
+              <p className="text-blue-100 mt-2">Custom Aliases</p>
+            </div>
+
+            <div>
+              <h3 className="text-3xl font-bold">✓</h3>
+              <p className="text-blue-100 mt-2">Analytics Dashboard</p>
+            </div>
+
+            <div>
+              <h3 className="text-3xl font-bold">✓</h3>
+              <p className="text-blue-100 mt-2">Smart Tagging</p>
+            </div>
+
+            <div>
+              <h3 className="text-3xl font-bold">✓</h3>
+              <p className="text-blue-100 mt-2">Expiration Control</p>
+            </div>
+
+          </div>
+
+        </div>
 
       </section>
       <Footer />
