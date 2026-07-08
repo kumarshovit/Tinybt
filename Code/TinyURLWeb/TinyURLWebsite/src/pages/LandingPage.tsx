@@ -1,8 +1,11 @@
-import LandingNavbar from "../components/LandingNavbar";
+import Navbar from "../components/Navbar";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
 import SEO from "../components/SEO";
 import ShortenCard from "../components/ShortenCard";
+import PowerfulFeatures from "../components/PowerfulFeatures";
+import HowItWorks from "../components/HowItWorks";
+import FAQPreview from "../components/FAQPreview";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -49,10 +52,10 @@ export default function LandingPage() {
         jsonLd={jsonLd}
       />
 
-      <LandingNavbar />
+      <Navbar />
 
       {/* HERO SECTION */}
-      <section className="max-w-7xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-12 items-center">
+      <section className="max-w-7xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-30 items-center">
 
         <div>
 
@@ -88,83 +91,24 @@ export default function LandingPage() {
 
         {/* SHORTEN CARD PREVIEW */}
         <div>
-          <ShortenCard onUrlCreated={() => {}} />
-          
+          <ShortenCard onUrlCreated={() => { }} />
+
         </div>
 
       </section>
 
 
       {/* FEATURES */}
-      <section id="features" className="bg-white py-24 px-6">
+      <PowerfulFeatures />
 
-        <div className="max-w-7xl mx-auto text-center">
+      {/* HOW IT WORKS */}
+      <HowItWorks />
 
-          <h2 className="text-3xl font-bold mb-12">
-            Powerful Features
-          </h2>
 
-          <div className="grid md:grid-cols-4 gap-8">
+      {/* FAQ */}
+      <FAQPreview />
 
-            <FeatureCard
-              title="Custom Aliases"
-              text="Create memorable branded links for your business."
-            />
 
-            <FeatureCard
-              title="Analytics"
-              text="Track clicks by device, browser and location."
-            />
-
-            <FeatureCard
-              title="Expiration Control"
-              text="Automatically disable links after a set time."
-            />
-
-            <FeatureCard
-              title="Smart Tagging"
-              text="Organize and search your links easily."
-            />
-
-          </div>
-
-        </div>
-
-      </section>
-
-      <section id="how" className="py-24 px-6">
-
-        <div className="max-w-6xl mx-auto text-center">
-
-          <h2 className="text-3xl font-bold mb-12">
-            How It Works
-          </h2>
-
-          <div className="grid md:grid-cols-3 gap-10">
-
-            <Step
-              number="1"
-              title="Paste your long URL"
-              text="Enter your destination link into the generator."
-            />
-
-            <Step
-              number="2"
-              title="Customize alias"
-              text="Create a branded and memorable short URL."
-            />
-
-            <Step
-              number="3"
-              title="Track analytics"
-              text="Monitor clicks and engagement from your dashboard."
-            />
-
-          </div>
-
-        </div>
-
-      </section>
       {/* CTA */}
       <section className="bg-blue-600 text-white py-20 text-center">
 
@@ -173,7 +117,7 @@ export default function LandingPage() {
         </h2>
 
         <p className="mb-8">
-          Join thousands of users managing their links with TinyURL.
+          Join thousands of users managing their links with LinkBt.
         </p>
 
         <Link
@@ -184,28 +128,8 @@ export default function LandingPage() {
         </Link>
 
       </section>
-      <Footer/>
+      <Footer />
 
     </div>
   );
 }
-function FeatureCard({ title, text }: any) {
-  return (
-    <div className="p-6 border rounded-xl hover:shadow-lg transition">
-      <h3 className="font-semibold text-lg mb-2">{title}</h3>
-      <p className="text-gray-600">{text}</p>
-    </div>
-  );
-}
-function Step({ number, title, text }: any) {
-  return (
-    <div>
-      <div className="text-blue-600 text-4xl font-bold mb-4">
-        {number}
-      </div>
-      <h3 className="font-semibold text-lg mb-2">{title}</h3>
-      <p className="text-gray-600">{text}</p>
-    </div>
-  );
-}
-

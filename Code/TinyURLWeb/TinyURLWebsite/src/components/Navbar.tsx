@@ -27,10 +27,9 @@ const Navbar = () => {
 
   // ✅ Active Link Style
   const navLinkClass = (path: string) =>
-    `transition-colors ${
-      location.pathname === path
-        ? "text-blue-600 font-semibold"
-        : "text-gray-700 hover:text-blue-600"
+    `transition-colors ${location.pathname === path
+      ? "text-blue-600 font-semibold"
+      : "text-gray-700 hover:text-blue-600"
     }`;
 
   return (
@@ -67,15 +66,22 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-6">
 
           {/* ================= BEFORE LOGIN ================= */}
+          {/* ================= BEFORE LOGIN ================= */}
           {!token ? (
             <>
-
-              <Link
-                to="/"
-                className={navLinkClass("/")}
+              <a
+                href="/#features"
+                className="hover:text-blue-600 transition"
               >
-                Home
-              </Link>
+                Features
+              </a>
+
+              <a
+                href="/#how"
+                className="hover:text-blue-600 transition"
+              >
+                How it Works
+              </a>
 
               <Link
                 to="/login"
@@ -88,9 +94,8 @@ const Navbar = () => {
                 to="/register"
                 className="bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition"
               >
-                Register
+                Sign Up
               </Link>
-
             </>
           ) : (
 
@@ -150,13 +155,19 @@ const Navbar = () => {
           {/* ================= BEFORE LOGIN ================= */}
           {!token ? (
             <>
-
-              <Link
-                to="/"
-                className={navLinkClass("/")}
+              <a
+                href="/#features"
+                className="hover:text-blue-600 transition"
               >
-                Home
-              </Link>
+                Features
+              </a>
+
+              <a
+                href="/#how"
+                className="hover:text-blue-600 transition"
+              >
+                How it Works
+              </a>
 
               <Link
                 to="/login"
@@ -167,11 +178,10 @@ const Navbar = () => {
 
               <Link
                 to="/register"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-center"
+                className="bg-blue-600 text-white px-4 py-1.5 rounded-lg hover:bg-blue-700 transition"
               >
-                Register
+                Sign Up
               </Link>
-
             </>
           ) : (
 
