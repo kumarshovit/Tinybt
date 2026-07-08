@@ -1,4 +1,4 @@
-﻿using FastEndpoints;
+using FastEndpoints;
 using Mediator;
 using Microsoft.Extensions.Configuration;
 using TinyBtUrlApi.UseCases.Urls.CreateShortUrl;
@@ -21,7 +21,7 @@ public class CreateShortUrlEndpoint
   public override void Configure()
   {
     Post("/api/urls");
-    Roles("User", "Admin");
+    AllowAnonymous();
     Description(x => x.WithTags("Url Management"));
   }
 
@@ -29,9 +29,15 @@ public class CreateShortUrlEndpoint
       CreateShortUrlCommand req,
       CancellationToken ct)
   {
-    var userId = int.Parse(
-        HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)!
-    );
+    int? userId = null;
+    if (HttpContext.User.Identity?.IsAuthenticated == true)
+    {
+      var claim = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+      if (claim != null)
+      {
+        userId = int.Parse(claim);
+      }
+    }
 
     var result = await _mediator.Send(
         new CreateShortUrlCommand(

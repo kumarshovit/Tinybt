@@ -1,8 +1,8 @@
 import LandingNavbar from "../components/LandingNavbar";
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
 import SEO from "../components/SEO";
+import ShortenCard from "../components/ShortenCard";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -38,23 +38,6 @@ const jsonLd = {
 };
 
 export default function LandingPage() {
-
-  const navigate = useNavigate();
-
-  const [longUrl, setLongUrl] = useState("");
-  const [alias, setAlias] = useState("");
-
-  const handleGenerate = () => {
-
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    navigate("/dashboard");
-  };
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -104,50 +87,9 @@ export default function LandingPage() {
         </div>
 
         {/* SHORTEN CARD PREVIEW */}
-
-        <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md">
-
-          <input
-            aria-label="Long URL"
-            placeholder="Enter long URL"
-            value={longUrl}
-            onChange={(e) => setLongUrl(e.target.value)}
-            className="w-full border rounded-lg px-4 py-2 mb-4"
-          />
-
-          <input
-            aria-label="Custom alias (optional)"
-            placeholder="Custom alias (optional)"
-            value={alias}
-            onChange={(e) => setAlias(e.target.value)}
-            className="w-full border rounded-lg px-4 py-2 mb-4"
-          />
-
-          <input
-            aria-label="Tags"
-            placeholder="Search or add tags..."
-            disabled
-            className="w-full border rounded-lg px-4 py-2 mb-4 bg-gray-100"
-          />
-
-          <input
-            type="datetime-local"
-            aria-label="Expiration date (optional)"
-            disabled
-            className="w-full border rounded-lg px-4 py-2 mb-4 bg-gray-100"
-          />
-
-          <button
-            onClick={handleGenerate}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg"
-          >
-            Generate Short Link
-          </button>
-
-          <p className="text-sm text-gray-500 text-center mt-3">
-            Sign in to save and manage your links
-          </p>
-
+        <div>
+          <ShortenCard onUrlCreated={() => {}} />
+          
         </div>
 
       </section>

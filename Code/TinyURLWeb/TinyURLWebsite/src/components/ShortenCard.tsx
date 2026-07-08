@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import CreatableSelect from "react-select/creatable";
 
 import {
@@ -8,6 +9,7 @@ import {
 } from "../api/urlService";
 
 export default function ShortenCard({ onUrlCreated }: any) {
+  const isAuthenticated = typeof window !== "undefined" ? !!localStorage.getItem("token") : false;
 
   const [longUrl, setLongUrl] = useState("");
   const [alias, setAlias] = useState("");
@@ -40,9 +42,11 @@ export default function ShortenCard({ onUrlCreated }: any) {
       }
     };
 
-    loadTags();
+    if (isAuthenticated) {
+      loadTags();
+    }
 
-  }, []);
+  }, [isAuthenticated]);
 
   /* ============================= */
   /* CREATE URL                    */
@@ -95,7 +99,9 @@ export default function ShortenCard({ onUrlCreated }: any) {
         tags
       };
 
-      await onUrlCreated();
+      if (onUrlCreated) {
+        await onUrlCreated();
+      }
 
       setResult(newLink);
 
@@ -137,33 +143,34 @@ export default function ShortenCard({ onUrlCreated }: any) {
 
 
       {/* TAG DROPDOWN */}
+      {isAuthenticated && (
+        <CreatableSelect
+          isMulti
+          options={tagOptions}
+          value={tagOptions.filter((opt) => tags.includes(opt.value))}
+          placeholder="Search or add tags..."
+          className="mb-4"
 
-      <CreatableSelect
-        isMulti
-        options={tagOptions}
-        value={tagOptions.filter((opt) => tags.includes(opt.value))}
-        placeholder="Search or add tags..."
-        className="mb-4"
+          onChange={(selected) => {
+            const values = selected
+              ? selected.map((t: any) => t.value)
+              : [];
+            setTags(values);
+          }}
 
-        onChange={(selected) => {
-          const values = selected
-            ? selected.map((t: any) => t.value)
-            : [];
-          setTags(values);
-        }}
+          onCreateOption={(inputValue) => {
 
-        onCreateOption={(inputValue) => {
+            const newOption = {
+              value: inputValue,
+              label: inputValue
+            };
 
-          const newOption = {
-            value: inputValue,
-            label: inputValue
-          };
+            setTagOptions([...tagOptions, newOption]);
+            setTags([...tags, inputValue]);
 
-          setTagOptions([...tagOptions, newOption]);
-          setTags([...tags, inputValue]);
-
-        }}
-      />
+          }}
+        />
+      )}
 
       {/* Expiration */}
 
@@ -198,7 +205,10 @@ export default function ShortenCard({ onUrlCreated }: any) {
       >
         Generate Short Link
       </button>
-
+        
+         <p className="text-sm text-gray-500 text-center mt-3">
+              Sign in to save and manage your links
+            </p>
 
       {error && (
         <p className="text-red-500 mt-3 text-sm">
@@ -213,14 +223,25 @@ export default function ShortenCard({ onUrlCreated }: any) {
             Short URL Generated:
           </p>
 
-          <a
-            href={result.shortUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-blue-600 hover:underline"
-          >
-            {result.shortUrl}
-          </a>
+          <div className="flex items-center justify-between mt-2">
+            <a
+              href={result.shortUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-600 hover:underline break-all"
+            >
+              {result.shortUrl}
+            </a>
+            
+            {!isAuthenticated && (
+              <Link 
+                to="/register" 
+                className="ml-4 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 py-1 rounded text-sm whitespace-nowrap"
+              >
+                View Analytics
+              </Link>
+            )}
+          </div>
 
         </div>
 

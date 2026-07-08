@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Mediator;
@@ -9,5 +9,5 @@ public record CreateShortUrlCommand(
     string LongUrl,
     string? CustomAlias,
     DateTime? ExpirationDate,
-    int UserId
+    int? UserId
 ) : IRequest<CreateShortUrlResult>;

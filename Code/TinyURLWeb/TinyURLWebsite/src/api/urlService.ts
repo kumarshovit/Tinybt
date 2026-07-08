@@ -17,6 +17,23 @@ const getAuthHeaders = () => {
 };
 
 /* ============================= */
+/* 🔓 OPTIONAL AUTH HEADER       */
+/* ============================= */
+const getOptionalAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  return headers;
+};
+
+/* ============================= */
 /* 📌 GET ALL TAGS              */
 /* ============================= */
 
@@ -62,7 +79,6 @@ export const getAllUrls = async () => {
   return { success: true, data };
 };
 
-/* ============================= */
 /* ➕ CREATE URL                 */
 /* ============================= */
 export const createUrl = async (
@@ -72,7 +88,7 @@ export const createUrl = async (
 ) => {
   const res = await fetch(BASE_URL, {
     method: "POST",
-    headers: getAuthHeaders(),
+    headers: getOptionalAuthHeaders(),
     body: JSON.stringify({
       longUrl,
       customAlias,
