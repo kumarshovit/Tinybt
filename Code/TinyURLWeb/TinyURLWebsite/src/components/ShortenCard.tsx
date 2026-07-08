@@ -8,6 +8,8 @@ import {
   getAllTags
 } from "../api/urlService";
 
+let memoryGuestUrlResult: any = null;
+
 export default function ShortenCard({ onUrlCreated }: any) {
   const isAuthenticated = typeof window !== "undefined" ? !!localStorage.getItem("token") : false;
 
@@ -18,7 +20,7 @@ export default function ShortenCard({ onUrlCreated }: any) {
   const [tags, setTags] = useState<string[]>([]);
   const [tagOptions, setTagOptions] = useState<any[]>([]);
 
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<any>(memoryGuestUrlResult);
   const [error, setError] = useState("");
 
   /* ============================= */
@@ -26,7 +28,6 @@ export default function ShortenCard({ onUrlCreated }: any) {
   /* ============================= */
 
   useEffect(() => {
-
     const loadTags = async () => {
 
       const response = await getAllTags();
@@ -98,6 +99,10 @@ export default function ShortenCard({ onUrlCreated }: any) {
         clickCount: 0,
         tags
       };
+
+      if (!isAuthenticated && typeof window !== "undefined") {
+        memoryGuestUrlResult = newLink;
+      }
 
       if (onUrlCreated) {
         await onUrlCreated();
@@ -242,7 +247,8 @@ export default function ShortenCard({ onUrlCreated }: any) {
               </Link>
             )}
           </div>
-
+          
+          
         </div>
 
       )}
