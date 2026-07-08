@@ -14,7 +14,7 @@ export default function LandingNavbar() {
       <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
 
         {/* Logo */}
-        <Link to="/dashboard" className="flex items-center">
+        <Link to="/" className="flex items-center">
           <img
             src={logo}
             alt="LinkBT"

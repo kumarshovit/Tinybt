@@ -8,7 +8,7 @@ const rootDir = path.resolve(__dirname, "..");
 const distDir = path.join(rootDir, "dist");
 const template = await readFile(path.join(distDir, "index.html"), "utf8");
 
-const routes = ["/", "/contact", "/terms", "/privacy-policy"];
+const routes = ["/", "/contact", "/terms", "/privacy-policy", "/login", "/register", "/forgot-password"];
 
 function stripClientSeo(html) {
   return html
@@ -48,15 +48,33 @@ function splitHeadTags(renderedHtml) {
   return { head: headTags.join("\n"), html };
 }
 
+/** Decode HTML entities that React's renderToString double-encodes. */
+function decodeEntities(str) {
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'");
+}
+
 for (const route of routes) {
   const rendered = render(route);
   const extracted = splitHeadTags(rendered.html);
-  const head = [rendered.head, extracted.head].filter(Boolean).join("\n");
+
+  // Move any JSON-LD <script> tags from body into <head>
+  const jsonLdRe = /<script\s+type="application\/ld\+json"[\s\S]*?<\/script>/gi;
+  const jsonLdTags = extracted.html.match(jsonLdRe) || [];
+  const bodyHtml = extracted.html.replace(jsonLdRe, "");
+
+  const head = decodeEntities(
+    [rendered.head, extracted.head, ...jsonLdTags].filter(Boolean).join("\n"),
+  );
   const html = stripClientSeo(template)
     .replace("</head>", `${head}\n  </head>`)
     .replace(
       '<div id="root"></div>',
-      `<div id="root">${extracted.html}</div>`,
+      `<div id="root">${bodyHtml}</div>`,
     );
 
   const outputPath = outputPathForRoute(route);

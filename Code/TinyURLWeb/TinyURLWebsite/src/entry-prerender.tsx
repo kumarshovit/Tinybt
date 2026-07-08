@@ -6,6 +6,9 @@ import LandingPage from "./pages/LandingPage";
 import ContactPage from "./pages/ContactPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
 
 (HelmetProvider as any).canUseDOM = false;
 
@@ -14,6 +17,9 @@ const routes: Record<string, () => React.ReactNode> = {
   "/contact": () => <ContactPage />,
   "/terms": () => <TermsPage />,
   "/privacy-policy": () => <PrivacyPolicyPage />,
+  "/login": () => <Login />,
+  "/register": () => <Register />,
+  "/forgot-password": () => <ForgotPassword />,
 };
 
 export function render(url: string) {
