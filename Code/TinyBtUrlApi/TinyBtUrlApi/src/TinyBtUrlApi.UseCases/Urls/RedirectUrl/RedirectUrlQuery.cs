@@ -3,6 +3,15 @@ using TinyBtUrlApi.Core.Entities;
 
 namespace TinyBtUrlApi.UseCases.Urls.RedirectUrl;
 
+public enum RedirectStatus
+{
+    Found,
+    NotFound,
+    Expired
+}
+
+public record RedirectResult(RedirectStatus Status, UrlMapping? Url = null);
+
 public record RedirectUrlQuery(
     string ShortCode,
     string? Browser,
@@ -13,4 +22,4 @@ public record RedirectUrlQuery(
     string? DeviceType,
     string? IpAddress,
     string? RawHeaders
-) : IRequest<UrlMapping?>;
+) : IRequest<RedirectResult>;
