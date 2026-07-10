@@ -22,10 +22,10 @@ const jsonLd = {
       "@id": "https://link.bt/#organization",
       "name": "LinkBT",
       "url": "https://link.bt/",
-      "logo": "https://link.bt/fevicon.svg",
+      "logo": "https://link.bt/favicon.svg",
       "contactPoint": {
         "@type": "ContactPoint",
-        "email": "support@linkbt.com",
+        "email": "norbu@nano.bt",
         "contactType": "customer support"
       }
     },
@@ -46,8 +46,8 @@ export default function LandingPage() {
     <div className="bg-gray-50 min-h-screen">
 
       <SEO
-        title="LinkBT – Free URL Shortener & Link Analytics"
-        description="Create branded short links, track clicks by device, browser & location, and manage all your links from one powerful dashboard. Free forever."
+        title="Free URL Shortener – Shorten Links & Track Clicks | LinkBT"
+        description="Shorten URLs and track clicks instantly with LinkBT, the best free URL shortener. Create custom aliases, monitor real-time analytics, and boost your engagement today!"
         canonical="/"
         jsonLd={jsonLd}
       />

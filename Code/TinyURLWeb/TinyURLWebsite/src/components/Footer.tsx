@@ -92,13 +92,13 @@ const Footer = () => {
               <div>
                 <span className="font-medium text-white">📞 Phone</span>
                 <br />
-                +91 99999 99999
+                + 975 17701770
               </div>
 
               <div>
                 <span className="font-medium text-white">✉️ Email</span>
                 <br />
-                support@linkbt.com
+                norbu@nano.bt
               </div>
             </div>
           </div>

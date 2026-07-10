@@ -6,20 +6,20 @@ using TinyBtUrlApi.Core.Models;
 namespace TinyBtUrlApi.UseCases.Urls.RedirectUrl;
 
 public class RedirectUrlHandler(IUrlRepository repo)
-    : IRequestHandler<RedirectUrlQuery, UrlMapping?>
+    : IRequestHandler<RedirectUrlQuery, RedirectResult>
 {
-  public async ValueTask<UrlMapping?> Handle(
+  public async ValueTask<RedirectResult> Handle(
       RedirectUrlQuery request,
       CancellationToken ct)
   {
     var url = await repo.GetByShortCodeAsync(request.ShortCode);
 
     if (url is null || url.IsDeleted)
-      return null;
+      return new RedirectResult(RedirectStatus.NotFound);
 
     if (url.ExpirationDate.HasValue &&
         url.ExpirationDate.Value < DateTime.UtcNow)
-      return null;
+      return new RedirectResult(RedirectStatus.Expired);
 
     url.ClickCount++;
 
@@ -116,6 +116,6 @@ public class RedirectUrlHandler(IUrlRepository repo)
     await repo.LogClickAsync(clickLog, ct);
     await repo.UpdateAsync(url);
 
-    return url;
+    return new RedirectResult(RedirectStatus.Found, url);
   }
 }

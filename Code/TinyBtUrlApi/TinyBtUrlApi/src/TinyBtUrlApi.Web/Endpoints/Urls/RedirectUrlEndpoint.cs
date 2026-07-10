@@ -53,30 +53,33 @@ public class RedirectUrlEndpoint : EndpointWithoutRequest
         headers.ToString()
     );
 
-    var url = await _mediator.Send(query, ct);
+    var result = await _mediator.Send(query, ct);
+    var frontendBaseUrl = _configuration["BaseUrl:Domain"];
 
-
-
-    if (url == null)
+    if (result.Status == RedirectStatus.NotFound)
     {
-      var frontendBaseUrl =
-          _configuration["BaseUrl:Domain"];
+      HttpContext.Response.Redirect(
+          $"{frontendBaseUrl}/not-found",
+          false,
+          false
+      );
+      await HttpContext.Response.CompleteAsync();
+      return;
+    }
 
+    if (result.Status == RedirectStatus.Expired)
+    {
       HttpContext.Response.Redirect(
           $"{frontendBaseUrl}/expired-link",
           false,
           false
       );
-
       await HttpContext.Response.CompleteAsync();
-
       return;
     }
 
-
-
     HttpContext.Response.StatusCode = StatusCodes.Status302Found;
-    HttpContext.Response.Headers.Location = url.LongUrl;
+    HttpContext.Response.Headers.Location = result.Url!.LongUrl;
     await HttpContext.Response.CompleteAsync();
   }
 }

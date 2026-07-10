@@ -15,6 +15,7 @@ import TermsPage from "./pages/TermsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 import FaqPage from "./pages/FaqPage";
+import NotFoundPage from "./pages/NotFoundPage";
 import FeaturesPage from "./pages/FeaturesPage";
 
 // Lazily loaded: authenticated / heavy pages (recharts, react-select, etc.)
@@ -33,29 +34,29 @@ export default function App() {
 
   return (
     <BrowserRouter>
-    
-     <AnalyticsTracker />
-     
+
+      <AnalyticsTracker />
+
       <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
-      <Routes>
+        <Routes>
 
-        {/* Landing */}
-        <Route path="/" element={<LandingPage />} />
+          {/* Landing */}
+          <Route path="/" element={<LandingPage />} />
 
-        {/* Auth Pages */}
-        <Route
-          path="/login"
-          element={token ? <Navigate to="/dashboard" /> : <Login />}
-        />
+          {/* Auth Pages */}
+          <Route
+            path="/login"
+            element={token ? <Navigate to="/dashboard" /> : <Login />}
+          />
 
-        <Route
-          path="/register"
-          element={token ? <Navigate to="/dashboard" /> : <Register />}
-        />
+          <Route
+            path="/register"
+            element={token ? <Navigate to="/dashboard" /> : <Register />}
+          />
 
-        <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route
           path="/contact"
@@ -76,61 +77,62 @@ export default function App() {
         />
         <Route path="/features" element={<FeaturesPage />} />
 
-        {/* Protected Routes */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+          {/* Protected Routes */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/analytics"
-          element={
-            <ProtectedRoute>
-              <AnalyticsPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/analytics"
+            element={
+              <ProtectedRoute>
+                <AnalyticsPage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
 
-        <Route
-          path="/tags/:id"
-          element={
-            <ProtectedRoute>
-              <TagManagement />
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/tags/:id"
+            element={
+              <ProtectedRoute>
+                <TagManagement />
+              </ProtectedRoute>
+            }
+          />
 
-        {/* Admin */}
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <AdminPage />
-            </AdminRoute>
-          }
-        />
+          {/* Admin */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminPage />
+              </AdminRoute>
+            }
+          />
 
-        <Route path="/:shortCode" element={<ShortUrlRedirect />} />
-
-
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/:shortCode" element={<ShortUrlRedirect />} />
 
 
-      </Routes>
+          {/* Fallback */}
+          <Route path="/not-found" element={<NotFoundPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+
+
+        </Routes>
       </Suspense>
 
     </BrowserRouter>
