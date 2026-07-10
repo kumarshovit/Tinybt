@@ -8,7 +8,7 @@ const faqData = [
   {
     question: "What is LinkBT?",
     answer:
-      "LinkBT is a smart URL shortening platform that transforms long URLs into short, shareable links while providing analytics and easy link management.",
+      "LinkBT is a modern URL shortening and link management platform that helps individuals, businesses, marketers, developers, and content creators transform long URLs into clean, professional short links. In addition to generating shortened URLs, LinkBT provides powerful features such as custom aliases, detailed click analytics, smart tagging, expiration controls, and centralized link management. Whether you're sharing links on social media, email campaigns, websites, advertisements, or internal business systems, LinkBT makes every URL easier to remember, easier to share, and easier to monitor. Our goal is to simplify URL management while providing users with valuable insights that help improve engagement, branding, and overall online performance.",
   },
   {
     question: "How do I shorten a URL?",
@@ -18,38 +18,38 @@ const faqData = [
   {
     question: "Can I create a custom alias?",
     answer:
-      "Yes. LinkBT allows you to create a custom alias, provided it is unique and available.",
+      "Yes. LinkBT allows you to create custom aliases so your shortened URLs become more meaningful, memorable, and professional. Instead of random characters, you can personalize your short link using words related to your business, campaign, event, or product. A branded alias improves trust, increases click-through rates, and makes links easier for users to recognize. Before creating the alias, LinkBT automatically checks its availability to ensure uniqueness. This feature is especially useful for businesses, digital marketers, educational institutions, and organizations that want consistent branding across all shared links.",
   },
-  {
-    question: "Can I update my shortened link later?",
-    answer:
-      "Yes. You can edit the destination URL or update the custom alias whenever required.",
-  },
-  {
-    question: "Can I delete a shortened URL?",
-    answer:
-      "Yes. You can remove links that are no longer required from your dashboard.",
-  },
-  {
-    question: "Does LinkBT provide analytics?",
-    answer:
-      "Yes. LinkBT provides analytics such as click tracking and link performance to help you monitor your shortened URLs.",
-  },
-  {
-    question: "Are my shortened links secure?",
-    answer:
-      "Yes. LinkBT follows secure practices to protect your links and user information.",
-  },
-  {
-    question: "Is there any limit to the number of URLs I can shorten?",
-    answer:
-      "You can create and manage multiple shortened URLs based on your account permissions.",
-  },
-  {
-    question: "How can I contact LinkBT support?",
-    answer:
-      "You can reach us through the Contact Us page or by using the contact information available in the website footer.",
-  },
+ {
+  question: "Can I update my shortened link later?",
+  answer:
+    "Yes. LinkBT allows you to update the destination URL of your shortened link whenever needed. If you are using a custom alias, you can also modify it based on availability. This makes it easy to keep your links up to date without creating a new short URL, helping you maintain consistency across your marketing campaigns and shared content.",
+},
+ {
+  question: "Can I delete a shortened URL?",
+  answer:
+    "Yes. You can delete shortened URLs that are no longer needed directly from your dashboard. Removing unused or outdated links helps keep your account organized and ensures you only manage active links. Depending on your account permissions, deleted links may no longer redirect visitors to the original destination.",
+},
+{
+  question: "Does LinkBT provide analytics?",
+  answer:
+    "Yes. LinkBT provides detailed link analytics to help you understand how your shortened URLs are performing. You can monitor metrics such as total clicks, unique visitors, devices, browsers, operating systems, locations, referrers, and other engagement data. These insights help businesses, marketers, and individuals measure campaign performance and optimize their marketing strategies.",
+},
+{
+  question: "Are my shortened links secure?",
+  answer:
+    "Yes. Security is a priority at LinkBT. We follow industry best practices to protect your shortened URLs and user information. Our platform uses secure HTTPS connections and continuously works to safeguard your links from unauthorized access, helping ensure a reliable and secure experience for both link creators and visitors.",
+},
+{
+  question: "Is there any limit to the number of URLs I can shorten?",
+  answer:
+    "LinkBT allows you to create and manage multiple shortened URLs based on your account type and permissions. Whether you're shortening a few personal links or managing hundreds of business links, our platform is designed to help you organize, track, and manage your URLs efficiently from a single dashboard.",
+},
+{
+  question: "How can I contact LinkBT support?",
+  answer:
+    "If you need assistance, you can contact the LinkBT support team through the Contact Us page on our website. You can also use the contact information provided in the website footer to reach us. Our team is available to help with account issues, technical questions, feature requests, and general inquiries.",
+},
 ];
 
 const FaqPage = () => {
