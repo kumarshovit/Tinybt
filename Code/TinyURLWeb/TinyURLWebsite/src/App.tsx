@@ -15,6 +15,7 @@ import TermsPage from "./pages/TermsPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 import FaqPage from "./pages/FaqPage";
+import FeaturesPage from "./pages/FeaturesPage";
 
 // Lazily loaded: authenticated / heavy pages (recharts, react-select, etc.)
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -73,6 +74,7 @@ export default function App() {
           path="/privacy-policy"
           element={<PrivacyPolicyPage />}
         />
+        <Route path="/features" element={<FeaturesPage />} />
 
         {/* Protected Routes */}
         <Route
