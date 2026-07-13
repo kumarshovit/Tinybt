@@ -57,7 +57,8 @@ const Login = () => {
     try {
       await loginUser(email, password);
 
-      navigate("/dashboard");
+      // navigate("/dashboard");
+       window.location.replace("/dashboard");
     } catch (err: any) {
 
       console.log(err.response);
