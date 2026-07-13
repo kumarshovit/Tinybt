@@ -21,5 +21,6 @@ public class UrlMapping
 
   public int? UserId { get; set; }              // 👈 ADD THIS
   public User? User { get; set; } = null!;
+  public string? IpAddress { get; set; }        // 👈 Added to track client IP
   public ICollection<UrlTag> UrlTags { get; set; } = new List<UrlTag>();
 }

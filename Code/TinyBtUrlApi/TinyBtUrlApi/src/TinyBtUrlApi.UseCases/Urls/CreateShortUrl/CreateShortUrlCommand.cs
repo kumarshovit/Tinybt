@@ -9,5 +9,6 @@ public record CreateShortUrlCommand(
     string LongUrl,
     string? CustomAlias,
     DateTime? ExpirationDate,
-    int? UserId
+    int? UserId,
+    string? IpAddress
 ) : IRequest<CreateShortUrlResult>;

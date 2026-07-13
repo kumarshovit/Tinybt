@@ -39,12 +39,15 @@ public class CreateShortUrlEndpoint
       }
     }
 
+    var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+
     var result = await _mediator.Send(
         new CreateShortUrlCommand(
             req.LongUrl,
             req.CustomAlias,
             req.ExpirationDate,
-            userId
+            userId,
+            ipAddress
         ),
         ct
     );

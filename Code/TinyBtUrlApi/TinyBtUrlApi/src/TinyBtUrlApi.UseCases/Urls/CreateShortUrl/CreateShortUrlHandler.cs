@@ -104,7 +104,8 @@ public class CreateShortUrlHandler
       ClickCount = 0,
       ExpirationDate = expirationDate,
       IsDeleted = false,
-      UserId = request.UserId
+      UserId = request.UserId,
+      IpAddress = request.IpAddress
     };
 
     // 🔹 4. Save to DB
