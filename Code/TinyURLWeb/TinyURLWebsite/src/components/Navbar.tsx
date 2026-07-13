@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { logoutUser } from "../services/authService";
 import { getUserRole } from "../utils/auth";
 import { BarChart3, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import logo from "../assets/logo.png";
 
 const Navbar = () => {
@@ -11,10 +11,16 @@ const Navbar = () => {
 
   const location = useLocation();
 
-  const token =
-    typeof window === "undefined" ? null : localStorage.getItem("token");
+  const [mounted, setMounted] = useState(false);
 
-  const role = getUserRole();
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const token =
+    typeof window === "undefined" || !mounted ? null : localStorage.getItem("token");
+
+  const role = typeof window === "undefined" || !mounted ? null : getUserRole();
 
   const [menuOpen, setMenuOpen] = useState(false);
 

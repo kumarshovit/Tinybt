@@ -11,7 +11,13 @@ import {
 let memoryGuestUrlResult: any = null;
 
 export default function ShortenCard({ onUrlCreated }: any) {
-  const isAuthenticated = typeof window !== "undefined" ? !!localStorage.getItem("token") : false;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isAuthenticated = typeof window !== "undefined" && mounted ? !!localStorage.getItem("token") : false;
 
   const [longUrl, setLongUrl] = useState("");
   const [alias, setAlias] = useState("");
