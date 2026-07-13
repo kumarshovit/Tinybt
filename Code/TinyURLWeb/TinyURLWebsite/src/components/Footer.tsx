@@ -84,9 +84,10 @@ const Footer = () => {
               <div>
                 <span className="font-medium text-white">📍 Address</span>
                 <br />
-                Demo Office Address<br />
-                Sector 62, Noida,<br />
-                Uttar Pradesh 201309, India
+                NANO<br />
+                Thimphu TechPark<br />
+                Wangchuktaba, Babesa<br />
+                Thimphu 11001,Bhutan
               </div>
 
               <div>
@@ -98,7 +99,7 @@ const Footer = () => {
               <div>
                 <span className="font-medium text-white">✉️ Email</span>
                 <br />
-                norbu@nano.bt
+                info@link.bt
               </div>
             </div>
           </div>

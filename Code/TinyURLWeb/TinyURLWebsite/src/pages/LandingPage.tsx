@@ -25,7 +25,7 @@ const jsonLd = {
       "logo": "https://link.bt/favicon.svg",
       "contactPoint": {
         "@type": "ContactPoint",
-        "email": "norbu@nano.bt",
+        "email": "info@link.bt",
         "contactType": "customer support"
       }
     },
