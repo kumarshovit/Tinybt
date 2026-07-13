@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { loginUser } from "../services/authService";
 import GoogleLogin from "../components/auth/GoogleLogin";
@@ -32,7 +32,7 @@ const Login = () => {
   // ✅ Show/Hide Password State
   const [showPassword, setShowPassword] = useState(false);
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const handleLogin = async (e?: React.FormEvent) => {
 
