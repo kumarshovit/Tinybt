@@ -64,6 +64,13 @@ const Footer = () => {
               >
                 Terms & Conditions
               </Link>
+              
+              <Link
+                to="/security"
+                className="hover:text-white transition"
+              >
+                Security
+              </Link>
 
               <Link
                 to="/privacy-policy"

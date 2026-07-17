@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 using TinyBtUrlApi.Core.Entities;
 using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Services;
-
 namespace TinyBtUrlApi.UseCases.Urls.CreateShortUrl;
 
 public class CreateShortUrlHandler
@@ -12,37 +11,42 @@ public class CreateShortUrlHandler
   private readonly IUrlRepository _repo;
   private readonly ShortCodeService _shortCodeService;
   private readonly ISettingsRepository _settingsRepo;
+  private readonly IUrlSecurityValidator _urlSecurityValidator;
+  private readonly ICaptchaService _captchaService;
 
   public CreateShortUrlHandler(
       IUrlRepository repo,
       ShortCodeService shortCodeService,
-     ISettingsRepository settingsRepo)
+      ISettingsRepository settingsRepo,
+      IUrlSecurityValidator urlSecurityValidator,
+      ICaptchaService captchaService)
   {
     _repo = repo;
     _shortCodeService = shortCodeService;
     _settingsRepo = settingsRepo;
+    _urlSecurityValidator = urlSecurityValidator;
+    _captchaService = captchaService;
   }
 
   public async ValueTask<CreateShortUrlResult> Handle(
       CreateShortUrlCommand request,
       CancellationToken ct)
   {
+    // 🔹 0. CAPTCHA Validation for unauthenticated users
+    if (request.UserId == null)
+    {
+      var isCaptchaValid = await _captchaService.VerifyTokenAsync(request.CaptchaToken ?? string.Empty, request.IpAddress, ct);
+      if (!isCaptchaValid)
+      {
+        return new CreateShortUrlResult
+        {
+          Success = false,
+          Message = "CAPTCHA verification failed."
+        };
+      }
+    }
+
     // 🔹 1. Basic Validation
-
-    if (string.IsNullOrWhiteSpace(request.LongUrl))
-      return new CreateShortUrlResult
-      {
-        Success = false,
-        Message = "URL is required."
-      };
-
-    if (!Uri.IsWellFormedUriString(request.LongUrl, UriKind.Absolute))
-      return new CreateShortUrlResult
-      {
-        Success = false,
-        Message = "Invalid URL format."
-      };
-
     if (request.ExpirationDate.HasValue &&
         request.ExpirationDate <= DateTime.UtcNow)
       return new CreateShortUrlResult
@@ -50,6 +54,19 @@ public class CreateShortUrlHandler
         Success = false,
         Message = "Expiration date must be in the future."
       };
+
+    // 🔹 1.1 Security Validation & Normalization
+    var securityResult = await _urlSecurityValidator.ValidateUrlAsync(request.LongUrl, ct);
+    if (!securityResult.Success)
+    {
+        return new CreateShortUrlResult
+        {
+            Success = false,
+            Message = securityResult.Message
+        };
+    }
+
+    var normalizedUrl = securityResult.NormalizedUrl;
 
     string shortCode;
 
@@ -98,7 +115,7 @@ public class CreateShortUrlHandler
 
     var mapping = new UrlMapping
     {
-      LongUrl = request.LongUrl,
+      LongUrl = normalizedUrl,
       ShortCode = shortCode,
       CreatedAt = DateTime.UtcNow,
       ClickCount = 0,

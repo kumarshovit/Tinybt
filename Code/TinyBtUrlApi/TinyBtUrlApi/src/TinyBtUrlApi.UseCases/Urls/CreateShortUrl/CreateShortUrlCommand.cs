@@ -10,5 +10,6 @@ public record CreateShortUrlCommand(
     string? CustomAlias,
     DateTime? ExpirationDate,
     int? UserId,
-    string? IpAddress
+    string? IpAddress,
+    string? CaptchaToken
 ) : IRequest<CreateShortUrlResult>;

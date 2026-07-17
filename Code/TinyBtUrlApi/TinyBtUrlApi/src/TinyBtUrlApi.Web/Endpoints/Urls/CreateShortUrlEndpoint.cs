@@ -47,7 +47,8 @@ public class CreateShortUrlEndpoint
             req.CustomAlias,
             req.ExpirationDate,
             userId,
-            ipAddress
+            ipAddress,
+            req.CaptchaToken
         ),
         ct
     );

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import CreatableSelect from "react-select/creatable";
+import { Turnstile } from "@marsidev/react-turnstile";
 
 import {
   createUrl,
@@ -28,6 +29,13 @@ export default function ShortenCard({ onUrlCreated }: any) {
 
   const [result, setResult] = useState<any>(memoryGuestUrlResult);
   const [error, setError] = useState("");
+
+  // const [captchaToken, setCaptchaToken] = useState("");
+  // const [captchaKey, setCaptchaKey] = useState(Date.now());
+  const [captchaToken, setCaptchaToken] = useState("");
+  const [captchaKey, setCaptchaKey] = useState(Date.now());
+  const [showCaptcha, setShowCaptcha] = useState(false);
+  const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY || "";
 
   /* ============================= */
   /* LOAD EXISTING TAGS            */
@@ -59,23 +67,7 @@ export default function ShortenCard({ onUrlCreated }: any) {
   /* CREATE URL                    */
   /* ============================= */
 
-  const handleCreate = async () => {
-
-    setError("");
-    setResult(null);
-
-    if (!longUrl.trim()) {
-      setError("Please enter a URL.");
-      return;
-    }
-
-    try {
-      new URL(longUrl);
-    } catch {
-      setError("Please enter a valid URL (e.g. https://example.com).");
-      return;
-    }
-
+  const performCreate = async (token?: string) => {
     try {
 
       const response = await createUrl(
@@ -83,7 +75,8 @@ export default function ShortenCard({ onUrlCreated }: any) {
         alias || undefined,
         expirationDate
           ? new Date(expirationDate).toISOString()
-          : undefined
+          : undefined,
+        token
       );
 
       if (!response.success) {
@@ -120,13 +113,75 @@ export default function ShortenCard({ onUrlCreated }: any) {
       setAlias("");
       setExpirationDate("");
       setTags([]);
+      setCaptchaToken("");
+      setShowCaptcha(false);
+      setCaptchaKey(Date.now());
 
     } catch {
 
-      setError("Something went wrong");
-
+      // setError("Something went wrong");
+      // setCaptchaToken("");
+      // setCaptchaKey(Date.now());
+       setError("Something went wrong");
+       setCaptchaToken("");
+       setShowCaptcha(false);
+       setCaptchaKey(Date.now());
     }
   };
+
+  // const handleCreate = async () => {
+  //   setError("");
+  //   setResult(null);
+
+  //   if (!longUrl.trim()) {
+  //     setError("Please enter a URL.");
+  //     return;
+  //   }
+
+  //   try {
+  //     new URL(longUrl);
+  //   } catch {
+  //     setError("Please enter a valid URL (e.g. https://example.com).");
+  //     return;
+  //   }
+
+  //   if (!isAuthenticated && !captchaToken) {
+  //     setError("Please verify CAPTCHA first.");
+  //     return;
+  //   }
+
+  //   await performCreate(captchaToken);
+  // };
+  const handleCreate = async () => {
+
+    setError("");
+    setResult(null);
+
+    if (!longUrl.trim()) {
+        setError("Please enter a URL.");
+        return;
+    }
+
+    try {
+        new URL(longUrl);
+    }
+    catch {
+        setError("Please enter a valid URL (e.g. https://example.com).");
+        return;
+    }
+
+    if (isAuthenticated) {
+        await performCreate();
+        return;
+    }
+
+    if (!captchaToken) {
+        setShowCaptcha(true);
+        return;
+    }
+
+    await performCreate(captchaToken);
+};
 
   return (
 
@@ -208,6 +263,41 @@ export default function ShortenCard({ onUrlCreated }: any) {
       />
 
 
+      {/* CAPTCHA Widget for Unauthenticated Users */}
+      {!isAuthenticated && showCaptcha && siteKey && (
+        <div className="mb-4 flex justify-center w-full overflow-hidden">
+          <Turnstile
+    key={captchaKey}
+    siteKey={siteKey}
+    onSuccess={(token) => {
+
+        setCaptchaToken(token);
+
+        setError("");
+
+        performCreate(token);
+
+    }}
+    onError={() => {
+
+        setError("CAPTCHA verification failed.");
+
+        setCaptchaToken("");
+
+        setCaptchaKey(Date.now());
+
+    }}
+    onExpire={() => {
+
+        setCaptchaToken("");
+
+        setCaptchaKey(Date.now());
+
+    }}
+/>
+        </div>
+      )}
+
       {/* BUTTON */}
 
       <button
@@ -216,10 +306,10 @@ export default function ShortenCard({ onUrlCreated }: any) {
       >
         Generate Short Link
       </button>
-        
-         <p className="text-sm text-gray-500 text-center mt-3">
-              Sign in to save and manage your links
-            </p>
+
+      <p className="text-sm text-gray-500 text-center mt-3">
+        Sign in to save and manage your links
+      </p>
 
       {error && (
         <p className="text-red-500 mt-3 text-sm">
@@ -243,18 +333,18 @@ export default function ShortenCard({ onUrlCreated }: any) {
             >
               {result.shortUrl}
             </a>
-            
+
             {!isAuthenticated && (
-              <Link 
-                to="/register" 
+              <Link
+                to="/register"
                 className="ml-4 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 py-1 rounded text-sm whitespace-nowrap"
               >
                 View Analytics
               </Link>
             )}
           </div>
-          
-          
+
+
         </div>
 
       )}

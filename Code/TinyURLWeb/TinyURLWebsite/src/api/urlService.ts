@@ -84,7 +84,8 @@ export const getAllUrls = async () => {
 export const createUrl = async (
   longUrl: string,
   customAlias?: string,
-  expirationDate?: string
+  expirationDate?: string,
+  captchaToken?: string
 ) => {
   const res = await fetch(BASE_URL, {
     method: "POST",
@@ -93,6 +94,7 @@ export const createUrl = async (
       longUrl,
       customAlias,
       expirationDate,
+      captchaToken
     }),
   });
 

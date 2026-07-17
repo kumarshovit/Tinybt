@@ -53,6 +53,13 @@ public static class InfrastructureServiceExtensions
     services.AddScoped<IUrlRepository, UrlRepository>();
     services.AddScoped<ShortCodeService>();
     services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
+    // URL Security Validations
+    services.AddMemoryCache();
+    services.AddScoped<IUrlFormatValidator, UrlFormatValidator>();
+    services.AddScoped<IDnsLookupService, DnsLookupService>();
+    //services.AddHttpClient<IHttpsValidationService, HttpsValidationService>();
+    services.AddScoped<IUrlSecurityValidator, UrlSecurityValidator>();
+    services.AddHttpClient<ICaptchaService, TurnstileCaptchaService>();
 
     logger.LogInformation("{Project} services registered", "Infrastructure");
 

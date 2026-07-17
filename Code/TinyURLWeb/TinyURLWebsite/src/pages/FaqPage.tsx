@@ -20,6 +20,11 @@ const faqData = [
     answer:
       "Yes. LinkBT allows you to create custom aliases so your shortened URLs become more meaningful, memorable, and professional. Instead of random characters, you can personalize your short link using words related to your business, campaign, event, or product. A branded alias improves trust, increases click-through rates, and makes links easier for users to recognize. Before creating the alias, LinkBT automatically checks its availability to ensure uniqueness. This feature is especially useful for businesses, digital marketers, educational institutions, and organizations that want consistent branding across all shared links.",
   },
+  {
+  question: "Does LinkBT scan links for malware?",
+  answer:
+    "Yes. Google Safe Browsing integration is being added to automatically detect phishing and malware before links are shortened.",
+},
  {
   question: "Can I update my shortened link later?",
   answer:
