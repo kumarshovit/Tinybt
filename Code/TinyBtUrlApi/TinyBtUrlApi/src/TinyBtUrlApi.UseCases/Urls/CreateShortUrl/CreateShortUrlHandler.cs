@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using TinyBtUrlApi.Core.Entities;
 using TinyBtUrlApi.Core.Interfaces;
+using TinyBtUrlApi.Core.Models;
 using TinyBtUrlApi.Core.Services;
 namespace TinyBtUrlApi.UseCases.Urls.CreateShortUrl;
 
@@ -13,19 +14,22 @@ public class CreateShortUrlHandler
   private readonly ISettingsRepository _settingsRepo;
   private readonly IUrlSecurityValidator _urlSecurityValidator;
   private readonly ICaptchaService _captchaService;
+  private readonly IGoogleSafeBrowsingService _safeBrowsingService;
 
   public CreateShortUrlHandler(
       IUrlRepository repo,
       ShortCodeService shortCodeService,
       ISettingsRepository settingsRepo,
       IUrlSecurityValidator urlSecurityValidator,
-      ICaptchaService captchaService)
+      ICaptchaService captchaService,
+      IGoogleSafeBrowsingService safeBrowsingService)
   {
     _repo = repo;
     _shortCodeService = shortCodeService;
     _settingsRepo = settingsRepo;
     _urlSecurityValidator = urlSecurityValidator;
     _captchaService = captchaService;
+    _safeBrowsingService = safeBrowsingService;
   }
 
   public async ValueTask<CreateShortUrlResult> Handle(
@@ -68,9 +72,23 @@ public class CreateShortUrlHandler
 
     var normalizedUrl = securityResult.NormalizedUrl;
 
+    // 🔹 4. Google Safe Browsing validation
+    if (normalizedUrl != null)
+    {
+        var safeBrowsingResult = await _safeBrowsingService.CheckUrlAsync(normalizedUrl, ct);
+        if (!safeBrowsingResult.IsSafe)
+        {
+            return new CreateShortUrlResult
+            {
+                Success = false,
+                Message = "The destination URL has been identified as unsafe."
+            };
+        }
+    }
+
     string shortCode;
 
-    // 🔹 2. Custom Alias Logic
+    // 🔹 5. Custom Alias Logic
 
     if (!string.IsNullOrWhiteSpace(request.CustomAlias))
     {

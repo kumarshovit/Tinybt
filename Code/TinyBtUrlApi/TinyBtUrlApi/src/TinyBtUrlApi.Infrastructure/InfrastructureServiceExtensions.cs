@@ -1,4 +1,5 @@
 ﻿using TinyBtUrlApi.Core.Interfaces;
+using TinyBtUrlApi.Core.Options;
 using TinyBtUrlApi.Core.Services;
 using TinyBtUrlApi.Infrastructure.Data;
 using TinyBtUrlApi.Infrastructure.Repositories;
@@ -60,6 +61,9 @@ public static class InfrastructureServiceExtensions
     //services.AddHttpClient<IHttpsValidationService, HttpsValidationService>();
     services.AddScoped<IUrlSecurityValidator, UrlSecurityValidator>();
     services.AddHttpClient<ICaptchaService, TurnstileCaptchaService>();
+    
+    services.Configure<GoogleSafeBrowsingOptions>(config.GetSection("GoogleSafeBrowsing"));
+    services.AddHttpClient<IGoogleSafeBrowsingService, GoogleSafeBrowsingService>();
 
     logger.LogInformation("{Project} services registered", "Infrastructure");
 
