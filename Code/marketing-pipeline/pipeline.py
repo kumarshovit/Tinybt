@@ -1,15 +1,15 @@
 """
 Main Pipeline Orchestrator for LinkBT Marketing Engine.
-Creative Director Pipeline with Interactive Feature Selection & Diversity Engine.
+Supports interactive prompt type selection (Image, Video, or Both) and feature selection.
 
 Flow:
   1. Codebase Analysis (Git history, React components, .NET backend)
   2. Interactive Feature Selection (Ask user at runtime or auto-select if skipped)
-  3. Creative Director Strategy (Marketing Style -> Layout -> Single Angle -> Seasonal Context)
-  4. Creativity & Uniqueness Scoring (<30% similarity threshold)
-  5. AI Image Prompt Generation (tailored to style, layout & selected features)
-  6. LinkedIn Caption & Copy Generation
-  7. Save Output: output/marketing-prompt.md & update past_posts.json
+  3. Interactive Prompt Type Selection (Ask user: Image, Video, or Both)
+  4. Creative Director Strategy (Style -> Layout / Story -> Single Angle -> Uniqueness Score)
+  5. Prompt Synthesis:
+     - Image Prompt -> output/marketing-prompt.md
+     - Video Prompt -> output/video-prompt.md (Gemini Veo, Runway Gen-4, Sora, Kling AI - Min 30s)
 """
 
 import sys
@@ -19,6 +19,7 @@ if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
 import json
+import random
 import argparse
 from datetime import datetime
 from pathlib import Path
@@ -29,31 +30,37 @@ from idea_generator import generate_idea
 from prompt_generator import generate_image_prompt
 from caption_generator import generate_caption
 
+from video_diversity_engine import (
+    VIDEO_DURATIONS,
+    VIDEO_STYLES,
+    STORY_STRUCTURES,
+    CAMERA_DIRECTIONS,
+    MOTION_GRAPHICS_STYLES,
+    MUSIC_DIRECTIONS,
+    VOICEOVER_TONES,
+    calculate_video_creativity_score,
+)
+from video_story_generator import generate_video_story
+from video_prompt_generator import generate_video_prompt
+
 
 def prompt_user_for_features(codebase_ctx: dict, preselected: list[str] = None) -> list[str]:
-    """
-    Interactively ask the user which features to highlight in this campaign.
-    If preselected is provided (via CLI args), uses those directly.
-    """
+    """Interactively ask user which features to highlight."""
     if preselected:
         print(f"\n🎯 Using pre-selected features: {', '.join(preselected)}")
         return preselected
 
-    # Build available feature list
     core_features = codebase_ctx.get("core_features", [])
     newly_detected = codebase_ctx.get("newly_detected_features", [])
     
     feature_options = []
 
-    # Newly detected first
     for nd in newly_detected:
         feature_options.append(f"✨ {nd['name']} (New: {nd['description']})")
     
-    # Core features
     for cf in core_features:
         feature_options.append(f"{cf.get('emoji', '🔗')} {cf['name']} ({cf['description']})")
 
-    # Additional standard options
     additional = [
         "QR Code Generation & Smart Routing",
         "UTM Link Builder & Campaign Tracking",
@@ -65,13 +72,12 @@ def prompt_user_for_features(codebase_ctx: dict, preselected: list[str] = None) 
     for add in additional:
         feature_options.append(f"⚡ {add}")
 
-    # If non-interactive environment (e.g. redirected stdin), return auto-selected default
     if not sys.stdin.isatty():
         print("\n⚡ Non-interactive shell detected: Intelligently auto-selecting features...")
         return [feature_options[0].split(" (")[0].replace("✨ ", "").replace("🔗 ", "").replace("⚡ ", "")]
 
     print("\n" + "="*60)
-    print("  🎨 LINKBT CREATIVE DIRECTOR — FEATURE SELECTION")
+    print("  🎨 LINKBT CREATIVE DIRECTOR — STEP 1: FEATURE SELECTION")
     print("="*60)
     print("Which feature(s) would you like to highlight in this campaign?\n")
 
@@ -94,7 +100,6 @@ def prompt_user_for_features(codebase_ctx: dict, preselected: list[str] = None) 
         if part.isdigit():
             idx = int(part) - 1
             if 0 <= idx < len(feature_options):
-                # Clean title
                 raw_title = feature_options[idx]
                 clean_title = raw_title.split(" (")[0].replace("✨ ", "").replace("🔗 ", "").replace("⚡ ", "").strip()
                 selected_names.append(clean_title)
@@ -107,119 +112,94 @@ def prompt_user_for_features(codebase_ctx: dict, preselected: list[str] = None) 
     return selected_names
 
 
-def run_pipeline(selected_features: list[str] = None) -> dict:
+def prompt_user_for_type(preselected_type: str = None) -> str:
+    """Interactively ask user if they want Image, Video, or Both prompts."""
+    if preselected_type and preselected_type in ["image", "video", "all"]:
+        return preselected_type
+
+    if not sys.stdin.isatty():
+        return "all"
+
+    print("\n" + "="*60)
+    print("  🎬 LINKBT CREATIVE DIRECTOR — STEP 2: PROMPT TYPE SELECTION")
+    print("="*60)
+    print("Which type of marketing campaign prompt would you like to generate?\n")
+    print("  [1] 🖼️  AI Image Generation Prompt (for ChatGPT / Gemini / DALL-E)")
+    print("  [2] 🎬  AI Video Commercial Prompt (for Gemini Veo / Runway / Sora / Kling AI - Min 30s)")
+    print("  [3] 🚀  BOTH (Image Poster & Video Commercial Prompts)")
+
+    try:
+        user_input = input("\nEnter option [1, 2, or 3] (Default: 3): ").strip()
+    except (EOFError, KeyboardInterrupt):
+        user_input = ""
+
+    if user_input == "1":
+        print("\n🖼️ Selected: AI Image Generation Prompt Only")
+        return "image"
+    elif user_input == "2":
+        print("\n🎬 Selected: AI Video Commercial Prompt Only (Min 30s)")
+        return "video"
+    else:
+        print("\n🚀 Selected: BOTH (AI Image & Video Commercial Prompts)")
+        return "all"
+
+
+def run_pipeline(selected_features: list[str] = None, prompt_type: str = None) -> dict:
     """
-    Execute the upgraded marketing pipeline.
-
-    Args:
-        selected_features: Optional list of feature names chosen by user.
-
-    Returns:
-        dict with all generated marketing campaign artifacts.
+    Execute the marketing pipeline for Image and/or Video prompt generation.
+    Interactively prompts for feature and prompt type selection.
     """
     today = datetime.now().strftime("%Y-%m-%d")
     print(f"\n{'='*60}")
-    print(f"  🚀 LinkBT Codebase-Driven Marketing Engine — {today}")
+    print(f"  🚀 LinkBT Codebase-Driven Creative Director Engine — {today}")
     print(f"{'='*60}\n")
 
-    # ── Step 1: Codebase Analysis ────────────────────
-    print("🔍 [1/5] Analyzing workspace codebase & Git history...")
+    # 1. Codebase Analysis
+    print("🔍 [1/6] Analyzing workspace codebase & Git history...")
     codebase_ctx = get_complete_codebase_context()
-    print(f"   📂 Pages detected: {len(codebase_ctx['pages'])} ({', '.join(codebase_ctx['pages'][:4])}...)")
+    print(f"   📂 Pages detected: {len(codebase_ctx['pages'])}")
     print(f"   ✨ Newly detected features: {len(codebase_ctx['newly_detected_features'])}")
 
-    # ── Step 2: Interactive Feature Selection ────────
+    # 2. Interactive Feature Selection
     if selected_features is None:
         selected_features = prompt_user_for_features(codebase_ctx)
 
-    # ── Step 3: Creative Director Strategy Selection ─
-    print("\n🧠 [2/5] Selecting Creative Director strategy & Diversity parameters...")
-    idea = generate_idea(selected_features)
-    print(f"   🎨 Marketing Style: {idea.get('marketing_style')}")
-    print(f"   📐 Poster Layout: {idea.get('layout')}")
-    print(f"   🎯 Single Angle: {idea.get('angle')}")
-    print(f"   📝 Headline: \"{idea.get('headline')}\"")
-    print(f"   ✨ Highlighted Features: {idea.get('feature_focus')}")
+    # 3. Interactive Prompt Type Selection (Image, Video, or Both)
+    if prompt_type is None:
+        prompt_type = prompt_user_for_type()
 
-    # ── Step 4: Uniqueness & Creativity Score Check ──
-    print("\n📊 [3/5] Evaluating Creativity & Anti-Repetition Score...")
-    c_score = idea.get("creativity_score", {})
-    print(f"   ⭐ Novelty Score: {c_score.get('novelty')}/100")
-    print(f"   ⭐ Visual Diversity Score: {c_score.get('visual_diversity')}/100")
-    print(f"   ⭐ Similarity with History: {c_score.get('similarity_percentage')}% (Threshold: <30%)")
-    
-    if not c_score.get("passed", True):
-        print("   ⚠️ Similarity exceeded 30%! Re-rolling creative concept for maximum diversity...")
-        idea = generate_idea(selected_features)
-        c_score = idea.get("creativity_score", {})
-        print(f"   ✅ Re-rolled Concept: Style={idea.get('marketing_style')}, Layout={idea.get('layout')}")
+    # 4. Creative Strategy Generation
+    print("\n🧠 [2/6] Generating Creative Strategy & Brand Parameters...")
+    image_idea = generate_idea(selected_features)
+    print(f"   🎯 Headline: \"{image_idea.get('headline')}\"")
+    print(f"   ✨ Highlighted Feature: {image_idea.get('feature_focus')}")
 
-    # ── Step 5: Synthesize AI Image Generation Prompt 
-    print("\n🎨 [4/5] Synthesizing AI Image Generation Prompt...")
-    image_prompt = generate_image_prompt(idea, codebase_ctx)
-    word_count = len(image_prompt.split())
-    print(f"   📄 AI Image Prompt generated ({word_count} words)")
+    results = {}
 
-    # ── Step 6: Generate LinkedIn Caption Copy ────────
-    print("\n✍️  [5/5] Generating LinkedIn caption & post copy...")
-    caption_data = generate_caption(idea)
-    print(f"   📄 Caption generated successfully")
+    # ── Image Prompt Generation ──────────────────────
+    if prompt_type in ["image", "all"]:
+        print("\n🎨 [3/6] Synthesizing AI Image Generation Prompt...")
+        image_prompt = generate_image_prompt(image_idea, codebase_ctx)
+        caption_data = generate_caption(image_idea)
 
-    # ── Step 7: Write Output Artifact: output/marketing-prompt.md ──
-    campaign_name = f"LinkBT Campaign — {idea.get('marketing_style')} ({today})"
-
-    new_features_md = "\n".join([
-        f"- **{nf['name']}**: {nf['description']} *(Source: {nf['source']})*"
-        for nf in codebase_ctx.get("newly_detected_features", [])
-    ]) if codebase_ctx.get("newly_detected_features") else "- Continuous deployment performance & security upgrades"
-
-    core_features_md = "\n".join([
-        f"- **{cf['name']}**: {cf['description']}"
-        for cf in codebase_ctx.get("core_features", [])
-    ])
-
-    marketing_prompt_content = f"""# {campaign_name}
+        campaign_name = f"LinkBT Campaign — {image_idea.get('marketing_style')} ({today})"
+        
+        image_prompt_content = f"""# {campaign_name}
 
 ## 📊 Campaign Strategy & Creative Direction
 - **Campaign Name**: {campaign_name}
-- **Marketing Style Category**: **{idea.get('marketing_style')}**
-- **Poster Layout**: **{idea.get('layout')}**
-- **Single Core Angle**: **{idea.get('angle')}**
-- **Highlighted Features**: **{idea.get('feature_focus')}**
-- **Color Palette**: {idea.get('color_palette_name')}
-- **Camera Angle**: {idea.get('camera_mode')}
-- **Lighting**: {idea.get('lighting_mode')}
-
-### 📈 Creativity & Uniqueness Evaluation
-- **Novelty Score**: {c_score.get('novelty')}/100
-- **Visual Diversity Score**: {c_score.get('visual_diversity')}/100
-- **Marketing Creativity**: {c_score.get('marketing_creativity')}/100
-- **Similarity with History**: {c_score.get('similarity_percentage')}% *(Passed <30% threshold)*
+- **Marketing Style Category**: **{image_idea.get('marketing_style')}**
+- **Poster Layout Structure**: **{image_idea.get('layout')}**
+- **Single Core Angle**: **{image_idea.get('angle')}**
+- **Highlighted Features**: **{image_idea.get('feature_focus')}**
+- **Color Palette**: {image_idea.get('color_palette_name')}
 
 ---
 
-## 🚀 Product Knowledge Graph
-### Newly Released Features (Automatically Detected from Local Codebase & Git)
-{new_features_md}
-
-### Core Product Features
-{core_features_md}
-
----
-
-## 📱 Marketing Copy & LinkedIn Caption
-
-### Headline & Supporting Copy
-- **Headline**: {idea.get('headline', '')}
-- **Supporting Copy**: {idea.get('subtitle', '')}
-- **CTA**: {caption_data.get('cta', '')}
-
-### Full LinkedIn Post
+## 📱 LinkedIn Post Copy
 ```text
 {caption_data.get('full_post', '')}
 ```
-
-- **Hashtags**: {caption_data.get('hashtags', '')}
 
 ---
 
@@ -228,45 +208,106 @@ def run_pipeline(selected_features: list[str] = None) -> dict:
 {image_prompt}
 """.strip()
 
-    output_file = OUTPUT_DIR / "marketing-prompt.md"
-    with open(output_file, "w", encoding="utf-8") as f:
-        f.write(marketing_prompt_content)
+        img_output_file = OUTPUT_DIR / "marketing-prompt.md"
+        with open(img_output_file, "w", encoding="utf-8") as f:
+            f.write(image_prompt_content)
+
+        print(f"   ✅ AI Image Prompt generated -> {img_output_file}")
+        results["image_artifact"] = str(img_output_file)
+
+    # ── Video Prompt Generation ──────────────────────
+    if prompt_type in ["video", "all"]:
+        print("\n🎬 [4/6] Generating AI Video Commercial Strategy (Min 30s Enforced)...")
+
+        duration_info = random.choice(VIDEO_DURATIONS)
+        video_style = random.choice(VIDEO_STYLES)
+        story_structure = random.choice(STORY_STRUCTURES)
+        camera_dir = random.choice(CAMERA_DIRECTIONS)
+        motion_style = random.choice(MOTION_GRAPHICS_STYLES)
+        music_info = random.choice(MUSIC_DIRECTIONS)
+        voiceover_tone = random.choice(VOICEOVER_TONES)
+
+        video_concept = {
+            "video_style": video_style,
+            "story_structure": story_structure,
+            "camera_direction": camera_dir,
+            "motion_style": motion_style,
+            "music_info": music_info,
+            "voiceover_tone": voiceover_tone,
+            "headline": image_idea.get("headline"),
+            "angle": image_idea.get("angle"),
+            "feature_focus": image_idea.get("feature_focus"),
+            "color_palette_name": image_idea.get("color_palette_name"),
+            "hero_icon": image_idea.get("hero_icon", "3D Emerald Security Shield"),
+        }
+
+        video_story = generate_video_story(video_concept, image_idea.get("feature_focus"), duration_info)
+
+        print("\n📊 [5/6] Evaluating Video Uniqueness & Anti-Repetition Score...")
+        v_score = calculate_video_creativity_score(video_concept, [])
+        print(f"   ⭐ Video Novelty Score: {v_score.get('novelty')}/100")
+        print(f"   ⭐ Duration: {duration_info['label']}")
+
+        print("\n🎥 [6/6] Synthesizing Cinematic AI Video Prompt (Gemini Veo / Runway / Sora / Kling)...")
+        video_prompt = generate_video_prompt(video_concept, video_story, codebase_ctx, duration_info)
+        video_caption = generate_caption(image_idea)
+
+        video_campaign_name = f"LinkBT Commercial — {video_style} ({duration_info['seconds']}s) ({today})"
+
+        video_prompt_content = f"""# {video_campaign_name}
+
+## 📊 Video Campaign Strategy
+- **Commercial Category**: **{video_style}**
+- **Story Structure**: **{story_structure}**
+- **Duration**: **{duration_info['label']} (Min 30s Enforced)**
+- **Highlighted Feature**: **{image_idea.get('feature_focus')}**
+- **Hero Graphic**: {image_idea.get('hero_icon')}
+
+---
+
+## 📱 LinkedIn Video Post Copy
+```text
+{video_caption.get('full_post', '')}
+```
+
+---
+
+## 🎬 Complete AI Video Generation Prompt (For Gemini Veo / Runway Gen-4 / Sora / Kling AI)
+
+{video_prompt}
+""".strip()
+
+        vid_output_file = OUTPUT_DIR / "video-prompt.md"
+        with open(vid_output_file, "w", encoding="utf-8") as f:
+            f.write(video_prompt_content)
+
+        print(f"   ✅ AI Video Commercial Prompt generated -> {vid_output_file}")
+        results["video_artifact"] = str(vid_output_file)
 
     print(f"\n{'='*60}")
     print(f"  ✅ [SUCCESS] Creative Director Pipeline Complete!")
     print(f"{'='*60}")
-    print(f"📁 Output Artifact: {output_file}")
+    if "image_artifact" in results:
+        print(f"🖼️  Image Prompt: {results['image_artifact']}")
+    if "video_artifact" in results:
+        print(f"🎬 Video Prompt: {results['video_artifact']}")
 
-    result = {
-        "date": today,
-        "campaign_name": campaign_name,
-        "marketing_style": idea.get("marketing_style"),
-        "layout": idea.get("layout"),
-        "headline": idea.get("headline"),
-        "angle": idea.get("angle"),
-        "feature_focus": idea.get("feature_focus"),
-        "artifact_path": str(output_file),
-    }
-
-    # Record to campaign history
     save_post({
         "date": today,
-        "campaign_name": campaign_name,
-        "marketing_style": idea.get("marketing_style"),
-        "layout": idea.get("layout"),
-        "headline": idea.get("headline"),
-        "angle": idea.get("angle"),
-        "feature_focus": idea.get("feature_focus"),
+        "type": prompt_type,
+        "headline": image_idea.get("headline"),
+        "feature_focus": image_idea.get("feature_focus"),
         "status": "pending_approval",
     })
 
-    return result
+    return results
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="LinkBT Marketing Pipeline")
-    parser.add_argument("--features", type=str, help="Comma-separated feature names to highlight")
+    parser.add_argument("--features", type=str, help="Comma-separated feature names")
+    parser.add_argument("--type", type=str, choices=["image", "video", "all"], help="Prompt type (image, video, all)")
     args = parser.parse_args()
 
     feats = [f.strip() for f in args.features.split(",")] if args.features else None
-    run_pipeline(feats)
+    run_pipeline(feats, args.type)
