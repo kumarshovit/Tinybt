@@ -116,5 +116,115 @@
     "headline": "Smart Links. Real Insights.",
     "angle": "Myth busting — debunking URL shortener misconceptions",
     "status": "pending_approval"
+  },
+  {
+    "date": "2026-07-27",
+    "campaign_name": "LinkBT Campaign — Feature Spotlight (2026-07-27)",
+    "marketing_style": "Feature Spotlight",
+    "layout": "Grid layout with 4 feature cards",
+    "headline": "Real-Time Insights. Zero Guesswork.",
+    "angle": "Clean Link Organization for High-Growth Marketing Teams",
+    "feature_focus": "Real-Time Click Analytics, Smart Link Tagging & Organization",
+    "status": "pending_approval"
+  },
+  {
+    "date": "2026-07-27",
+    "campaign_name": "LinkBT Campaign — Before vs After (2026-07-27)",
+    "marketing_style": "Before vs After",
+    "layout": "Large headline left, floating dashboard right",
+    "headline": "Real-Time Insights. Zero Guesswork.",
+    "angle": "Double Your Click-Through Rate with Branded Links",
+    "feature_focus": "Real-Time Click Analytics, Smart Link Tagging & Organization",
+    "status": "pending_approval"
+  },
+  {
+    "date": "2026-07-27",
+    "campaign_name": "LinkBT Campaign — Product Comparison (2026-07-27)",
+    "marketing_style": "Product Comparison",
+    "layout": "Large headline left, floating dashboard right",
+    "headline": "Real-Time Insights. Zero Guesswork.",
+    "angle": "Clean Link Organization for High-Growth Marketing Teams",
+    "feature_focus": "Real-Time Click Analytics, Smart Link Tagging & Organization",
+    "status": "pending_approval"
+  },
+  {
+    "date": "2026-07-27",
+    "campaign_name": "LinkBT Campaign — Power User Tips (2026-07-27)",
+    "marketing_style": "Power User Tips",
+    "layout": "3D workspace desktop with glowing screen",
+    "headline": "Real-Time Insights. Zero Guesswork.",
+    "angle": "Auto-Expiring Promo Links for Time-Sensitive Campaigns",
+    "feature_focus": "Smart Link Tagging & Organization",
+    "status": "pending_approval"
+  },
+  {
+    "date": "2026-07-27",
+    "campaign_name": "LinkBT Campaign — Glassmorphism (2026-07-27)",
+    "marketing_style": "Glassmorphism",
+    "layout": "Laptop mockup perspective tilt",
+    "headline": "Real-Time Insights. Zero Guesswork.",
+    "angle": "Custom Domain Shortening Built for Brand Authority",
+    "feature_focus": "Smart Link Tagging & Organization",
+    "status": "pending_approval"
+  },
+  {
+    "date": "2026-07-27",
+    "campaign_name": "LinkBT Campaign — Security Awareness (2026-07-27)",
+    "marketing_style": "Security Awareness",
+    "layout": "Dark futuristic background with neon light rays",
+    "headline": "Real-Time Insights. Zero Guesswork.",
+    "angle": "Clean Link Organization for High-Growth Marketing Teams",
+    "feature_focus": "Bot & Spam Captcha Shield",
+    "status": "pending_approval"
+  },
+  {
+    "date": "2026-07-27",
+    "campaign_name": "LinkBT Campaign — Minimal Poster (2026-07-27)",
+    "marketing_style": "Minimal Poster",
+    "layout": "Marketing dashboard spotlight",
+    "headline": "Real-Time Insights. Zero Guesswork.",
+    "angle": "Zero Guesswork: Real-Time Click & Geo Analytics",
+    "feature_focus": "Bot & Spam Captcha Shield",
+    "status": "pending_approval"
+  },
+  {
+    "date": "2026-07-27",
+    "campaign_name": "LinkBT Campaign — Editorial Magazine (2026-07-27)",
+    "marketing_style": "Editorial Magazine",
+    "layout": "Large headline right, screenshot left",
+    "headline": "Real-Time Insights. Zero Guesswork.",
+    "angle": "Zero Guesswork: Real-Time Click & Geo Analytics",
+    "feature_focus": "100% Free & No Subscription Fees",
+    "status": "pending_approval"
+  },
+  {
+    "date": "2026-07-27",
+    "campaign_name": "LinkBT Campaign — Marketing Tips (2026-07-27)",
+    "marketing_style": "Marketing Tips",
+    "layout": "Clean developer desktop workspace view",
+    "headline": "Enterprise Security for Every Campaign Link.",
+    "angle": "Instant Anti-Bot Captcha Shield for Authentic Traffic Data",
+    "feature_focus": "Bot & Spam Captcha Shield",
+    "status": "pending_approval"
+  },
+  {
+    "date": "2026-07-27",
+    "campaign_name": "LinkBT Campaign — Customer Story (2026-07-27)",
+    "marketing_style": "Customer Story",
+    "layout": "3D workspace desktop with glowing screen",
+    "headline": "Zero Spam Clicks. Pure Traffic Stats.",
+    "angle": "Auto-Expiring Promo Links for Time-Sensitive Campaigns",
+    "feature_focus": "Bot & Spam Captcha Shield",
+    "status": "pending_approval"
+  },
+  {
+    "date": "2026-07-27",
+    "campaign_name": "LinkBT Campaign — Isometric Design (2026-07-27)",
+    "marketing_style": "Isometric Design",
+    "layout": "Large headline left, floating dashboard right",
+    "headline": "Enterprise Security for Every Campaign Link.",
+    "angle": "Instant Anti-Bot Captcha Shield for Authentic Traffic Data",
+    "feature_focus": "Google Safe Browsing Threat Protection",
+    "status": "pending_approval"
   }
 ]

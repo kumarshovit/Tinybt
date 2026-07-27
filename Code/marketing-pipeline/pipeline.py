@@ -1,12 +1,15 @@
 """
 Main Pipeline Orchestrator for LinkBT Marketing Engine.
+Creative Director Pipeline with Interactive Feature Selection & Diversity Engine.
 
 Flow:
-  1. Analyze codebase (Git history, React components, .NET backend)
-  2. Generate unique campaign strategy (Ollama LLM)
-  3. Synthesize hyper-detailed AI Image Generation Prompt (1000-3000 words)
-  4. Generate high-converting LinkedIn caption, CTA & hashtags
-  5. Write single output artifact: output/marketing-prompt.md
+  1. Codebase Analysis (Git history, React components, .NET backend)
+  2. Interactive Feature Selection (Ask user at runtime or auto-select if skipped)
+  3. Creative Director Strategy (Marketing Style -> Layout -> Single Angle -> Seasonal Context)
+  4. Creativity & Uniqueness Scoring (<30% similarity threshold)
+  5. AI Image Prompt Generation (tailored to style, layout & selected features)
+  6. LinkedIn Caption & Copy Generation
+  7. Save Output: output/marketing-prompt.md & update past_posts.json
 """
 
 import sys
@@ -16,6 +19,7 @@ if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
 import json
+import argparse
 from datetime import datetime
 from pathlib import Path
 from config import OUTPUT_DIR, PAST_POSTS_FILE
@@ -26,9 +30,89 @@ from prompt_generator import generate_image_prompt
 from caption_generator import generate_caption
 
 
-def run_pipeline() -> dict:
+def prompt_user_for_features(codebase_ctx: dict, preselected: list[str] = None) -> list[str]:
+    """
+    Interactively ask the user which features to highlight in this campaign.
+    If preselected is provided (via CLI args), uses those directly.
+    """
+    if preselected:
+        print(f"\n🎯 Using pre-selected features: {', '.join(preselected)}")
+        return preselected
+
+    # Build available feature list
+    core_features = codebase_ctx.get("core_features", [])
+    newly_detected = codebase_ctx.get("newly_detected_features", [])
+    
+    feature_options = []
+
+    # Newly detected first
+    for nd in newly_detected:
+        feature_options.append(f"✨ {nd['name']} (New: {nd['description']})")
+    
+    # Core features
+    for cf in core_features:
+        feature_options.append(f"{cf.get('emoji', '🔗')} {cf['name']} ({cf['description']})")
+
+    # Additional standard options
+    additional = [
+        "QR Code Generation & Smart Routing",
+        "UTM Link Builder & Campaign Tracking",
+        "Custom Domains & Branded Aliases",
+        "Password Protection & Access Controls",
+        "Bio Pages & Link-in-Bio Builder",
+        "Bulk URL Shortener Management",
+    ]
+    for add in additional:
+        feature_options.append(f"⚡ {add}")
+
+    # If non-interactive environment (e.g. redirected stdin), return auto-selected default
+    if not sys.stdin.isatty():
+        print("\n⚡ Non-interactive shell detected: Intelligently auto-selecting features...")
+        return [feature_options[0].split(" (")[0].replace("✨ ", "").replace("🔗 ", "").replace("⚡ ", "")]
+
+    print("\n" + "="*60)
+    print("  🎨 LINKBT CREATIVE DIRECTOR — FEATURE SELECTION")
+    print("="*60)
+    print("Which feature(s) would you like to highlight in this campaign?\n")
+
+    for i, feat in enumerate(feature_options, 1):
+        print(f"  [{i}] {feat}")
+    print("  [0] Skip selection (Intelligently auto-select optimal features)")
+
+    try:
+        user_input = input("\nEnter feature numbers separated by comma (e.g. 1, 2) [Default: 0]: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        user_input = ""
+
+    if not user_input or user_input == "0":
+        print("\n✨ Auto-selecting optimal features from latest code additions...")
+        return []
+
+    selected_names = []
+    for part in user_input.split(","):
+        part = part.strip()
+        if part.isdigit():
+            idx = int(part) - 1
+            if 0 <= idx < len(feature_options):
+                # Clean title
+                raw_title = feature_options[idx]
+                clean_title = raw_title.split(" (")[0].replace("✨ ", "").replace("🔗 ", "").replace("⚡ ", "").strip()
+                selected_names.append(clean_title)
+
+    if selected_names:
+        print(f"\n✅ Selected Features for Campaign: {', '.join(selected_names)}")
+    else:
+        print("\n✨ Auto-selecting optimal features...")
+
+    return selected_names
+
+
+def run_pipeline(selected_features: list[str] = None) -> dict:
     """
     Execute the upgraded marketing pipeline.
+
+    Args:
+        selected_features: Optional list of feature names chosen by user.
 
     Returns:
         dict with all generated marketing campaign artifacts.
@@ -39,35 +123,50 @@ def run_pipeline() -> dict:
     print(f"{'='*60}\n")
 
     # ── Step 1: Codebase Analysis ────────────────────
-    print("🔍 [1/4] Analyzing workspace codebase & Git history...")
+    print("🔍 [1/5] Analyzing workspace codebase & Git history...")
     codebase_ctx = get_complete_codebase_context()
-    print(f"   📂 Pages detected: {len(codebase_ctx['pages'])} ({', '.join(codebase_ctx['pages'][:5])}...)")
+    print(f"   📂 Pages detected: {len(codebase_ctx['pages'])} ({', '.join(codebase_ctx['pages'][:4])}...)")
     print(f"   ✨ Newly detected features: {len(codebase_ctx['newly_detected_features'])}")
-    for nd in codebase_ctx['newly_detected_features']:
-        print(f"      - {nd['name']}")
 
-    # ── Step 2: Generate Campaign Strategy ───────────
-    print("\n🧠 [2/4] Generating unique campaign concept...")
-    idea = generate_idea()
-    print(f"   🎯 Theme: {idea.get('theme', 'N/A')}")
-    print(f"   💡 Idea: {idea.get('idea', 'N/A')}")
-    print(f"   📝 Headline: {idea.get('headline', 'N/A')}")
-    print(f"   ✨ Feature Focus: {idea.get('feature_focus', 'N/A')}")
+    # ── Step 2: Interactive Feature Selection ────────
+    if selected_features is None:
+        selected_features = prompt_user_for_features(codebase_ctx)
 
-    # ── Step 3: Generate AI Image Generation Prompt ──
-    print("\n🎨 [3/4] Synthesizing 1000-3000 word AI Image Generation Prompt...")
+    # ── Step 3: Creative Director Strategy Selection ─
+    print("\n🧠 [2/5] Selecting Creative Director strategy & Diversity parameters...")
+    idea = generate_idea(selected_features)
+    print(f"   🎨 Marketing Style: {idea.get('marketing_style')}")
+    print(f"   📐 Poster Layout: {idea.get('layout')}")
+    print(f"   🎯 Single Angle: {idea.get('angle')}")
+    print(f"   📝 Headline: \"{idea.get('headline')}\"")
+    print(f"   ✨ Highlighted Features: {idea.get('feature_focus')}")
+
+    # ── Step 4: Uniqueness & Creativity Score Check ──
+    print("\n📊 [3/5] Evaluating Creativity & Anti-Repetition Score...")
+    c_score = idea.get("creativity_score", {})
+    print(f"   ⭐ Novelty Score: {c_score.get('novelty')}/100")
+    print(f"   ⭐ Visual Diversity Score: {c_score.get('visual_diversity')}/100")
+    print(f"   ⭐ Similarity with History: {c_score.get('similarity_percentage')}% (Threshold: <30%)")
+    
+    if not c_score.get("passed", True):
+        print("   ⚠️ Similarity exceeded 30%! Re-rolling creative concept for maximum diversity...")
+        idea = generate_idea(selected_features)
+        c_score = idea.get("creativity_score", {})
+        print(f"   ✅ Re-rolled Concept: Style={idea.get('marketing_style')}, Layout={idea.get('layout')}")
+
+    # ── Step 5: Synthesize AI Image Generation Prompt 
+    print("\n🎨 [4/5] Synthesizing AI Image Generation Prompt...")
     image_prompt = generate_image_prompt(idea, codebase_ctx)
     word_count = len(image_prompt.split())
     print(f"   📄 AI Image Prompt generated ({word_count} words)")
 
-    # ── Step 4: Generate LinkedIn Caption ────────────
-    print("\n✍️  [4/4] Generating LinkedIn caption & post copy...")
+    # ── Step 6: Generate LinkedIn Caption Copy ────────
+    print("\n✍️  [5/5] Generating LinkedIn caption & post copy...")
     caption_data = generate_caption(idea)
-    print(f"   📄 Caption length: {len(caption_data.get('caption', ''))} chars")
-    print(f"   #️⃣  Hashtags: {caption_data.get('hashtags', 'N/A')}")
+    print(f"   📄 Caption generated successfully")
 
-    # ── Step 5: Format Final Single Artifact: marketing-prompt.md ──
-    campaign_name = f"LinkBT Campaign — {idea.get('theme', 'General')} ({today})"
+    # ── Step 7: Write Output Artifact: output/marketing-prompt.md ──
+    campaign_name = f"LinkBT Campaign — {idea.get('marketing_style')} ({today})"
 
     new_features_md = "\n".join([
         f"- **{nf['name']}**: {nf['description']} *(Source: {nf['source']})*"
@@ -81,19 +180,25 @@ def run_pipeline() -> dict:
 
     marketing_prompt_content = f"""# {campaign_name}
 
-## 📊 Campaign Strategy & Overview
+## 📊 Campaign Strategy & Creative Direction
 - **Campaign Name**: {campaign_name}
-- **Campaign Strategy Theme**: {idea.get('theme', 'N/A')}
-- **Marketing Goal**: Drive signups and brand awareness on LinkedIn by showcasing LinkBT's enterprise feature suite.
-- **Target Audience**: {idea.get('target_audience', 'Digital Marketers, Content Creators, Developers')}
-- **Customer Pain Points**: {idea.get('pain_points', 'N/A')}
-- **Emotional Trigger**: {idea.get('emotional_trigger', 'N/A')}
-- **Marketing Angle**: {idea.get('angle', 'N/A')}
-- **Value Proposition**: 100% Free, custom short URLs, real-time analytics, Google Safe Browsing, and link tagging.
+- **Marketing Style Category**: **{idea.get('marketing_style')}**
+- **Poster Layout**: **{idea.get('layout')}**
+- **Single Core Angle**: **{idea.get('angle')}**
+- **Highlighted Features**: **{idea.get('feature_focus')}**
+- **Color Palette**: {idea.get('color_palette_name')}
+- **Camera Angle**: {idea.get('camera_mode')}
+- **Lighting**: {idea.get('lighting_mode')}
+
+### 📈 Creativity & Uniqueness Evaluation
+- **Novelty Score**: {c_score.get('novelty')}/100
+- **Visual Diversity Score**: {c_score.get('visual_diversity')}/100
+- **Marketing Creativity**: {c_score.get('marketing_creativity')}/100
+- **Similarity with History**: {c_score.get('similarity_percentage')}% *(Passed <30% threshold)*
 
 ---
 
-## 🚀 Product Features
+## 🚀 Product Knowledge Graph
 ### Newly Released Features (Automatically Detected from Local Codebase & Git)
 {new_features_md}
 
@@ -123,60 +228,45 @@ def run_pipeline() -> dict:
 {image_prompt}
 """.strip()
 
-    # Save to output/marketing-prompt.md
     output_file = OUTPUT_DIR / "marketing-prompt.md"
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(marketing_prompt_content)
 
     print(f"\n{'='*60}")
-    print(f"  ✅ [SUCCESS] Pipeline Complete! Output artifact generated.")
+    print(f"  ✅ [SUCCESS] Creative Director Pipeline Complete!")
     print(f"{'='*60}")
     print(f"📁 Output Artifact: {output_file}")
-    print(f"📝 Total Artifact Word Count: {len(marketing_prompt_content.split())} words")
 
     result = {
         "date": today,
         "campaign_name": campaign_name,
-        "theme": idea.get("theme", ""),
-        "idea": idea,
-        "caption": caption_data.get("caption", ""),
-        "hashtags": caption_data.get("hashtags", ""),
-        "cta": caption_data.get("cta", ""),
-        "full_post": caption_data.get("full_post", ""),
-        "image_prompt": image_prompt,
+        "marketing_style": idea.get("marketing_style"),
+        "layout": idea.get("layout"),
+        "headline": idea.get("headline"),
+        "angle": idea.get("angle"),
+        "feature_focus": idea.get("feature_focus"),
         "artifact_path": str(output_file),
-        "status": "pending_approval",
     }
 
-    # Record to history
+    # Record to campaign history
     save_post({
         "date": today,
         "campaign_name": campaign_name,
-        "theme": idea.get("theme", ""),
-        "idea": idea.get("idea", ""),
-        "headline": idea.get("headline", ""),
-        "angle": idea.get("angle", ""),
+        "marketing_style": idea.get("marketing_style"),
+        "layout": idea.get("layout"),
+        "headline": idea.get("headline"),
+        "angle": idea.get("angle"),
+        "feature_focus": idea.get("feature_focus"),
         "status": "pending_approval",
     })
 
     return result
 
 
-def run_standalone():
-    """Run pipeline standalone without Telegram bot for testing."""
-    from llm import check_connection
-
-    print("🔍 Checking Ollama connection...")
-    if not check_connection():
-        print("\n❌ Ollama is not running or model not found!")
-        print("   1. Install Ollama:  https://ollama.com")
-        print("   2. Start it:        ollama serve")
-        print("   3. Pull model:      ollama pull llama3.2:3b")
-        return None
-
-    print("✅ Ollama is ready!\n")
-    return run_pipeline()
-
-
 if __name__ == "__main__":
-    run_standalone()
+    parser = argparse.ArgumentParser(description="LinkBT Marketing Pipeline")
+    parser.add_argument("--features", type=str, help="Comma-separated feature names to highlight")
+    args = parser.parse_args()
+
+    feats = [f.strip() for f in args.features.split(",")] if args.features else None
+    run_pipeline(feats)
