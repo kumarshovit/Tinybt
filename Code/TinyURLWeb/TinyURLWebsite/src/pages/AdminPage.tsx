@@ -19,8 +19,8 @@ const AdminPage = () => {
   const [search, setSearch] = useState("");
   const [error, setError] = useState("");
 
-  const [defaultExpiration, setDefaultExpiration] = useState<number | "">("");
-  const [settingLoading, setSettingLoading] = useState(false);
+  // const [defaultExpiration, setDefaultExpiration] = useState<number | "">("");
+  // const [settingLoading, setSettingLoading] = useState(false);
 
   const [loading, setLoading] = useState(true);
 
@@ -29,11 +29,10 @@ const AdminPage = () => {
 
   useEffect(() => {
     fetchUsers();
-    fetchDefaultExpiration();
+    // fetchDefaultExpiration();
   }, []);
 
   // ================= FETCH USERS =================
-
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -57,34 +56,34 @@ const AdminPage = () => {
 
   // ================= FETCH DEFAULT EXPIRATION =================
 
-  const fetchDefaultExpiration = async () => {
-    try {
-      const res = await api.get("/admin/settings/expiration");
-      setDefaultExpiration(res.data.defaultExpirationDays ?? "");
-    } catch {
-      console.log("Failed to fetch expiration setting");
-    }
-  };
+  // const fetchDefaultExpiration = async () => {
+  //   try {
+  //     const res = await api.get("/admin/settings/expiration");
+  //     setDefaultExpiration(res.data.defaultExpirationDays ?? "");
+  //   } catch {
+  //     console.log("Failed to fetch expiration setting");
+  //   }
+  // };
 
   // ================= UPDATE EXPIRATION =================
 
-  const updateDefaultExpiration = async () => {
-    if (!defaultExpiration) return alert("Enter valid days");
+  // const updateDefaultExpiration = async () => {
+  //   if (!defaultExpiration) return alert("Enter valid days");
 
-    try {
-      setSettingLoading(true);
+  //   try {
+  //     setSettingLoading(true);
 
-      await api.put("/admin/settings/expiration", {
-        defaultExpirationDays: Number(defaultExpiration),
-      });
+  //     await api.put("/admin/settings/expiration", {
+  //       defaultExpirationDays: Number(defaultExpiration),
+  //     });
 
-      alert("Default expiration updated successfully!");
-    } catch {
-      alert("Failed to update expiration.");
-    } finally {
-      setSettingLoading(false);
-    }
-  };
+  //     alert("Default expiration updated successfully!");
+  //   } catch {
+  //     alert("Failed to update expiration.");
+  //   } finally {
+  //     setSettingLoading(false);
+  //   }
+  // };
 
   // ================= UPDATE ROLE =================
 
@@ -174,7 +173,7 @@ const AdminPage = () => {
 
         {/* ================= SYSTEM SETTINGS ================= */}
 
-        <div className="bg-white shadow rounded-lg p-4 sm:p-6">
+        {/* <div className="bg-white shadow rounded-lg p-4 sm:p-6">
           <h2 className="text-lg sm:text-xl font-semibold mb-4">
             System Settings ⚙️
           </h2>
@@ -200,7 +199,7 @@ const AdminPage = () => {
               {settingLoading ? "Saving..." : "Save"}
             </button>
           </div>
-        </div>
+        </div> */}
 
         {/* ================= SEARCH ================= */}
 

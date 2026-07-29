@@ -63,11 +63,11 @@ public class CreateShortUrlHandler
     var securityResult = await _urlSecurityValidator.ValidateUrlAsync(request.LongUrl, ct);
     if (!securityResult.Success)
     {
-        return new CreateShortUrlResult
-        {
-            Success = false,
-            Message = securityResult.Message
-        };
+      return new CreateShortUrlResult
+      {
+        Success = false,
+        Message = securityResult.Message
+      };
     }
 
     var normalizedUrl = securityResult.NormalizedUrl;
@@ -75,15 +75,15 @@ public class CreateShortUrlHandler
     // 🔹 4. Google Safe Browsing validation
     if (normalizedUrl != null)
     {
-        var safeBrowsingResult = await _safeBrowsingService.CheckUrlAsync(normalizedUrl, ct);
-        if (!safeBrowsingResult.IsSafe)
+      var safeBrowsingResult = await _safeBrowsingService.CheckUrlAsync(normalizedUrl, ct);
+      if (!safeBrowsingResult.IsSafe)
+      {
+        return new CreateShortUrlResult
         {
-            return new CreateShortUrlResult
-            {
-                Success = false,
-                Message = "The destination URL has been identified as unsafe."
-            };
-        }
+          Success = false,
+          Message = "The destination URL has been identified as unsafe."
+        };
+      }
     }
 
     string shortCode;
@@ -122,12 +122,13 @@ public class CreateShortUrlHandler
     // If user did NOT provide expiration
     if (!expirationDate.HasValue)
     {
-      var settings = await _settingsRepo.GetAsync();
+      //var settings = await _settingsRepo.GetAsync();
 
-      if (settings?.DefaultExpirationDays is int days && days > 0)
-      {
-        expirationDate = DateTime.UtcNow.AddDays(days);
-      }
+      //if (settings?.DefaultExpirationDays is int days && days > 0)
+      //{
+      //  expirationDate = DateTime.UtcNow.AddDays(days);
+      //}
+      expirationDate = null;
     }
 
 
