@@ -1,6 +1,9 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useClickOutside from "../hooks/useClickOutside";
+import QrModal from "./QrModal";
+import { QrCode, Copy, Tags, Trash2 } from "lucide-react";
+
 import {
     updateAlias,
     updateDestination,
@@ -35,6 +38,7 @@ export default function LinkRow({
     const [newDestination, setNewDestination] = useState("");
     const [error, setError] = useState("");
     const [copied, setCopied] = useState(false);
+    const [showQrModal, setShowQrModal] = useState(false);
 
     const cardRef = useRef<HTMLDivElement>(null);
 
@@ -53,13 +57,13 @@ export default function LinkRow({
         () => setActiveEdit(null),
         isEditingAlias || isEditingDestination
     );
-   const handleCopy = () => {
-    const urlToCopy = link.shortUrl || `${window.location.origin}/${link.shortCode}`;
-    navigator.clipboard.writeText(urlToCopy);
-    setCopied(true);
+    const handleCopy = () => {
+        const urlToCopy = link.shortUrl || `${window.location.origin}/${link.shortCode}`;
+        navigator.clipboard.writeText(urlToCopy);
+        setCopied(true);
 
-    setTimeout(() => setCopied(false), 2000);
-};
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     const handleAliasUpdate = async () => {
         if (!newAlias.trim()) return;
@@ -129,51 +133,59 @@ export default function LinkRow({
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">                <div>
-                <a
-                    href={link.shortUrl}
-                    target="_blank"
-                    className="text-blue-600 font-medium"
-                >
-                    {link.shortUrl}
-                </a>
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3">
+                <div>
+                    <a
+                        href={link.shortUrl}
+                        target="_blank"
+                        className="text-blue-600 font-medium"
+                    >
+                        {link.shortUrl}
+                    </a>
 
-                <p className="text-sm text-gray-500 mt-1 truncate max-w-[450px]">
-                    {link.longUrl.length > 60
-                        ? link.longUrl.slice(0, 60) + "..."
-                        : link.longUrl}
-                </p>
-                <p className="text-sm text-gray-400">
-                    {link.clickCount} clicks
-                </p>
-
-                {link.expirationDate && (
-                    <p className="text-sm text-red-500">
-                        Expires on: {new Date(link.expirationDate).toLocaleString()}
+                    <p className="text-sm text-gray-500 mt-1 truncate max-w-[450px]">
+                        {link.longUrl.length > 60
+                            ? link.longUrl.slice(0, 60) + "..."
+                            : link.longUrl}
                     </p>
-                )}
-            </div>
+                    <p className="text-sm text-gray-400">
+                        {link.clickCount} clicks
+                    </p>
 
-                <div className="flex gap-3">
+                    {link.expirationDate && (
+                        <p className="text-sm text-red-500">
+                            Expires on: {new Date(link.expirationDate).toLocaleString()}
+                        </p>
+                    )}
+                </div>
+
+                <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
+                    <button
+                        onClick={() => setShowQrModal(true)}
+                        className="bg-white border text-blue-600 border-blue-200 hover:bg-blue-50 px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 transition"
+                    >
+                        <QrCode className="w-4 h-4" /> QR
+                    </button>
+
                     <button
                         onClick={handleCopy}
-                        className="bg-gray-200 px-3 py-1 rounded text-sm"
+                        className="bg-gray-100 hover:bg-gray-200 border border-transparent px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5 transition text-gray-700"
                     >
-                        {copied ? "Copied!" : "Copy"}
+                        <Copy className="w-4 h-4" /> {copied ? "Copied!" : "Copy"}
                     </button>
 
                     <button
                         onClick={() => navigate(`/tags/${link.id}`)}
-                        className="bg-blue-100 text-blue-600 px-3 py-1 rounded text-sm"
+                        className="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5 transition"
                     >
-                        Manage Tags
+                        <Tags className="w-4 h-4" /> Manage Tags
                     </button>
 
                     <button
                         onClick={handleDelete}
-                        className="text-red-600"
+                        className="text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-md text-sm flex items-center gap-1.5 transition"
                     >
-                        Delete
+                        <Trash2 className="w-4 h-4" /> Delete
                     </button>
                 </div>
 
@@ -222,9 +234,9 @@ export default function LinkRow({
                         className="border px-3 py-1 rounded flex-1"
                     />
                     {error && (
-                        <p style={{ color: "red", fontSize: "13px", marginTop: "5px" }}>
+                        <div className="text-red-600 bg-red-50 px-3 py-2 rounded-md border border-red-100 text-sm mt-2 w-full md:w-auto">
                             {error}
-                        </p>
+                        </div>
                     )}
 
                     <button
@@ -274,6 +286,12 @@ export default function LinkRow({
                 </div>
             )}
 
+            {showQrModal && (
+                <QrModal
+                    shortCode={link.shortUrl?.split('/').pop() || link.id.toString()}
+                    onClose={() => setShowQrModal(false)}
+                />
+            )}
         </div>
     );
 }

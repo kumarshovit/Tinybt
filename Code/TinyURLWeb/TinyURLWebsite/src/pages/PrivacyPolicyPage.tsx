@@ -13,7 +13,7 @@ const PrivacyPolicyPage = () => {
       <SEO
         title="Privacy Policy – LinkBT"
         description="Learn how LinkBT collects, stores, and protects your personal data. We are committed to keeping your information safe and transparent."
-        canonical="/privacy-policy"
+        canonical="/privacy-policy/"
       />
 
       {/* Navbar */}

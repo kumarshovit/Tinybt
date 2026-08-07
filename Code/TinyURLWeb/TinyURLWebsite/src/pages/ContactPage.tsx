@@ -93,8 +93,8 @@ const ContactPage = () => {
             <SEO
             title="Contact Us – LinkBT"
             description="Get in touch with the LinkBT team. Have questions about URL shortening, analytics, or your account? We're here to help."
-            canonical="/contact"
-        />
+            canonical="/contact/"
+            />
 
         {/* Navbar */}
             <Navbar />

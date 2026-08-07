@@ -11,6 +11,7 @@ public class ClickLog
   public string VisitorId { get; set; } = default!;
   public DateTime ClickedAt { get; set; }
   public string? Referrer { get; set; }
+  public string? Source { get; set; }
   public string? Country { get; set; }
   public string? DeviceType { get; set; }
   public string? Browser { get; set; }

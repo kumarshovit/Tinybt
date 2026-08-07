@@ -24,6 +24,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="NimblePros.Metronome" />
+    <PackageReference Include="QRCoder" />
     <PackageReference Include="SQLite" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <PackageReference Include="Vogen" />

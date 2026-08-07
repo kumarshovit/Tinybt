@@ -77,6 +77,8 @@ public static class ServiceConfigs
     services.AddScoped<ITokenRepository, TokenRepository>();
     // Password Reset Repository
     services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
+    services.AddScoped<IQrCodeService, QrCodeService>();
+
     logger.LogInformation("{Project} services registered", "Infrastructure");
 
     return services;

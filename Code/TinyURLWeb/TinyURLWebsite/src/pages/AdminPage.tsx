@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../utils/api";
 import Navbar from "../components/Navbar";
-
+import SEO from "../components/SEO";
 import ActivityModal from "../components/ActivityModal";
 import { getUserActivity } from "../api/activityService";
 import type { Activity } from "../types/activity";
@@ -134,6 +134,11 @@ const AdminPage = () => {
   };
   return (
     <>
+      <SEO
+      title="Admin – LinkBT"
+      description="LinkBT administration panel."
+      noindex={true}
+      />
       <Navbar />
 
       <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">

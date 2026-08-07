@@ -13,7 +13,7 @@ const TermsPage = () => {
       <SEO
         title="Terms & Conditions – LinkBT"
         description="Read the Terms & Conditions governing your use of the LinkBT URL shortening platform. Understand your rights and responsibilities as a user."
-        canonical="/terms"
+        canonical="/terms/"
       />
 
       {/* Navbar */}

@@ -1,9 +1,17 @@
 import { Link } from "react-router-dom";
 import { AlertTriangle } from "lucide-react";
+import SEO from "../components/SEO";
 
 const ExpiredLinkPage = () => {
 
     return (
+        <>
+       <SEO
+    title="Link Expired – LinkBT"
+    description="The short link you are trying to access has expired or is no longer available."
+    canonical="/expired"
+    noindex
+     />
 
         <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-50 flex items-center justify-center px-6">
 
@@ -57,6 +65,7 @@ const ExpiredLinkPage = () => {
             </div>
 
         </div>
+        </>
     );
 };
 

@@ -21,5 +21,6 @@ public record RedirectUrlQuery(
     string? Referrer,
     string? DeviceType,
     string? IpAddress,
-    string? RawHeaders
+    string? RawHeaders,
+    string? SourceOverride = null
 ) : IRequest<RedirectResult>;

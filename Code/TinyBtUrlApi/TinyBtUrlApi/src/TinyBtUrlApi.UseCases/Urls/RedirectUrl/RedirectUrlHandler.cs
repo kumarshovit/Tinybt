@@ -73,7 +73,7 @@ public class RedirectUrlHandler(IUrlRepository repo)
     // =========================
     var referrer = request.Referrer ?? "";
 
-    var trafficSource =
+    var trafficSource = request.SourceOverride ?? (
         string.IsNullOrWhiteSpace(referrer) ? "Direct" :
         referrer.Contains("google", StringComparison.OrdinalIgnoreCase) ||
         referrer.Contains("bing", StringComparison.OrdinalIgnoreCase) ||
@@ -83,7 +83,8 @@ public class RedirectUrlHandler(IUrlRepository repo)
               referrer.Contains("twitter", StringComparison.OrdinalIgnoreCase) ||
               referrer.Contains("linkedin", StringComparison.OrdinalIgnoreCase)
                 ? "Social"
-                : "Referral";
+                : "Referral"
+    );
 
     // =========================
     // COUNTRY FIX FOR LOCALHOST
@@ -106,7 +107,8 @@ public class RedirectUrlHandler(IUrlRepository repo)
       OS = os,
       Country = country,
       DeviceLanguage = request.DeviceLanguage ?? "Unknown",
-      Referrer = trafficSource,
+      Referrer = referrer,
+      Source = trafficSource,
       DeviceType = deviceType,
       IpAddress = request.IpAddress ?? "Unknown",
       UserAgent = request.Browser ?? "Unknown",

@@ -69,7 +69,7 @@ const FaqPage = () => {
       <SEO
         title="FAQ – LinkBT"
         description="Frequently Asked Questions about LinkBT. Find answers related to URL shortening, custom aliases, analytics, and link management."
-        canonical="/faq"
+        canonical="/faq/"
       />
 
       <Navbar />
