@@ -30,21 +30,28 @@
   </url>
 
   <url>
-    <loc>https://link.bt/contact</loc>
+    <loc>https://link.bt/contact/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
-    <loc>https://link.bt/terms</loc>
+    <loc>https://link.bt/terms/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
 
   <url>
-    <loc>https://link.bt/privacy-policy</loc>
+    <loc>https://link.bt/faq/</loc>
+    <lastmod>2026-08-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://link.bt/privacy-policy/</loc>
     <lastmod>2026-07-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>

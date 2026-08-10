@@ -32,22 +32,27 @@ const Navbar = () => {
   };
 
   // ✅ Active Link Style
-  const navLinkClass = (path: string) =>
-    `transition-colors ${location.pathname === path
+  const isLanding = location.pathname === "/" || location.pathname === "/dashboard";
+
+  const navLinkClass = (path: string) => {
+    return `transition-all duration-300 hover:-translate-y-1 hover:scale-105 ${location.pathname === path
       ? "text-blue-600 font-semibold"
       : "text-gray-700 hover:text-blue-600"
-    }`;
+      }`;
+  };
+
+  const defaultLinkClass = "text-gray-700 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1 hover:scale-105";
 
   return (
 
-    <nav className="bg-white shadow-md px-4 sm:px-6 lg:px-10 py-3">
+    <nav className={`px-4 sm:px-6 lg:px-10 py-3 ${isLanding ? 'bg-white/95 backdrop-blur-md shadow-sm absolute top-0 w-full z-50' : 'bg-white shadow-md'}`}>
 
       <div className="flex justify-between items-center">
 
         {/* Logo */}
         <Link
           to={token ? "/dashboard" : "/"}
-          className="flex items-center"
+          className="flex items-center transition-transform duration-300 hover:scale-105 hover:-translate-y-1 block"
         >
           <img
             src={logo}
@@ -77,14 +82,14 @@ const Navbar = () => {
             <>
               <a
                 href="/#features"
-                className="hover:text-blue-600 transition"
+                className={defaultLinkClass}
               >
                 Features
               </a>
 
               <a
                 href="/#how"
-                className="hover:text-blue-600 transition"
+                className={defaultLinkClass}
               >
                 How it Works
               </a>
@@ -163,14 +168,14 @@ const Navbar = () => {
             <>
               <a
                 href="/#features"
-                className="hover:text-blue-600 transition"
+                className={defaultLinkClass}
               >
                 Features
               </a>
 
               <a
                 href="/#how"
-                className="hover:text-blue-600 transition"
+                className={defaultLinkClass}
               >
                 How it Works
               </a>

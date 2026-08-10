@@ -129,7 +129,7 @@ export default function LinkRow({
     return (
         <div
             ref={cardRef}
-            className="bg-white shadow rounded-lg p-5 m-4 relative"
+            className="bg-white border border-gray-100 shadow-sm rounded-xl p-5 md:p-6 relative transition-all duration-300 hover:-translate-y-2 hover:shadow-xl group"
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >

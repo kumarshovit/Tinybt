@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Download, Copy, X } from "lucide-react";
 
 interface Props {
@@ -67,19 +68,19 @@ export default function QrModal({ shortCode, onClose }: Props) {
         }
     };
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4 transition-all">
-            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-sm relative flex flex-col pt-6 pb-8 px-6">
+    return createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 transition-all">
+            <div className="bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-sm relative flex flex-col pt-6 pb-8 px-6 backdrop-blur-none">
 
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 transition"
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-900 transition"
                     aria-label="Close"
                 >
                     <X className="w-6 h-6" />
                 </button>
 
-                <h3 className="text-xl font-bold text-center text-gray-800 mb-2">QR Code</h3>
+                <h3 className="text-xl font-bold text-center text-gray-900 mb-2">QR Code</h3>
                 <p className="text-sm text-center text-gray-500 mb-6">
                     Scan to visit the short URL for {shortCode}
                 </p>
@@ -104,7 +105,7 @@ export default function QrModal({ shortCode, onClose }: Props) {
                     <button
                         onClick={handleDownload}
                         disabled={!blobUrl}
-                        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-lg disabled:opacity-50 transition"
+                        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl disabled:opacity-50 transition shadow-sm hover:shadow"
                     >
                         <Download className="w-4 h-4" />
                         Download PNG
@@ -113,13 +114,14 @@ export default function QrModal({ shortCode, onClose }: Props) {
                     <button
                         onClick={handleCopy}
                         disabled={!blobUrl}
-                        className="w-full flex items-center justify-center gap-2 bg-gray-100 border border-gray-200 hover:bg-gray-200 text-gray-700 py-2.5 rounded-lg disabled:opacity-50 transition"
+                        className="w-full flex items-center justify-center gap-2 bg-gray-100 border border-gray-200 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl disabled:opacity-50 transition shadow-sm"
                     >
                         <Copy className="w-4 h-4" />
                         {copied ? "Copied!" : "Copy Image"}
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

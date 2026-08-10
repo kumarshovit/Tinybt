@@ -91,14 +91,14 @@ export default function RecentLinks({
             </div>
 
             {/* LINKS LIST */}
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm divide-y">
+            <div className="flex flex-col gap-4">
 
                 {/* LOADING SKELETON */}
                 {loading &&
                     Array.from({ length: 3 }).map((_, i) => (
                         <div
                             key={i}
-                            className="p-6 animate-pulse space-y-3"
+                            className="bg-white border border-gray-100 shadow-sm rounded-xl p-6 animate-pulse space-y-3"
                         >
                             <div className="h-4 bg-gray-200 rounded w-64"></div>
                             <div className="h-3 bg-gray-200 rounded w-96"></div>
@@ -109,7 +109,7 @@ export default function RecentLinks({
 
                 {/* REAL LINKS */}
                 {!loading && links.length === 0 ? (
-                    <div className="p-8 text-center text-gray-400">
+                    <div className="bg-white border border-gray-100 rounded-xl p-8 text-center text-gray-400">
                         No links found.
                     </div>
                 ) : (

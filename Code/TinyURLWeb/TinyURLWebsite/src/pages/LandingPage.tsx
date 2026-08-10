@@ -55,51 +55,57 @@ export default function LandingPage() {
       <Navbar />
 
       {/* HERO SECTION */}
-      <section className="max-w-7xl mx-auto px-6 py-24 grid md:grid-cols-2 gap-30 items-center">
+      <section className="bg-gradient-to-br from-[#0f172a] via-[#0f2439] to-[#0a3854] relative pt-32 pb-56 overflow-hidden">
+        {/* Wave SVG at bottom */}
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
+          <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-full h-[60px] md:h-[100px]" style={{ transform: "rotateY(180deg)" }}>
+            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.11,130.83,121.92,189.65,108.6Z" fill="#f9fafb"></path>
+          </svg>
+        </div>
 
-        <div>
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center relative z-10">
 
-          <h1 className="text-5xl font-bold mb-6 leading-tight">
-            Create
-            <span className="text-blue-600"> Short URLs</span>,
-            <br />
-            Track Analytics &
-            <br />
-            Manage Links
-          </h1>
+          <div>
 
-          <p className="text-gray-600 text-lg mb-8 leading-8">
-            Create branded short URLs, customize memorable aliases, monitor
-            real-time click analytics, manage link expiration, organize links
-            with smart tags, and securely share links from one powerful
-            dashboard. LinkBT helps businesses, developers, marketers, and
-            content creators simplify link management while gaining valuable
-            insights into link performance.
-          </p>
+            <h1 className="text-5xl font-bold mb-6 leading-tight text-white">
+              Create Smart Short Links,
+              <br />
+              Track Detailed Analytics &
+              <br />
+              Manage Your Brand
+            </h1>
 
-          <div className="flex gap-4">
+            <p className="text-blue-100/90 text-lg mb-8 leading-8 max-w-xl">
+              LinkBT is a complete platform to amplify your reach. Create branded, memorable aliases, monitor real-time traffic, manage link lifecycles, and use powerful tags—all from an intuitive, unified dashboard. Empower your marketing, secure your links, and grow with insights.
+            </p>
 
-            <Link
-              to="/register"
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
-            >
-              Get Started Free
-            </Link>
+            <div className="flex gap-4">
 
-            <Link
-              to="/login"
-              className="border px-6 py-3 rounded-lg hover:bg-gray-100"
-            >
-              Login
-            </Link>
+              <Link
+                to="/register"
+                className="bg-blue-600 font-semibold text-white px-8 py-3.5 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-600/30"
+              >
+                Get Started Free
+              </Link>
+
+              <Link
+                to="/login"
+                className="bg-white font-semibold flex items-center justify-center text-gray-900 border border-gray-200 px-8 py-3.5 rounded-lg hover:bg-gray-50 transition shadow-lg shadow-black/5"
+              >
+                Login
+              </Link>
+
+            </div>
 
           </div>
 
-        </div>
-
-        {/* SHORTEN CARD PREVIEW */}
-        <div>
-          <ShortenCard onUrlCreated={() => { }} />
+          {/* SHORTEN CARD PREVIEW */}
+          <div className="flex justify-end hidden md:flex md:-mr-16">
+            <ShortenCard onUrlCreated={() => { }} />
+          </div>
+          <div className="flex justify-center md:hidden mt-8">
+            <ShortenCard onUrlCreated={() => { }} />
+          </div>
 
         </div>
 
