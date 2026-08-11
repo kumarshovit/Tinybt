@@ -18,6 +18,7 @@ import FaqPage from "./pages/FaqPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import FeaturesPage from "./pages/FeaturesPage";
 import SecurityPage from "./pages/SecurityPage";
+import PricingPage from "./pages/PricingPage";
 
 // Lazily loaded: authenticated / heavy pages (recharts, react-select, etc.)
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -77,6 +78,7 @@ export default function App() {
           element={<PrivacyPolicyPage />}
         />
         <Route path="/features" element={<FeaturesPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
         <Route path="/security" element={<SecurityPage />} />
           {/* Protected Routes */}
           <Route

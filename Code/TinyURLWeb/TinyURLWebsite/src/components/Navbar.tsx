@@ -80,6 +80,13 @@ const Navbar = () => {
           {/* ================= BEFORE LOGIN ================= */}
           {!token ? (
             <>
+              <Link
+                to="/pricing"
+                className={navLinkClass("/pricing")}
+              >
+                Pricing
+              </Link>
+
               <a
                 href="/#features"
                 className={defaultLinkClass}
@@ -166,6 +173,13 @@ const Navbar = () => {
           {/* ================= BEFORE LOGIN ================= */}
           {!token ? (
             <>
+              <Link
+                to="/pricing"
+                className={navLinkClass("/pricing")}
+              >
+                Pricing
+              </Link>
+
               <a
                 href="/#features"
                 className={defaultLinkClass}
