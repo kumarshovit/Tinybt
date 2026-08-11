@@ -43,12 +43,20 @@ public class GenerateQrCodeEndpoint : EndpointWithoutRequest
         }
 
         var request = HttpContext.Request;
-        var backendBaseUrl = $"{request.Scheme}://{request.Host}";
+        // Construct the base URL. When behind proxy without ForwardedHeaders properly configured,
+        // Host might just be local. So we use the host header safely.
+        var host = request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? request.Host.ToString();
+        var scheme = request.Headers["X-Forwarded-Proto"].FirstOrDefault() ?? request.Scheme;
+        
+        var backendBaseUrl = $"{scheme}://{host}";
         var qrCodeTargetUrl = $"{backendBaseUrl}/q/{shortCode}";
 
         var imageBytes = _qrCodeService.GenerateQrCode(qrCodeTargetUrl);
         
         HttpContext.Response.ContentType = "image/png";
+        HttpContext.Response.ContentLength = imageBytes.Length;
         await HttpContext.Response.Body.WriteAsync(imageBytes, 0, imageBytes.Length, ct);
+        await HttpContext.Response.Body.FlushAsync(ct);
+        await HttpContext.Response.CompleteAsync();
     }
 }

@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
 import CreatableSelect from "react-select/creatable";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { QrCode, AlertCircle, CheckCircle } from "lucide-react";
