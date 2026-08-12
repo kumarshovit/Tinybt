@@ -1,4 +1,4 @@
-using FastEndpoints;
+﻿using FastEndpoints;
 using TinyBtUrlApi.Core.Interfaces;
 
 namespace TinyBtUrlApi.Web.Endpoints.Urls.QrCode;
@@ -31,32 +31,51 @@ public class GenerateQrCodeEndpoint : EndpointWithoutRequest
         var shortCode = Route<string>("shortCode");
         if (string.IsNullOrWhiteSpace(shortCode))
         {
-            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            await Send.NotFoundAsync(ct);
             return;
         }
 
         var urlData = await _urlRepository.GetByShortCodeAsync(shortCode);
         if (urlData == null || urlData.IsDeleted)
         {
-            HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            await Send.NotFoundAsync(ct);
             return;
         }
 
         var request = HttpContext.Request;
-        // Construct the base URL. When behind proxy without ForwardedHeaders properly configured,
-        // Host might just be local. So we use the host header safely.
-        var host = request.Headers["X-Forwarded-Host"].FirstOrDefault() ?? request.Host.ToString();
-        var scheme = request.Headers["X-Forwarded-Proto"].FirstOrDefault() ?? request.Scheme;
-        
-        var backendBaseUrl = $"{scheme}://{host}";
+
+        // Fix 1: On localhost use the actual request host so the QR encodes the right URL.
+        // In production, prefer the configured short URL domain, then fall back to proxy headers.
+        string backendBaseUrl;
+        if (request.Host.Host.Contains("localhost"))
+        {
+            backendBaseUrl = $"{request.Scheme}://{request.Host}";
+        }
+        else
+        {
+            var configDomain = _configuration["BaseUrl:ShortUrlDomain"] ?? _configuration["BaseUrl:Domain"];
+            if (!string.IsNullOrWhiteSpace(configDomain))
+            {
+                backendBaseUrl = configDomain.TrimEnd('/');
+            }
+            else
+            {
+                var fwdHost = request.Headers["X-Forwarded-Host"].FirstOrDefault();
+                var host = !string.IsNullOrWhiteSpace(fwdHost) ? fwdHost.Split(',')[0].Trim() : request.Host.ToString();
+
+                var fwdProto = request.Headers["X-Forwarded-Proto"].FirstOrDefault();
+                var scheme = !string.IsNullOrWhiteSpace(fwdProto) ? fwdProto.Split(',')[0].Trim() : request.Scheme;
+
+                backendBaseUrl = $"{scheme}://{host}";
+            }
+        }
+
         var qrCodeTargetUrl = $"{backendBaseUrl}/q/{shortCode}";
 
         var imageBytes = _qrCodeService.GenerateQrCode(qrCodeTargetUrl);
-        
-        HttpContext.Response.ContentType = "image/png";
-        HttpContext.Response.ContentLength = imageBytes.Length;
-        await HttpContext.Response.Body.WriteAsync(imageBytes, 0, imageBytes.Length, ct);
-        await HttpContext.Response.Body.FlushAsync(ct);
-        await HttpContext.Response.CompleteAsync();
+
+        // Fix 2: Use FastEndpoints' SendBytesAsync instead of writing directly to the body stream.
+        // Writing to Body.WriteAsync manually caused FastEndpoints to override the response with 204 No Content.
+        await Send.BytesAsync(imageBytes, fileName: null, contentType: "image/png", cancellation: ct);
     }
 }
