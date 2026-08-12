@@ -53,7 +53,8 @@ public class GenerateQrCodeEndpoint : EndpointWithoutRequest
         }
         else
         {
-            var configDomain = _configuration["BaseUrl:ShortUrlDomain"] ?? _configuration["BaseUrl:Domain"];
+            //var configDomain = _configuration["BaseUrl:ShortUrlDomain"] ?? _configuration["BaseUrl:Domain"];
+            var configDomain = _configuration["BaseUrl:ApiDomain"] ?? _configuration["BaseUrl:ShortUrlDomain"];
             if (!string.IsNullOrWhiteSpace(configDomain))
             {
                 backendBaseUrl = configDomain.TrimEnd('/');
