@@ -23,4 +23,8 @@ public class UrlMapping
   public User? User { get; set; } = null!;
   public string? IpAddress { get; set; }        // 👈 Added to track client IP
   public ICollection<UrlTag> UrlTags { get; set; } = new List<UrlTag>();
+
+  // Password Protection
+  public bool IsPasswordProtected { get; set; } = false;
+  public string? PasswordHash { get; set; }
 }

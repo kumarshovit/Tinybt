@@ -75,7 +75,7 @@ export const getAllUrls = async () => {
     return { success: false, message: msg };
   }
 
-    const data = await res.json();
+  const data = await res.json();
   return { success: true, data };
 };
 
@@ -85,7 +85,8 @@ export const createUrl = async (
   longUrl: string,
   customAlias?: string,
   expirationDate?: string,
-  captchaToken?: string
+  captchaToken?: string,
+  password?: string
 ) => {
   const res = await fetch(BASE_URL, {
     method: "POST",
@@ -94,17 +95,19 @@ export const createUrl = async (
       longUrl,
       customAlias,
       expirationDate,
-      captchaToken
+      captchaToken,
+      password
     }),
   });
 
   if (!res.ok) {
     const err = await res.json();
- return { success: false, message: err.message };
+    return { success: false, message: err.message };
   }
 
-const data = await res.json();
-  return { success: true, data };};
+  const data = await res.json();
+  return { success: true, data };
+};
 
 /* ============================= */
 /* 🏷 ADD TAGS                   */
@@ -132,7 +135,7 @@ export const searchByTag = async (tag: string) => {
     headers: getAuthHeaders(),
   });
 
- 
+
   if (!res.ok) {
     const msg = await res.text();
     return { success: false, message: msg };
@@ -152,7 +155,7 @@ export const updateTags = async (id: number, tags: string[]) => {
     body: JSON.stringify({ tags }),
   });
 
- if (!res.ok) {
+  if (!res.ok) {
     const msg = await res.text();
     return { success: false, message: msg };
   }
@@ -170,7 +173,7 @@ export const removeTag = async (id: number, tagName: string) => {
     headers: getAuthHeaders(),
   });
 
-   if (!res.ok) {
+  if (!res.ok) {
     const msg = await res.text();
     return { success: false, message: msg };
   }
@@ -218,7 +221,7 @@ export const updateDestination = async (
     body: JSON.stringify({ newLongUrl }),
   });
 
-   if (!res.ok) {
+  if (!res.ok) {
     const msg = await res.text();
     return { success: false, message: msg };
   }
@@ -241,7 +244,7 @@ export const renameTag = async (
     body: JSON.stringify({ newTag }),
   });
 
-   if (!res.ok) {
+  if (!res.ok) {
     const msg = await res.text();
     return { success: false, message: msg };
   }
@@ -258,10 +261,47 @@ export const deleteUrl = async (id: number) => {
     headers: getAuthHeaders(),
   });
 
-   if (!res.ok) {
+  if (!res.ok) {
     const msg = await res.text();
     return { success: false, message: msg };
   }
 
   return { success: true };
+};
+
+/* ============================= */
+/* 🔐 VERIFY PASSWORD             */
+/* ============================= */
+/**
+ * Submits the visitor-entered password and the server-issued access token.
+ * credentials: "include" is required so the browser stores the HttpOnly cookie
+ * that the API sets in the response.
+ * Returns { success, message, redirectTo } — never the destination URL.
+ */
+export const verifyPassword = async (
+  shortCode: string,
+  password: string,
+  token: string
+) => {
+  const res = await fetch(
+    `${import.meta.env.VITE_API_URL}/api/urls/${shortCode}/verify-password`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",   // required to receive the HttpOnly cookie
+      body: JSON.stringify({ password, token }),
+    }
+  );
+
+  if (!res.ok) {
+    try {
+      const err = await res.json();
+      return { success: false, message: err.message as string, redirectTo: undefined };
+    } catch {
+      return { success: false, message: "Something went wrong.", redirectTo: undefined };
+    }
+  }
+
+  const data = await res.json();
+  return { success: true, message: undefined, redirectTo: data.redirectTo as string };
 };

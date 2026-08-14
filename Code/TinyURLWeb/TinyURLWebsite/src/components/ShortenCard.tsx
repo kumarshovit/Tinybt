@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import CreatableSelect from "react-select/creatable";
 import { Turnstile } from "@marsidev/react-turnstile";
-import { QrCode, AlertCircle, CheckCircle } from "lucide-react";
+import { QrCode, AlertCircle, CheckCircle, Lock, Eye, EyeOff } from "lucide-react";
 import QrModal from "./QrModal";
 
 import {
@@ -38,6 +38,13 @@ export default function ShortenCard({ onUrlCreated }: any) {
 
   const [captchaToken, setCaptchaToken] = useState("");
   const [showCaptcha, setShowCaptcha] = useState(false);
+
+  // Password protection (auth-only)
+  const [enablePassword, setEnablePassword] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
+  const [passwordError, setPasswordError] = useState("")
 
   const [activeTab, setActiveTab] = useState<"shorten" | "qr">("shorten");
   const [showQrModal, setShowQrModal] = useState(false);
@@ -117,7 +124,8 @@ export default function ShortenCard({ onUrlCreated }: any) {
         expirationDate
           ? new Date(expirationDate).toISOString()
           : undefined,
-        token
+        token,
+        enablePassword && password ? password : undefined
       );
 
 
@@ -198,6 +206,11 @@ export default function ShortenCard({ onUrlCreated }: any) {
 
       setShowCaptcha(false);
 
+      // Reset password fields
+      setEnablePassword(false);
+      setPassword("");
+      setConfirmPassword("");
+      setPasswordError("");
 
       resetCaptcha();
 
@@ -261,6 +274,23 @@ export default function ShortenCard({ onUrlCreated }: any) {
 
       return;
 
+    }
+
+    // Password validation (client-side guard; server re-validates)
+    if (enablePassword) {
+      if (!password) {
+        setPasswordError("Please enter a password.");
+        return;
+      }
+      if (password.length < 6) {
+        setPasswordError("Password must be at least 6 characters.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setPasswordError("Passwords do not match.");
+        return;
+      }
+      setPasswordError("");
     }
 
 
@@ -390,6 +420,56 @@ export default function ShortenCard({ onUrlCreated }: any) {
           </div>
         )}
 
+        {/* Password Protection */}
+        <div className="mb-4 bg-[#0f172a]/40 p-3 rounded-lg border border-white/5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-white/10 p-1.5 rounded-md">
+                <Lock className="w-5 h-5 text-gray-300" />
+              </div>
+              <span className="text-gray-200 text-sm font-medium">Password Protection</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setEnablePassword(!enablePassword); setPasswordError(""); }}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${enablePassword ? 'bg-blue-500' : 'bg-gray-600'}`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${enablePassword ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
+          </div>
+
+          {enablePassword && (
+            <div className="mt-3 space-y-2">
+              <div className="relative">
+                <input
+                  type={showPwd ? "text" : "password"}
+                  placeholder="Set password (min 6 chars)"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  className="w-full bg-[#0f172a]/80 border border-white/10 focus:border-blue-500 rounded-lg px-4 py-2.5 pr-10 text-white placeholder-gray-500 outline-none transition text-sm"
+                />
+                <button type="button" onClick={() => setShowPwd(!showPwd)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200"
+                  tabIndex={-1}>
+                  {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+              <input
+                type={showPwd ? "text" : "password"}
+                placeholder="Confirm password"
+                value={confirmPassword}
+                onChange={e => setConfirmPassword(e.target.value)}
+                className="w-full bg-[#0f172a]/80 border border-white/10 focus:border-blue-500 rounded-lg px-4 py-2.5 text-white placeholder-gray-500 outline-none transition text-sm"
+              />
+              {passwordError && (
+                <p className="text-red-400 text-xs flex items-center gap-1">
+                  <AlertCircle size={12} /> {passwordError}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
         <div className="flex items-center justify-between mb-6 bg-[#0f172a]/40 p-3 rounded-lg border border-white/5">
           <div className="flex items-center gap-3">
             <div className="bg-white/10 p-1.5 rounded-md">
@@ -448,6 +528,11 @@ export default function ShortenCard({ onUrlCreated }: any) {
             <div className="flex items-center gap-2 mb-3 text-blue-300">
               <CheckCircle className="w-5 h-5 shrink-0" />
               <p className="font-semibold">Short URL Generated:</p>
+              {result.isPasswordProtected && (
+                <span title="Password protected" className="ml-1 text-yellow-400">
+                  <Lock size={14} />
+                </span>
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

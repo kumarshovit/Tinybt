@@ -7,7 +7,8 @@ public enum RedirectStatus
 {
     Found,
     NotFound,
-    Expired
+    Expired,
+    PasswordProtected
 }
 
 public record RedirectResult(RedirectStatus Status, UrlMapping? Url = null);

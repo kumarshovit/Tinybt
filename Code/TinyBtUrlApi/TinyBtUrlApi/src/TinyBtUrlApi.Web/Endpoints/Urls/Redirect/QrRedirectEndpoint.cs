@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Mediator;
+using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.UseCases.Urls.RedirectUrl;
 
 namespace TinyBtUrlApi.Web.Endpoints.Urls.Redirect;
@@ -8,13 +9,16 @@ public class QrRedirectEndpoint : EndpointWithoutRequest
 {
     private readonly IMediator _mediator;
     private readonly IConfiguration _configuration;
+    private readonly IUrlAccessTokenService _tokenService;
 
     public QrRedirectEndpoint(
         IMediator mediator,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IUrlAccessTokenService tokenService)
     {
         _mediator = mediator;
         _configuration = configuration;
+        _tokenService = tokenService;
     }
 
     public override void Configure()
@@ -72,6 +76,20 @@ public class QrRedirectEndpoint : EndpointWithoutRequest
         {
             HttpContext.Response.Redirect(
                 $"{frontendBaseUrl}/expired-link",
+                false,
+                false
+            );
+            await HttpContext.Response.CompleteAsync();
+            return;
+        }
+
+        // 🔐 QR-originated visit: source="QRCode" is embedded in the server-signed
+        // token. The browser cannot alter this value.
+        if (result.Status == RedirectStatus.PasswordProtected)
+        {
+            var token = _tokenService.Protect(shortCode, "QRCode");
+            HttpContext.Response.Redirect(
+                $"{frontendBaseUrl}/protected/{shortCode}?token={Uri.EscapeDataString(token)}",
                 false,
                 false
             );

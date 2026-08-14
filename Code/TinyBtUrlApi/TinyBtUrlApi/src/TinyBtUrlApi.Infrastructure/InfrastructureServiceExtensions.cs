@@ -62,6 +62,10 @@ public static class InfrastructureServiceExtensions
     services.AddScoped<IUrlSecurityValidator, UrlSecurityValidator>();
     services.AddHttpClient<ICaptchaService, TurnstileCaptchaService>();
     
+    // Security
+    services.AddScoped<IUrlAccessTokenService, TinyBtUrlApi.Infrastructure.Security.UrlAccessTokenService>();
+    services.AddScoped<IPasswordRateLimiter, TinyBtUrlApi.Infrastructure.Security.PasswordRateLimiter>();
+
     services.Configure<GoogleSafeBrowsingOptions>(config.GetSection("GoogleSafeBrowsing"));
     services.AddHttpClient<IGoogleSafeBrowsingService, GoogleSafeBrowsingService>();
 

@@ -19,6 +19,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import FeaturesPage from "./pages/FeaturesPage";
 import SecurityPage from "./pages/SecurityPage";
 import PricingPage from "./pages/PricingPage";
+import PasswordProtectedPage from "./pages/PasswordProtectedPage";
 
 // Lazily loaded: authenticated / heavy pages (recharts, react-select, etc.)
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -60,26 +61,26 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
 
-        <Route
-          path="/contact"
-          element={<ContactPage />}
-        />
-        <Route
-          path="/expired-link"
-          element={<ExpiredLinkPage />}
-        />
-        <Route
-          path="/terms"
-          element={<TermsPage />}
-        />
-        <Route path="/faq" element={<FaqPage />} />
-        <Route
-          path="/privacy-policy"
-          element={<PrivacyPolicyPage />}
-        />
-        <Route path="/features" element={<FeaturesPage />} />
-        <Route path="/pricing" element={<PricingPage />} />
-        <Route path="/security" element={<SecurityPage />} />
+          <Route
+            path="/contact"
+            element={<ContactPage />}
+          />
+          <Route
+            path="/expired-link"
+            element={<ExpiredLinkPage />}
+          />
+          <Route
+            path="/terms"
+            element={<TermsPage />}
+          />
+          <Route path="/faq" element={<FaqPage />} />
+          <Route
+            path="/privacy-policy"
+            element={<PrivacyPolicyPage />}
+          />
+          <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/security" element={<SecurityPage />} />
           {/* Protected Routes */}
           <Route
             path="/dashboard"
@@ -126,6 +127,9 @@ export default function App() {
               </AdminRoute>
             }
           />
+
+          {/* 🔐 Password-protected short URL — must come before /:shortCode */}
+          <Route path="/protected/:shortCode" element={<PasswordProtectedPage />} />
 
           <Route path="/:shortCode" element={<ShortUrlRedirect />} />
 

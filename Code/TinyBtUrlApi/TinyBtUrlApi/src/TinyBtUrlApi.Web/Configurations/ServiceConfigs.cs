@@ -1,4 +1,5 @@
 ﻿using Ardalis.SharedKernel;
+using TinyBtUrlApi.UseCases.Urls.VerifyUrlPassword;
 using System.Linq;
 using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Models;
@@ -78,6 +79,7 @@ public static class ServiceConfigs
     // Password Reset Repository
     services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
     services.AddScoped<IQrCodeService, QrCodeService>();
+    services.AddScoped<VerifyUrlPasswordHandler>();
 
     logger.LogInformation("{Project} services registered", "Infrastructure");
 

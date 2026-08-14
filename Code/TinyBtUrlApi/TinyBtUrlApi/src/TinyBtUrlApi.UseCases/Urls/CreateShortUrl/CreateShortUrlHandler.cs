@@ -59,6 +59,17 @@ public class CreateShortUrlHandler
         Message = "Expiration date must be in the future."
       };
 
+    // 🔹 1.2 Password validation (length enforced here)
+    if (request.Password is not null)
+    {
+      if (request.Password.Length < 6 || request.Password.Length > 128)
+        return new CreateShortUrlResult
+        {
+          Success = false,
+          Message = "Password must be between 6 and 128 characters."
+        };
+    }
+
     // 🔹 1.1 Security Validation & Normalization
     var securityResult = await _urlSecurityValidator.ValidateUrlAsync(request.LongUrl, ct);
     if (!securityResult.Success)
@@ -144,6 +155,13 @@ public class CreateShortUrlHandler
       IpAddress = request.IpAddress
     };
 
+    // 🔐 Password Protection
+    if (!string.IsNullOrWhiteSpace(request.Password))
+    {
+      mapping.IsPasswordProtected = true;
+      mapping.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+    }
+
     // 🔹 4. Save to DB
     await _repo.AddAsync(mapping);
 
@@ -156,7 +174,8 @@ public class CreateShortUrlHandler
       ShortCode = mapping.ShortCode,
       LongUrl = mapping.LongUrl,
       ExpirationDate = mapping.ExpirationDate,
-      CreatedAt = mapping.CreatedAt
+      CreatedAt = mapping.CreatedAt,
+      IsPasswordProtected = mapping.IsPasswordProtected
     };
   }
 }

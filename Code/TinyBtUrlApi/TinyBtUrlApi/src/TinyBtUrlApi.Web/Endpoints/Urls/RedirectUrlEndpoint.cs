@@ -1,5 +1,6 @@
 ﻿using FastEndpoints;
 using Mediator;
+using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.UseCases.Urls.RedirectUrl;
 
 namespace TinyBtUrlApi.Web.Endpoints.Urls;
@@ -8,13 +9,16 @@ public class RedirectUrlEndpoint : EndpointWithoutRequest
 {
   private readonly IMediator _mediator;
   private readonly IConfiguration _configuration;
+  private readonly IUrlAccessTokenService _tokenService;
 
   public RedirectUrlEndpoint(
     IMediator mediator,
-    IConfiguration configuration)
+    IConfiguration configuration,
+    IUrlAccessTokenService tokenService)
   {
     _mediator = mediator;
     _configuration = configuration;
+    _tokenService = tokenService;
   }
 
   public override void Configure()
@@ -71,6 +75,20 @@ public class RedirectUrlEndpoint : EndpointWithoutRequest
     {
       HttpContext.Response.Redirect(
           $"{frontendBaseUrl}/expired-link",
+          false,
+          false
+      );
+      await HttpContext.Response.CompleteAsync();
+      return;
+    }
+
+    // 🔐 Password-protected: issue a signed token encoding source="Direct".
+    // The token is opaque to the browser; no destination URL is revealed.
+    if (result.Status == RedirectStatus.PasswordProtected)
+    {
+      var token = _tokenService.Protect(shortCode, "Direct");
+      HttpContext.Response.Redirect(
+          $"{frontendBaseUrl}/protected/{shortCode}?token={Uri.EscapeDataString(token)}",
           false,
           false
       );

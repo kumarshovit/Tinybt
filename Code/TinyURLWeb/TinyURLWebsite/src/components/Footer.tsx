@@ -78,6 +78,14 @@ const Footer = () => {
               >
                 Privacy Policy
               </Link>
+
+              
+              <Link
+                to="/pricing"
+                className="hover:text-white transition"
+              >
+                Pricing
+              </Link>
             </div>
           </div>
 

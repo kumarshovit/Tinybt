@@ -21,6 +21,10 @@ public class RedirectUrlHandler(IUrlRepository repo)
         url.ExpirationDate.Value < DateTime.UtcNow)
       return new RedirectResult(RedirectStatus.Expired);
 
+    // 🔐 Password-protected — early exit, no click logged
+    if (url.IsPasswordProtected)
+      return new RedirectResult(RedirectStatus.PasswordProtected, url);
+
     url.ClickCount++;
 
     var userAgent = request.Browser ?? string.Empty;

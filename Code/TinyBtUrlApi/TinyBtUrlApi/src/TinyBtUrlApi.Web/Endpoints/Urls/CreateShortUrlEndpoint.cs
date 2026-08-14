@@ -48,7 +48,8 @@ public class CreateShortUrlEndpoint
             req.ExpirationDate,
             userId,
             ipAddress,
-            req.CaptchaToken
+            req.CaptchaToken,
+            req.Password
         ),
         ct
     );
@@ -82,7 +83,8 @@ public class CreateShortUrlEndpoint
       ShortUrl = shortUrl,
       result.LongUrl,
       result.ExpirationDate,
-      result.CreatedAt
+      result.CreatedAt,
+      result.IsPasswordProtected
     }, ct);
   }
 }

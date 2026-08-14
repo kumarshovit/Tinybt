@@ -15,5 +15,7 @@ public record CreateShortUrlResult
   public string? LongUrl { get; init; }
   public DateTime? ExpirationDate { get; init; }
   public DateTime? CreatedAt { get; init; }
+  public bool IsPasswordProtected { get; init; }
 }
+
 
