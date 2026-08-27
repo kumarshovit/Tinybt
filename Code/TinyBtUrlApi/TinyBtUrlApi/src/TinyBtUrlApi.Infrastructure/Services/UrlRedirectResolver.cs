@@ -1,4 +1,5 @@
 using System.Net;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TinyBtUrlApi.Core.Configuration;
@@ -8,25 +9,32 @@ using TinyBtUrlApi.Core.Models;
 namespace TinyBtUrlApi.Infrastructure.Services;
 
 /// <summary>
-/// Service that traces HTTP redirect chains to uncover downstream landing destinations and protect against cloaking.
+/// Service that traces HTTP and HTML meta redirect chains to uncover downstream landing destinations and protect against cloaking.
 /// </summary>
 public class UrlRedirectResolver : IUrlRedirectResolver
 {
     private readonly HttpClient _httpClient;
-    private readonly IUrlFormatValidator _formatValidator;
+    private readonly IUrlSecurityValidator _urlSecurityValidator;
     private readonly UrlSecurityOptions _options;
     private readonly ILogger<UrlRedirectResolver> _logger;
 
-    private const string UserAgent = "Mozilla/5.0 (compatible; TinyBtBot/1.0; +https://link.bt)";
+    private const string BrowserUserAgent = 
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
+    private const string BrowserAcceptHeader = 
+        "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8";
+
+    private static readonly Regex MetaRefreshRegex = new(
+        @"<meta\s+[^>]*http-equiv\s*=\s*[""']?refresh[""']?[^>]*content\s*=\s*[""']?\d+;\s*url\s*=\s*([^""'>\s]+)[""']?",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     public UrlRedirectResolver(
         HttpClient httpClient,
-        IUrlFormatValidator formatValidator,
+        IUrlSecurityValidator urlSecurityValidator,
         IOptions<UrlSecurityOptions> options,
         ILogger<UrlRedirectResolver> logger)
     {
         _httpClient = httpClient;
-        _formatValidator = formatValidator;
+        _urlSecurityValidator = urlSecurityValidator;
         _options = options.Value;
         _logger = logger;
     }
@@ -47,44 +55,45 @@ public class UrlRedirectResolver : IUrlRedirectResolver
 
         for (int hop = 0; hop < maxHops; hop++)
         {
+            // 1. Validate security & DNS before connecting to currentUrl
+            var securityCheck = await _urlSecurityValidator.ValidateUrlAsync(currentUrl, cancellationToken);
+            if (!securityCheck.Success)
+            {
+                _logger.LogWarning("URL/Hop '{Url}' failed security validation: {Message}", currentUrl, securityCheck.Message);
+                return UrlRedirectResolutionResult.CreateFailure(
+                    $"URL or redirect destination '{currentUrl}' is unsafe: {securityCheck.Message}", chain);
+            }
+
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(TimeSpan.FromMilliseconds(_options.RedirectTimeoutMilliseconds));
 
             HttpResponseMessage? response = null;
             try
             {
-                // 1. Try HEAD request first for performance
-                using var headRequest = new HttpRequestMessage(HttpMethod.Head, currentUrl);
-                headRequest.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
+                // Always use GET with browser headers to defeat cloaking filters (which return 200 to HEAD but 302 to GET)
+                using var request = new HttpRequestMessage(HttpMethod.Get, currentUrl);
+                request.Headers.TryAddWithoutValidation("User-Agent", BrowserUserAgent);
+                request.Headers.TryAddWithoutValidation("Accept", BrowserAcceptHeader);
 
-                response = await _httpClient.SendAsync(headRequest, HttpCompletionOption.ResponseHeadersRead, cts.Token);
-
-                // Fallback to GET if HEAD is not supported by target server
-                if (response.StatusCode == HttpStatusCode.MethodNotAllowed ||
-                    response.StatusCode == HttpStatusCode.NotImplemented)
-                {
-                    response.Dispose();
-                    using var getRequest = new HttpRequestMessage(HttpMethod.Get, currentUrl);
-                    getRequest.Headers.TryAddWithoutValidation("User-Agent", UserAgent);
-                    response = await _httpClient.SendAsync(getRequest, HttpCompletionOption.ResponseHeadersRead, cts.Token);
-                }
+                response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
                 _logger.LogWarning("Redirect check timed out for hop URL: {Url}", currentUrl);
-                // Timeout on hop - return the chain collected so far
-                break;
+                return UrlRedirectResolutionResult.CreateFailure(
+                    $"Redirect destination '{currentUrl}' could not be reached (connection timed out).", chain);
             }
             catch (HttpRequestException ex)
             {
                 _logger.LogWarning(ex, "HTTP request failed during redirect resolution for URL: {Url}", currentUrl);
-                // Cannot follow further - return the chain collected so far
-                break;
+                return UrlRedirectResolutionResult.CreateFailure(
+                    $"Redirect destination '{currentUrl}' could not be reached: {ex.Message}", chain);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error during redirect resolution for URL: {Url}", currentUrl);
-                break;
+                return UrlRedirectResolutionResult.CreateFailure(
+                    $"Error resolving destination '{currentUrl}'.", chain);
             }
 
             using (response)
@@ -92,57 +101,75 @@ public class UrlRedirectResolver : IUrlRedirectResolver
                 if (response == null) break;
 
                 var statusCode = (int)response.StatusCode;
+                string? nextUrl = null;
 
                 // Check for HTTP 3xx Redirection (301, 302, 303, 307, 308)
                 if (statusCode is >= 300 and <= 399)
                 {
                     var location = response.Headers.Location;
-                    if (location == null)
+                    if (location != null)
                     {
-                        // 3xx without Location header
-                        break;
-                    }
+                        nextUrl = location.IsAbsoluteUri 
+                            ? location.ToString() 
+                            : (Uri.TryCreate(new Uri(currentUrl), location, out var resolved) ? resolved.ToString() : null);
 
-                    // Resolve relative URLs to absolute
-                    string nextUrl;
-                    if (location.IsAbsoluteUri)
-                    {
-                        nextUrl = location.ToString();
-                    }
-                    else
-                    {
-                        if (!Uri.TryCreate(new Uri(currentUrl), location, out var resolvedUri))
+                        if (nextUrl == null)
                         {
                             return UrlRedirectResolutionResult.CreateFailure(
                                 $"Invalid redirect location '{location}' from '{currentUrl}'.", chain);
                         }
-                        nextUrl = resolvedUri.ToString();
                     }
-
-                    // 2. Validate format and SSRF safety of the hop
-                    var formatCheck = _formatValidator.ValidateFormat(nextUrl);
-                    if (!formatCheck.Success)
+                }
+                else if (statusCode == 200)
+                {
+                    // Check for HTML meta refresh redirect (first 4KB of content)
+                    try
                     {
-                        _logger.LogWarning("Redirect hop to '{NextUrl}' failed validation: {Message}", nextUrl, formatCheck.Message);
-                        return UrlRedirectResolutionResult.CreateFailure(
-                            $"Redirect hop to '{nextUrl}' is invalid or blocked: {formatCheck.Message}", chain);
+                        var contentType = response.Content.Headers.ContentType?.MediaType;
+                        if (string.IsNullOrEmpty(contentType) || contentType.Contains("html", StringComparison.OrdinalIgnoreCase))
+                        {
+                            using var stream = await response.Content.ReadAsStreamAsync(cts.Token);
+                            var buffer = new byte[4096];
+                            var read = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token);
+                            if (read > 0)
+                            {
+                                var htmlSnippet = System.Text.Encoding.UTF8.GetString(buffer, 0, read);
+                                var match = MetaRefreshRegex.Match(htmlSnippet);
+                                if (match.Success)
+                                {
+                                    var metaTarget = match.Groups[1].Value.Trim('\'', '"', ' ');
+                                    if (Uri.TryCreate(metaTarget, UriKind.Absolute, out var absUri))
+                                    {
+                                        nextUrl = absUri.ToString();
+                                    }
+                                    else if (Uri.TryCreate(new Uri(currentUrl), metaTarget, out var relUri))
+                                    {
+                                        nextUrl = relUri.ToString();
+                                    }
+                                }
+                            }
+                        }
                     }
-
-                    var normalizedNextUrl = formatCheck.NormalizedUrl ?? nextUrl;
-
-                    // 3. Check for circular loops
-                    if (visited.Contains(normalizedNextUrl))
+                    catch
                     {
-                        _logger.LogWarning("Circular redirect loop detected: {NextUrl}", normalizedNextUrl);
+                        // Non-critical, ignore HTML read errors
+                    }
+                }
+
+                if (nextUrl != null)
+                {
+                    // Check for circular loop
+                    if (visited.Contains(nextUrl))
+                    {
+                        _logger.LogWarning("Circular redirect loop detected: {NextUrl}", nextUrl);
                         return UrlRedirectResolutionResult.CreateFailure(
                             "Circular redirect loop detected in URL.", chain);
                     }
 
-                    visited.Add(normalizedNextUrl);
-                    chain.Add(normalizedNextUrl);
-                    currentUrl = normalizedNextUrl;
+                    visited.Add(nextUrl);
+                    chain.Add(nextUrl);
+                    currentUrl = nextUrl;
 
-                    // 4. Check if max hops exceeded
                     if (hop == maxHops - 1)
                     {
                         _logger.LogWarning("Exceeded maximum redirect hops ({MaxHops}) for URL: {Url}", maxHops, initialUrl);
@@ -152,10 +179,18 @@ public class UrlRedirectResolver : IUrlRedirectResolver
                 }
                 else
                 {
-                    // Terminal response reached (e.g. 200 OK, 404, etc.)
+                    // Terminal response reached
                     break;
                 }
             }
+        }
+
+        // Validate the final landing URL as well
+        var finalSecurityCheck = await _urlSecurityValidator.ValidateUrlAsync(currentUrl, cancellationToken);
+        if (!finalSecurityCheck.Success)
+        {
+            return UrlRedirectResolutionResult.CreateFailure(
+                $"Final destination '{currentUrl}' failed security check: {finalSecurityCheck.Message}", chain);
         }
 
         return UrlRedirectResolutionResult.CreateSuccess(currentUrl, chain);

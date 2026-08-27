@@ -30,118 +30,106 @@ const AdminPage = lazy(() => import("./pages/AdminPage"));
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./components/auth/AdminRoute";
+import { LoadingProvider } from "./context/LoadingContext";
+import GlobalLoadingPanel from "./components/common/GlobalLoadingPanel";
+import PageLoadingFallback from "./components/common/PageLoadingFallback";
 
 export default function App() {
-
-  const token = localStorage.getItem("token");
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   return (
-    <BrowserRouter>
+    <LoadingProvider>
+      <BrowserRouter>
+        <AnalyticsTracker />
+        <GlobalLoadingPanel />
 
-      <AnalyticsTracker />
+        <Suspense fallback={<PageLoadingFallback />}>
+          <Routes>
+            {/* Landing */}
+            <Route path="/" element={<LandingPage />} />
 
-      <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
-        <Routes>
+            {/* Auth Pages */}
+            <Route
+              path="/login"
+              element={token ? <Navigate to="/dashboard" /> : <Login />}
+            />
 
-          {/* Landing */}
-          <Route path="/" element={<LandingPage />} />
+            <Route
+              path="/register"
+              element={token ? <Navigate to="/dashboard" /> : <Register />}
+            />
 
-          {/* Auth Pages */}
-          <Route
-            path="/login"
-            element={token ? <Navigate to="/dashboard" /> : <Login />}
-          />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
-          <Route
-            path="/register"
-            element={token ? <Navigate to="/dashboard" /> : <Register />}
-          />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/expired-link" element={<ExpiredLinkPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/faq" element={<FaqPage />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+            <Route path="/features" element={<FeaturesPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/security" element={<SecurityPage />} />
 
-          <Route path="/verify-email" element={<VerifyEmail />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
+            {/* Protected Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/contact"
-            element={<ContactPage />}
-          />
-          <Route
-            path="/expired-link"
-            element={<ExpiredLinkPage />}
-          />
-          <Route
-            path="/terms"
-            element={<TermsPage />}
-          />
-          <Route path="/faq" element={<FaqPage />} />
-          <Route
-            path="/privacy-policy"
-            element={<PrivacyPolicyPage />}
-          />
-          <Route path="/features" element={<FeaturesPage />} />
-          <Route path="/pricing" element={<PricingPage />} />
-          <Route path="/security" element={<SecurityPage />} />
-          {/* Protected Routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/analytics"
+              element={
+                <ProtectedRoute>
+                  <AnalyticsPage />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/analytics"
-            element={
-              <ProtectedRoute>
-                <AnalyticsPage />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/tags/:id"
+              element={
+                <ProtectedRoute>
+                  <TagManagement />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/tags/:id"
-            element={
-              <ProtectedRoute>
-                <TagManagement />
-              </ProtectedRoute>
-            }
-          />
+            {/* Admin */}
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminPage />
+                </AdminRoute>
+              }
+            />
 
-          {/* Admin */}
-          <Route
-            path="/admin"
-            element={
-              <AdminRoute>
-                <AdminPage />
-              </AdminRoute>
-            }
-          />
+            {/* 🔐 Password-protected short URL — must come before /:shortCode */}
+            <Route path="/protected/:shortCode" element={<PasswordProtectedPage />} />
 
-          {/* 🔐 Password-protected short URL — must come before /:shortCode */}
-          <Route path="/protected/:shortCode" element={<PasswordProtectedPage />} />
+            <Route path="/:shortCode" element={<ShortUrlRedirect />} />
 
-          <Route path="/:shortCode" element={<ShortUrlRedirect />} />
-
-
-          {/* Fallback */}
-          <Route path="/not-found" element={<NotFoundPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-
-
-        </Routes>
-      </Suspense>
-
-    </BrowserRouter>
+            {/* Fallback */}
+            <Route path="/not-found" element={<NotFoundPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </LoadingProvider>
   );
 }

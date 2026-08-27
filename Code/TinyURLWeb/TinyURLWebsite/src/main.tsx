@@ -5,9 +5,11 @@ import App from "./App";
 import "./index.css";
 
 import { initializeAnalytics } from "./services/analytics";
+import { setupLoadingInterceptors } from "./utils/setupLoadingInterceptors";
 
 if (typeof window !== "undefined") {
   initializeAnalytics();
+  setupLoadingInterceptors();
 }
 
 const app = (

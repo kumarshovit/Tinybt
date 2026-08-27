@@ -13,14 +13,13 @@ namespace TinyBtUrlApi.UnitTests.Core.Services;
 
 public class UrlRedirectResolverTests
 {
-    private readonly IUrlFormatValidator _formatValidator;
+    private readonly IUrlSecurityValidator _securityValidator;
     private readonly IOptions<UrlSecurityOptions> _options;
 
     public UrlRedirectResolverTests()
     {
-        _formatValidator = Substitute.For<IUrlFormatValidator>();
-        // Default format validator allows HTTPS
-        _formatValidator.ValidateFormat(Arg.Any<string>()).Returns(callInfo =>
+        _securityValidator = Substitute.For<IUrlSecurityValidator>();
+        _securityValidator.ValidateUrlAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(callInfo =>
         {
             var url = callInfo.Arg<string>();
             if (url.Contains("127.0.0.1") || url.Contains("localhost"))
@@ -44,7 +43,7 @@ public class UrlRedirectResolverTests
         // Arrange
         var handler = new MockHttpMessageHandler(req => new HttpResponseMessage(HttpStatusCode.OK));
         var client = new HttpClient(handler);
-        var resolver = new UrlRedirectResolver(client, _formatValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
+        var resolver = new UrlRedirectResolver(client, _securityValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
 
         // Act
         var result = await resolver.ResolveChainAsync("https://example.com/page");
@@ -77,7 +76,7 @@ public class UrlRedirectResolverTests
         });
 
         var client = new HttpClient(handler);
-        var resolver = new UrlRedirectResolver(client, _formatValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
+        var resolver = new UrlRedirectResolver(client, _securityValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
 
         // Act
         var result = await resolver.ResolveChainAsync("https://start.com/");
@@ -113,13 +112,14 @@ public class UrlRedirectResolverTests
         });
 
         var client = new HttpClient(handler);
-        var resolver = new UrlRedirectResolver(client, _formatValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
+        var resolver = new UrlRedirectResolver(client, _securityValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
 
         // Act
         var result = await resolver.ResolveChainAsync("https://loop-a.com/");
 
         // Assert
         result.Success.ShouldBeFalse();
+        result.ErrorMessage.ShouldNotBeNull();
         result.ErrorMessage.ShouldContain("Circular redirect loop detected");
     }
 
@@ -137,13 +137,14 @@ public class UrlRedirectResolverTests
         });
 
         var client = new HttpClient(handler);
-        var resolver = new UrlRedirectResolver(client, _formatValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
+        var resolver = new UrlRedirectResolver(client, _securityValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
 
         // Act
         var result = await resolver.ResolveChainAsync("https://hop0.com/");
 
         // Assert
         result.Success.ShouldBeFalse();
+        result.ErrorMessage.ShouldNotBeNull();
         result.ErrorMessage.ShouldContain("exceeded the maximum allowed redirect limit");
     }
 
@@ -159,14 +160,41 @@ public class UrlRedirectResolverTests
         });
 
         var client = new HttpClient(handler);
-        var resolver = new UrlRedirectResolver(client, _formatValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
+        var resolver = new UrlRedirectResolver(client, _securityValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
 
         // Act
         var result = await resolver.ResolveChainAsync("https://public-start.com/");
 
         // Assert
         result.Success.ShouldBeFalse();
+        result.ErrorMessage.ShouldNotBeNull();
         result.ErrorMessage.ShouldContain("Localhost and loopback addresses are not allowed");
+    }
+
+    [Fact]
+    public async Task ResolveChainAsync_RedirectHopFlaggedByDnsThreat_FailsValidation()
+    {
+        // Arrange: Redirect hop to a known spam / sinkholed domain
+        _securityValidator.ValidateUrlAsync(Arg.Is<string>(u => u.Contains("speedyconnectedlink")), Arg.Any<CancellationToken>())
+            .Returns(UrlSecurityResult.CreateFailure("The destination domain '36vj3.speedyconnectedlink.com' is flagged as malicious/spam by DNS threat intelligence."));
+
+        var handler = new MockHttpMessageHandler(req =>
+        {
+            var resp = new HttpResponseMessage(HttpStatusCode.Found);
+            resp.Headers.Location = new Uri("https://36vj3.speedyconnectedlink.com/?kw=1778");
+            return resp;
+        });
+
+        var client = new HttpClient(handler);
+        var resolver = new UrlRedirectResolver(client, _securityValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
+
+        // Act
+        var result = await resolver.ResolveChainAsync("https://www.codeworksquick.com/3TP5XSH/2BM8G1H2/");
+
+        // Assert
+        result.Success.ShouldBeFalse();
+        result.ErrorMessage.ShouldNotBeNull();
+        result.ErrorMessage.ShouldContain("flagged as malicious/spam");
     }
 
     private class MockHttpMessageHandler : HttpMessageHandler

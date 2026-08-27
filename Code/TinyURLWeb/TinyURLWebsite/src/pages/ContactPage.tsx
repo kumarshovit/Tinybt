@@ -8,7 +8,8 @@ import {
     Send,
     Mail,
     User,
-    MessageSquare
+    MessageSquare,
+    Loader2
 } from "lucide-react";
 
 import {
@@ -322,13 +323,17 @@ const ContactPage = () => {
                                 disabled={loading}
                                 className="w-full h-14 rounded-xl bg-blue-600 hover:bg-blue-700 transition text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-60"
                             >
-
-                                <Send size={18} />
-
-                                {loading
-                                    ? "Sending..."
-                                    : "Send Message"}
-
+                                {loading ? (
+                                    <>
+                                        <Loader2 size={18} className="animate-spin" />
+                                        <span>Sending Message...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Send size={18} />
+                                        <span>Send Message</span>
+                                    </>
+                                )}
                             </button>
 
                         </form>

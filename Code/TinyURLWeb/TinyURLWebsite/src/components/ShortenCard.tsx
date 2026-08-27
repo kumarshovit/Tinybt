@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import CreatableSelect from "react-select/creatable";
 import { Turnstile } from "@marsidev/react-turnstile";
-import { QrCode, AlertCircle, CheckCircle, Lock, Eye, EyeOff } from "lucide-react";
+import { QrCode, AlertCircle, CheckCircle, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 import QrModal from "./QrModal";
 
 import {
@@ -35,9 +35,9 @@ export default function ShortenCard({ onUrlCreated }: any) {
 
   const [result, setResult] = useState<any>(memoryGuestUrlResult);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [captchaToken, setCaptchaToken] = useState("");
-  const [showCaptcha, setShowCaptcha] = useState(false);
 
   // Password protection (auth-only)
   const [enablePassword, setEnablePassword] = useState(false);
@@ -115,9 +115,8 @@ export default function ShortenCard({ onUrlCreated }: any) {
   /* ============================= */
 
   const performCreate = async (token?: string) => {
-
+    setIsSubmitting(true);
     try {
-
       const response = await createUrl(
         longUrl,
         alias || undefined,
@@ -128,83 +127,41 @@ export default function ShortenCard({ onUrlCreated }: any) {
         enablePassword && password ? password : undefined
       );
 
-
-
       if (!response.success) {
-
         setError(
           response.message || "Something went wrong"
         );
-
-
         resetCaptcha();
-
         return;
-
       }
-
-
 
       const res = response.data;
 
-
-
       if (tags.length > 0) {
-
         await addTags(res.id, tags);
-
       }
-
-
-
 
       const newLink = {
-
         id: res.id,
-
         shortUrl: res.shortUrl,
-
         clickCount: 0,
-
         tags
-
       };
 
-
-
       if (!isAuthenticated) {
-
         memoryGuestUrlResult = newLink;
-
       }
-
-
-
 
       if (onUrlCreated) {
-
         await onUrlCreated();
-
       }
 
-
-
-
       setResult(newLink);
-
-
       setLongUrl("");
-
       setAlias("");
-
       setExpirationDate("");
-
       setTags([]);
-
-
       setCaptchaToken("");
-
-      setShowCaptcha(false);
 
       // Reset password fields
       setEnablePassword(false);
@@ -213,20 +170,14 @@ export default function ShortenCard({ onUrlCreated }: any) {
       setPasswordError("");
 
       resetCaptcha();
-
-
-
-    }
-    catch {
-
+    } catch {
       setError(
         "Something went wrong"
       );
-
       resetCaptcha();
-
+    } finally {
+      setIsSubmitting(false);
     }
-
   };
 
 
@@ -309,11 +260,10 @@ export default function ShortenCard({ onUrlCreated }: any) {
 
 
     if (!captchaToken) {
-
-      setShowCaptcha(true);
-
+      setError(
+        "Please complete the CAPTCHA verification."
+      );
       return;
-
     }
 
 
@@ -486,7 +436,7 @@ export default function ShortenCard({ onUrlCreated }: any) {
           </button>
         </div>
 
-        {!isAuthenticated && showCaptcha && siteKey && (
+        {!isAuthenticated && siteKey && (
           <div className="mb-4 flex justify-center">
             <Turnstile
               ref={turnstileRef}
@@ -494,7 +444,6 @@ export default function ShortenCard({ onUrlCreated }: any) {
               onSuccess={(token) => {
                 setCaptchaToken(token);
                 setError("");
-                // DO NOT call performCreate here
               }}
               onError={() => {
                 setError(
@@ -511,9 +460,17 @@ export default function ShortenCard({ onUrlCreated }: any) {
 
         <button
           onClick={handleCreate}
-          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 rounded-lg transition shadow-lg shadow-blue-500/20"
+          disabled={isSubmitting}
+          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 rounded-lg transition shadow-lg shadow-blue-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          {activeTab === "qr" ? "Generate QR Code" : "Shorten"}
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>{activeTab === "qr" ? "Generating QR Code..." : "Shortening URL..."}</span>
+            </>
+          ) : (
+            activeTab === "qr" ? "Generate QR Code" : "Shorten"
+          )}
         </button>
 
         {error && (

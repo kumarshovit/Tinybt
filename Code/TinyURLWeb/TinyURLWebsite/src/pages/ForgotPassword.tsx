@@ -90,6 +90,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import api from "../utils/api";
 import { Link } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import SEO from "../components/SEO";
 
 const ForgotPassword = () => {
@@ -165,9 +166,16 @@ const ForgotPassword = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-60"
+            className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-60 flex items-center justify-center gap-2"
           >
-            {loading ? "Sending..." : "Send Reset Link"}
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Sending Reset Link...</span>
+              </>
+            ) : (
+              "Send Reset Link"
+            )}
           </button>
         </form>
 

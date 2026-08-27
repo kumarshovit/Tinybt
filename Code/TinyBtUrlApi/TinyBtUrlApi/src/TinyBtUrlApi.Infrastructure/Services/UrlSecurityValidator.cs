@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TinyBtUrlApi.Core.Configuration;
 using TinyBtUrlApi.Core.Interfaces;
@@ -47,7 +47,7 @@ public class UrlSecurityValidator : IUrlSecurityValidator
 
         var host = uri.Host;
 
-        // 2. DNS Validation
+        // 2. DNS & Threat Validation
         if (_options.EnableDnsValidation)
         {
             try
@@ -55,10 +55,10 @@ public class UrlSecurityValidator : IUrlSecurityValidator
                 using var dnsCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                 dnsCts.CancelAfter(TimeSpan.FromMilliseconds(_options.DnsTimeoutMilliseconds));
 
-                var hasValidDns = await _dnsService.HasValidDnsRecordsAsync(host, dnsCts.Token);
-                if (!hasValidDns)
+                var dnsResult = await _dnsService.ValidateDnsAsync(host, dnsCts.Token);
+                if (!dnsResult.IsValid)
                 {
-                    return UrlSecurityResult.CreateFailure($"The destination domain '{host}' could not be resolved or lacks valid DNS records.");
+                    return UrlSecurityResult.CreateFailure(dnsResult.Reason ?? $"The destination domain '{host}' could not be resolved or lacks valid DNS records.");
                 }
             }
             catch (OperationCanceledException)
