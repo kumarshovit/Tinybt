@@ -14,4 +14,12 @@ public interface IGoogleSafeBrowsingService
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A <see cref="SafeBrowsingResult"/> containing the verdict.</returns>
     Task<SafeBrowsingResult> CheckUrlAsync(string url, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks multiple URLs against Google Safe Browsing in a single batch request.
+    /// </summary>
+    /// <param name="urls">The collection of URLs to check.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A <see cref="SafeBrowsingResult"/> containing the verdict.</returns>
+    Task<SafeBrowsingResult> CheckUrlsAsync(IEnumerable<string> urls, CancellationToken cancellationToken = default);
 }

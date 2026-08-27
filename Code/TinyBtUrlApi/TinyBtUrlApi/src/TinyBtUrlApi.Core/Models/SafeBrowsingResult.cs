@@ -19,4 +19,9 @@ public class SafeBrowsingResult
     /// Gets a description or reason for the block.
     /// </summary>
     public string? Description { get; init; }
+
+    /// <summary>
+    /// Gets the specific URL in the chain that triggered the threat detection, if any.
+    /// </summary>
+    public string? FlaggedUrl { get; init; }
 }

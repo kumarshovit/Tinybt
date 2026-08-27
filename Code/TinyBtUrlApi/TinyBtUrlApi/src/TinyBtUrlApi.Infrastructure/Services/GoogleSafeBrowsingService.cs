@@ -27,8 +27,19 @@ public class GoogleSafeBrowsingService : IGoogleSafeBrowsingService
         _logger = logger;
     }
 
-    public async Task<SafeBrowsingResult> CheckUrlAsync(string url, CancellationToken cancellationToken = default)
+    public Task<SafeBrowsingResult> CheckUrlAsync(string url, CancellationToken cancellationToken = default)
     {
+        return CheckUrlsAsync(new[] { url }, cancellationToken);
+    }
+
+    public async Task<SafeBrowsingResult> CheckUrlsAsync(IEnumerable<string> urls, CancellationToken cancellationToken = default)
+    {
+        var urlList = urls.Where(u => !string.IsNullOrWhiteSpace(u)).Distinct().ToList();
+        if (!urlList.Any())
+        {
+            return new SafeBrowsingResult { IsSafe = true };
+        }
+
         try
         {
             if (string.IsNullOrWhiteSpace(_options.ApiKey))
@@ -51,7 +62,7 @@ public class GoogleSafeBrowsingService : IGoogleSafeBrowsingService
                     ThreatTypes = GoogleThreatTypes.All,
                     PlatformTypes = new[] { "ANY_PLATFORM" },
                     ThreatEntryTypes = new[] { "URL" },
-                    ThreatEntries = new[] { new SafeBrowsingWarningEntry { Url = url } }
+                    ThreatEntries = urlList.Select(u => new SafeBrowsingWarningEntry { Url = u }).ToArray()
                 }
             };
 
@@ -63,13 +74,15 @@ public class GoogleSafeBrowsingService : IGoogleSafeBrowsingService
             if (responseResult?.Matches != null && responseResult.Matches.Any())
             {
                 var match = responseResult.Matches.First();
-                _logger.LogWarning("URL blocked by Google Safe Browsing. URL: {Url}, ThreatType: {ThreatType}", url, match.ThreatType);
+                var flaggedUrl = match.Threat?.Url ?? urlList.First();
+                _logger.LogWarning("URL blocked by Google Safe Browsing. URL: {Url}, ThreatType: {ThreatType}", flaggedUrl, match.ThreatType);
                 
                 return new SafeBrowsingResult
                 {
                     IsSafe = false,
                     ThreatType = match.ThreatType,
-                    Description = $"The destination URL has been identified as unsafe."
+                    FlaggedUrl = flaggedUrl,
+                    Description = $"The destination URL or a redirect hop ('{flaggedUrl}') has been identified as unsafe ({match.ThreatType})."
                 };
             }
 
@@ -77,22 +90,22 @@ public class GoogleSafeBrowsingService : IGoogleSafeBrowsingService
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "HTTP Request Error while checking URL against Google Safe Browsing API. URL: {Url}", url);
+            _logger.LogError(ex, "HTTP Request Error while checking URLs against Google Safe Browsing API.");
             return new SafeBrowsingResult { IsSafe = true, Description = "Failed to validate URL against Safe Browsing API due to network error." };
         }
         catch (System.Text.Json.JsonException ex)
         {
-            _logger.LogError(ex, "JSON Parsing Error from Google Safe Browsing API response. URL: {Url}", url);
+            _logger.LogError(ex, "JSON Parsing Error from Google Safe Browsing API response.");
             return new SafeBrowsingResult { IsSafe = true, Description = "Failed to validate URL against Safe Browsing API due to invalid response." };
         }
         catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
         {
-             _logger.LogError(ex, "Timeout while checking URL against Google Safe Browsing API. URL: {Url}", url);
+            _logger.LogError(ex, "Timeout while checking URLs against Google Safe Browsing API.");
             return new SafeBrowsingResult { IsSafe = true, Description = "Check timed out." };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected Error while checking URL against Google Safe Browsing API. URL: {Url}", url);
+            _logger.LogError(ex, "Unexpected Error while checking URLs against Google Safe Browsing API.");
             return new SafeBrowsingResult { IsSafe = true, Description = "Failed to validate URL against Safe Browsing API." };
         }
     }

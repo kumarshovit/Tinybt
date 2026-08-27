@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Mediator;
@@ -9,10 +9,20 @@ namespace TinyBtUrlApi.UseCases.Urls.UpdateDestination;
 public class UpdateDestinationHandler : IRequestHandler<UpdateDestinationCommand, bool>
 {
   private readonly IUrlRepository _repo;
+  private readonly IUrlSecurityValidator _urlSecurityValidator;
+  private readonly IUrlRedirectResolver _urlRedirectResolver;
+  private readonly IGoogleSafeBrowsingService _safeBrowsingService;
 
-  public UpdateDestinationHandler(IUrlRepository repo)
+  public UpdateDestinationHandler(
+      IUrlRepository repo,
+      IUrlSecurityValidator urlSecurityValidator,
+      IUrlRedirectResolver urlRedirectResolver,
+      IGoogleSafeBrowsingService safeBrowsingService)
   {
     _repo = repo;
+    _urlSecurityValidator = urlSecurityValidator;
+    _urlRedirectResolver = urlRedirectResolver;
+    _safeBrowsingService = safeBrowsingService;
   }
 
   public async ValueTask<bool> Handle(UpdateDestinationCommand request, CancellationToken ct)
@@ -22,7 +32,25 @@ public class UpdateDestinationHandler : IRequestHandler<UpdateDestinationCommand
 
     if (url.UserId != request.UserId && !request.IsAdmin) return false;
 
-    url.LongUrl = request.NewLongUrl;
+    // Validate format & security
+    var securityResult = await _urlSecurityValidator.ValidateUrlAsync(request.NewLongUrl, ct);
+    if (!securityResult.Success) return false;
+
+    var normalizedUrl = securityResult.NormalizedUrl ?? request.NewLongUrl;
+
+    // Resolve redirect chain
+    var redirectResult = await _urlRedirectResolver.ResolveChainAsync(normalizedUrl, ct);
+    if (!redirectResult.Success) return false;
+
+    // Check Safe Browsing on all hops
+    var urlsToCheck = redirectResult.RedirectChain.Count > 0
+        ? redirectResult.RedirectChain
+        : new List<string> { normalizedUrl };
+
+    var safeBrowsingResult = await _safeBrowsingService.CheckUrlsAsync(urlsToCheck, ct);
+    if (!safeBrowsingResult.IsSafe) return false;
+
+    url.LongUrl = normalizedUrl;
     await _repo.UpdateAsync(url);
 
     return true;

@@ -1,4 +1,4 @@
-﻿namespace TinyBtUrlApi.Core.Configuration;
+namespace TinyBtUrlApi.Core.Configuration;
 
 public class UrlSecurityOptions
 {
@@ -10,4 +10,7 @@ public class UrlSecurityOptions
     public int DnsTimeoutMilliseconds { get; set; } = 2000;
     public bool EnableDnsValidation { get; set; } = true;
     public int HttpsTimeoutMilliseconds { get; set; } = 2000;
+    public int MaxRedirectHops { get; set; } = 5;
+    public int RedirectTimeoutMilliseconds { get; set; } = 3000;
+    public bool EnableRedirectChainValidation { get; set; } = true;
 }

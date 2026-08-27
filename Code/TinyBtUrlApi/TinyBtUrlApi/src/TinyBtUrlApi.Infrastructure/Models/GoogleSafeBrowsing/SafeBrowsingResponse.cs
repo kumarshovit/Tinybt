@@ -18,4 +18,7 @@ public class SafeBrowsingMatch
 
     [JsonPropertyName("threatEntryType")]
     public string? ThreatEntryType { get; set; }
+
+    [JsonPropertyName("threat")]
+    public SafeBrowsingWarningEntry? Threat { get; set; }
 }

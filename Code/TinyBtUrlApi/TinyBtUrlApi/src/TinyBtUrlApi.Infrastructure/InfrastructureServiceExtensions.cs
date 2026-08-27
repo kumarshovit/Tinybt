@@ -1,4 +1,4 @@
-﻿using TinyBtUrlApi.Core.Interfaces;
+using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Options;
 using TinyBtUrlApi.Core.Services;
 using TinyBtUrlApi.Infrastructure.Data;
@@ -68,6 +68,14 @@ public static class InfrastructureServiceExtensions
 
     services.Configure<GoogleSafeBrowsingOptions>(config.GetSection("GoogleSafeBrowsing"));
     services.AddHttpClient<IGoogleSafeBrowsingService, GoogleSafeBrowsingService>();
+
+    // Redirect Resolution
+    services.AddHttpClient<IUrlRedirectResolver, UrlRedirectResolver>()
+        .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+        {
+            AllowAutoRedirect = false,
+            MaxAutomaticRedirections = 1
+        });
 
     logger.LogInformation("{Project} services registered", "Infrastructure");
 

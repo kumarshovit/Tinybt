@@ -1,4 +1,4 @@
-﻿using Mediator;
+using Mediator;
 using System.Text.RegularExpressions;
 using TinyBtUrlApi.Core.Entities;
 using TinyBtUrlApi.Core.Interfaces;
@@ -15,6 +15,7 @@ public class CreateShortUrlHandler
   private readonly IUrlSecurityValidator _urlSecurityValidator;
   private readonly ICaptchaService _captchaService;
   private readonly IGoogleSafeBrowsingService _safeBrowsingService;
+  private readonly IUrlRedirectResolver _urlRedirectResolver;
 
   public CreateShortUrlHandler(
       IUrlRepository repo,
@@ -22,7 +23,8 @@ public class CreateShortUrlHandler
       ISettingsRepository settingsRepo,
       IUrlSecurityValidator urlSecurityValidator,
       ICaptchaService captchaService,
-      IGoogleSafeBrowsingService safeBrowsingService)
+      IGoogleSafeBrowsingService safeBrowsingService,
+      IUrlRedirectResolver urlRedirectResolver)
   {
     _repo = repo;
     _shortCodeService = shortCodeService;
@@ -30,6 +32,7 @@ public class CreateShortUrlHandler
     _urlSecurityValidator = urlSecurityValidator;
     _captchaService = captchaService;
     _safeBrowsingService = safeBrowsingService;
+    _urlRedirectResolver = urlRedirectResolver;
   }
 
   public async ValueTask<CreateShortUrlResult> Handle(
@@ -81,20 +84,32 @@ public class CreateShortUrlHandler
       };
     }
 
-    var normalizedUrl = securityResult.NormalizedUrl;
+    var normalizedUrl = securityResult.NormalizedUrl ?? request.LongUrl;
 
-    // 🔹 4. Google Safe Browsing validation
-    if (normalizedUrl != null)
+    // 🔹 1.2 Multi-Hop Redirect Resolution & Chain Validation
+    var redirectResult = await _urlRedirectResolver.ResolveChainAsync(normalizedUrl, ct);
+    if (!redirectResult.Success)
     {
-      var safeBrowsingResult = await _safeBrowsingService.CheckUrlAsync(normalizedUrl, ct);
-      if (!safeBrowsingResult.IsSafe)
+      return new CreateShortUrlResult
       {
-        return new CreateShortUrlResult
-        {
-          Success = false,
-          Message = "The destination URL has been identified as unsafe."
-        };
-      }
+        Success = false,
+        Message = redirectResult.ErrorMessage ?? "Failed to validate redirect chain."
+      };
+    }
+
+    // 🔹 1.3 Batch Google Safe Browsing validation for all hops in redirect chain
+    var urlsToCheck = redirectResult.RedirectChain.Count > 0
+        ? redirectResult.RedirectChain
+        : new List<string> { normalizedUrl };
+
+    var safeBrowsingResult = await _safeBrowsingService.CheckUrlsAsync(urlsToCheck, ct);
+    if (!safeBrowsingResult.IsSafe)
+    {
+      return new CreateShortUrlResult
+      {
+        Success = false,
+        Message = safeBrowsingResult.Description ?? "The destination URL or a redirect hop has been identified as unsafe."
+      };
     }
 
     string shortCode;
