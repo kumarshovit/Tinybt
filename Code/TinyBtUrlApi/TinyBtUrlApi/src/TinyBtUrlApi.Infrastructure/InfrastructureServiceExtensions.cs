@@ -1,4 +1,4 @@
-using TinyBtUrlApi.Core.Interfaces;
+﻿using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Options;
 using TinyBtUrlApi.Core.Services;
 using TinyBtUrlApi.Infrastructure.Data;
@@ -54,6 +54,9 @@ public static class InfrastructureServiceExtensions
     services.AddScoped<IUrlRepository, UrlRepository>();
     services.AddScoped<ShortCodeService>();
     services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
+    services.AddScoped<IApiKeyRepository, ApiKeyRepository>();
+    services.AddScoped<IApiKeyGeneratorService, ApiKeyGeneratorService>();
+
     // URL Security Validations
     services.AddMemoryCache();
     services.AddScoped<IUrlFormatValidator, UrlFormatValidator>();

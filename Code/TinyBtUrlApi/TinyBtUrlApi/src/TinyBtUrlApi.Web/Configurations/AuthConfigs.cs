@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using TinyBtUrlApi.Core.Interfaces;
+using TinyBtUrlApi.Web.Auth.ApiKey;
 
 namespace TinyBtUrlApi.Web.Configurations;
 
@@ -11,11 +12,12 @@ public static class AuthConfigs
   public static IServiceCollection AddAuthConfigs(
       this IServiceCollection services,
       WebApplicationBuilder builder)
-  {
-    services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {
+      services
+      .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+      .AddScheme<ApiKeyAuthenticationOptions, ApiKeyAuthenticationHandler>(ApiKeyAuthenticationOptions.DefaultScheme, null)
+      .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+      {
           options.TokenValidationParameters = new TokenValidationParameters
           {
             ValidateIssuer = true,

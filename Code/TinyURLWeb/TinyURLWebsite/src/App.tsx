@@ -27,6 +27,7 @@ const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const TagManagement = lazy(() => import("./pages/TagManagement"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
+const DeveloperDashboard = lazy(() => import("./pages/DeveloperDashboard"));
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./components/auth/AdminRoute";
@@ -90,6 +91,21 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+ 
+            path="/developer"
+ 
+            element={
+ 
+              <ProtectedRoute>
+ 
+                <DeveloperDashboard />
+ 
+              </ProtectedRoute>
+ 
+            }
+ 
+          />
 
             <Route
               path="/profile"

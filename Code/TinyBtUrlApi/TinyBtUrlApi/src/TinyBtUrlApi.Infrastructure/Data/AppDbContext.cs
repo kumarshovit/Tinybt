@@ -24,6 +24,8 @@ public class AppDbContext : DbContext
   public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
   public DbSet<IpLoginAttempt> IpLoginAttempts { get; set; }
 
+  public DbSet<ApiKey> ApiKeys { get; set; }
+
   public DbSet<SystemSettings> SystemSettings { get; set; }
 
   public DbSet<ClickLog> ClickLogs { get; set; }

@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\TinyBtUrlApi.Infrastructure\TinyBtUrlApi.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\TinyBtUrlApi.Web\TinyBtUrlApi.Web.csproj" />
   </ItemGroup>
 
   <ItemGroup>

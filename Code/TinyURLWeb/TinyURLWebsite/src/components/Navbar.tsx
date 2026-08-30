@@ -145,6 +145,13 @@ const Navbar = () => {
               )}
 
               <Link
+                to="/developer"
+                className={navLinkClass("/developer")}
+              >
+                Developer API
+              </Link>
+
+              <Link
                 to="/profile"
                 className={navLinkClass("/profile")}
               >
@@ -236,6 +243,13 @@ const Navbar = () => {
                   Admin Panel
                 </Link>
               )}
+
+              <Link
+                to="/developer"
+                className={navLinkClass("/developer")}
+              >
+                Developer API
+              </Link>
 
               <Link
                 to="/profile"

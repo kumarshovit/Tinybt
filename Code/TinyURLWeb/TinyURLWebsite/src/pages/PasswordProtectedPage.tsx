@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams, Link } from "react-router-dom";
 import { Lock, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 import SEO from "../components/SEO";
 import { verifyPassword } from "../api/urlService";
+import logo from "../assets/logo.png";
 
 const PasswordProtectedPage = () => {
     const { shortCode } = useParams<{ shortCode: string }>();
@@ -15,8 +16,6 @@ const PasswordProtectedPage = () => {
     const [loading, setLoading] = useState(false);
     const [tokenMissing] = useState(!token);
 
-    // If no token in URL, the user navigated here directly (not via redirect).
-    // Show a clear error — they must visit the original short URL.
     useEffect(() => {
         if (!token) {
             setError("Access token missing. Please visit the original short link.");
@@ -47,11 +46,7 @@ const PasswordProtectedPage = () => {
                 return;
             }
 
-            // Navigate to the access endpoint.
-            // 'credentials: include' in the fetch already ensured the HttpOnly
-            // cookie was set. Now the browser navigation sends it automatically.
             window.location.replace(result.redirectTo!);
-            // Don't set loading to false — the page is navigating away.
         } catch {
             setError("Something went wrong. Please try again.");
             setLoading(false);
@@ -66,77 +61,98 @@ const PasswordProtectedPage = () => {
                 canonical={`/protected/${shortCode}`}
                 noindex
             />
-            <div className="min-h-screen bg-gradient-to-br from-gray-100 to-blue-50 flex items-center justify-center px-6">
-                <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl border border-gray-200 p-10">
 
-                    <div className="flex justify-center mb-6">
-                        <div className="bg-blue-100 p-5 rounded-full">
-                            <Lock className="text-blue-600" size={48} />
-                        </div>
+            <div className="min-h-screen relative flex items-center justify-center overflow-hidden bg-slate-950 font-sans">
+                {/* Ambient Background Glows */}
+                <div className="absolute inset-0 w-full h-full pointer-events-none">
+                    <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-blue-600/20 rounded-full blur-[120px] mix-blend-screen" />
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-indigo-600/20 rounded-full blur-[120px] mix-blend-screen" />
+                    <div className="absolute top-[40%] left-[60%] w-[30vw] h-[30vw] bg-purple-600/15 rounded-full blur-[100px] mix-blend-screen" />
+                </div>
+
+                {/* Main Card */}
+                <div className="relative z-10 w-full max-w-[420px] mx-6 flex flex-col items-center">
+                    {/* Logo */}
+                    <div className="mb-8">
+                        <Link to="/">
+                            <img src={logo} alt="LinkBT Logo" className="h-10 object-contain" />
+                        </Link>
                     </div>
 
-                    <h1 className="text-3xl font-bold text-gray-900 text-center mb-2">
-                        Password Required
-                    </h1>
-                    <p className="text-gray-500 text-center mb-8 text-sm leading-6">
-                        This link is protected. Enter the password to continue.
-                    </p>
+                    <div className="w-full bg-slate-900/60 backdrop-blur-2xl border border-slate-700/50 rounded-[2rem] p-8 sm:p-10 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.5)] shadow-blue-900/20 transition-all duration-500">
 
-                    {tokenMissing ? (
-                        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm text-center">
-                            Access token missing. Please visit the original short link.
-                        </div>
-                    ) : (
-                        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-                            <div>
-                                <label
-                                    htmlFor="pwd-input"
-                                    className="block text-sm font-medium text-gray-700 mb-1.5"
-                                >
-                                    Password
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        id="pwd-input"
-                                        type={showPassword ? "text" : "password"}
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Enter password"
-                                        className="w-full border border-gray-300 rounded-xl px-4 py-3 pr-11 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                                        disabled={loading}
-                                        autoComplete="current-password"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
-                                        aria-label={showPassword ? "Hide password" : "Show password"}
-                                        tabIndex={-1}
-                                    >
-                                        {showPassword
-                                            ? <EyeOff size={18} />
-                                            : <Eye size={18} />}
-                                    </button>
-                                </div>
+                        {/* Lock Icon */}
+                        <div className="flex justify-center mb-8">
+                            <div className="relative flex items-center justify-center w-20 h-20 rounded-full bg-slate-800/80 border border-slate-700/50 shadow-inner">
+                                <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-[10px] animate-pulse" />
+                                <Lock className="text-blue-400 relative z-10" size={32} strokeWidth={1.5} />
                             </div>
+                        </div>
 
-                            {error && (
-                                <div className="flex items-start gap-2 bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">
-                                    <AlertCircle size={16} className="shrink-0 mt-0.5" />
-                                    <span>{error}</span>
+                        {/* Text */}
+                        <h1 className="text-2xl sm:text-3xl font-extrabold text-white text-center mb-3 tracking-tight">
+                            Protected Link
+                        </h1>
+                        <p className="text-slate-400 text-center mb-8 text-sm leading-relaxed px-2">
+                            This destination is secured. Please enter the password to unlock access.
+                        </p>
+
+                        {/* Form */}
+                        {tokenMissing ? (
+                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 rounded-2xl p-4 text-sm text-center font-medium backdrop-blur-sm">
+                                Access token missing. Please visit the original short link.
+                            </div>
+                        ) : (
+                            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+
+                                {/* Password Input */}
+                                <div className="space-y-1.5">
+                                    <label htmlFor="pwd-input" className="block text-xs font-semibold text-slate-300 uppercase tracking-wider ml-1">
+                                        Password
+                                    </label>
+                                    <div className="relative group">
+                                        <input
+                                            id="pwd-input"
+                                            type={showPassword ? "text" : "password"}
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            placeholder="Enter password..."
+                                            className="w-full bg-slate-950/50 border border-slate-700 rounded-2xl px-5 py-4 pr-12 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all duration-300"
+                                            disabled={loading}
+                                            autoComplete="current-password"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors duration-200"
+                                            aria-label={showPassword ? "Hide password" : "Show password"}
+                                            tabIndex={-1}
+                                        >
+                                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                        </button>
+                                    </div>
                                 </div>
-                            )}
 
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl transition flex items-center justify-center gap-2"
-                            >
-                                {loading && <Loader2 size={18} className="animate-spin" />}
-                                {loading ? "Verifying…" : "Continue"}
-                            </button>
-                        </form>
-                    )}
+                                {/* Error Alert */}
+                                <div className={`transition-all duration-300 overflow-hidden ${error ? "max-h-24 opacity-100" : "max-h-0 opacity-0"}`}>
+                                    <div className="flex items-start gap-2.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl p-3.5 text-sm backdrop-blur-sm">
+                                        <AlertCircle size={18} className="shrink-0 mt-0.5 text-red-400" />
+                                        <span className="font-medium">{error}</span>
+                                    </div>
+                                </div>
+
+                                {/* Submit Button */}
+                                <button
+                                    type="submit"
+                                    disabled={loading}
+                                    className="w-full mt-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:from-slate-600 disabled:to-slate-700 text-white font-semibold py-4 rounded-2xl shadow-lg hover:shadow-blue-500/25 disabled:shadow-none disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
+                                >
+                                    {loading && <Loader2 size={20} className="animate-spin text-white/70" />}
+                                    <span>{loading ? "Verifying..." : "Unlock Link"}</span>
+                                </button>
+                            </form>
+                        )}
+                    </div>
                 </div>
             </div>
         </>
