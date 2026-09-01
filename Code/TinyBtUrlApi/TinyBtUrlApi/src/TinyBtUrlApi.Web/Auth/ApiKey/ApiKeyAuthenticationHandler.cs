@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -67,7 +67,11 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
             return AuthenticateResult.Fail("Invalid API Key.");
         }
 
-        // 5. Success -> Create Identity
+        // 5. Update LastUsedAt
+        apiKeyEntity.LastUsedAt = _timeProvider.GetUtcNow().UtcDateTime;
+        await _apiKeyRepository.UpdateLastUsedAtAsync(apiKeyEntity.Id, apiKeyEntity.LastUsedAt.Value, Context.RequestAborted);
+
+        // 6. Success -> Create Identity
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, apiKeyEntity.UserId.ToString()),
@@ -75,20 +79,16 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
             new Claim("ApiKeyId", apiKeyEntity.Id.ToString())
         };
 
-    //var identity = new ClaimsIdentity(claims, Options.DefaultScheme);
-    //var principal = new ClaimsPrincipal(identity);
-    //var ticket = new AuthenticationTicket(principal, Options.DefaultScheme);
+        var identity = new ClaimsIdentity(
+            claims,
+            ApiKeyAuthenticationOptions.DefaultScheme);
 
-    var identity = new ClaimsIdentity(
-    claims,
-    ApiKeyAuthenticationOptions.DefaultScheme);
+        var principal = new ClaimsPrincipal(identity);
 
-    var principal = new ClaimsPrincipal(identity);
+        var ticket = new AuthenticationTicket(
+            principal,
+            ApiKeyAuthenticationOptions.DefaultScheme);
 
-    var ticket = new AuthenticationTicket(
-        principal,
-        ApiKeyAuthenticationOptions.DefaultScheme);
-
-    return AuthenticateResult.Success(ticket);
+        return AuthenticateResult.Success(ticket);
     }
 }

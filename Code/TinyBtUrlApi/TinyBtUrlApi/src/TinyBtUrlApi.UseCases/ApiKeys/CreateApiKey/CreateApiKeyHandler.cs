@@ -7,6 +7,8 @@ namespace TinyBtUrlApi.UseCases.ApiKeys.CreateApiKey;
 
 public class CreateApiKeyHandler : IRequestHandler<CreateApiKeyCommand, CreateApiKeyResult>
 {
+    private const int MaxApiKeysPerUser = 5;
+
     private readonly IApiKeyGeneratorService _apiKeyGeneratorService;
     private readonly IApiKeyRepository _apiKeyRepository;
 
@@ -21,6 +23,16 @@ public class CreateApiKeyHandler : IRequestHandler<CreateApiKeyCommand, CreateAp
         if (string.IsNullOrWhiteSpace(request.Name))
         {
             return new CreateApiKeyResult { Success = false, Message = "API Key Name is required." };
+        }
+
+        var activeKeyCount = await _apiKeyRepository.CountActiveByUserIdAsync(request.UserId, ct);
+        if (activeKeyCount >= MaxApiKeysPerUser)
+        {
+            return new CreateApiKeyResult
+            {
+                Success = false,
+                Message = $"Maximum number of active API keys ({MaxApiKeysPerUser}) reached. Revoke an existing key before creating a new one."
+            };
         }
 
         var generatedKeyInfo = _apiKeyGeneratorService.GenerateKey();

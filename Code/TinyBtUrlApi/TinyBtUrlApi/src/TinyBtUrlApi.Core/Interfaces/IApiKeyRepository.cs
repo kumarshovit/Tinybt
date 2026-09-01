@@ -11,4 +11,6 @@ public interface IApiKeyRepository
     Task<ApiKey?> FindByHashAsync(string keyHash, CancellationToken ct = default);
     Task<System.Collections.Generic.List<ApiKey>> GetByUserIdAsync(int userId, CancellationToken ct = default);
     Task<bool> RevokeAsync(int id, int userId, CancellationToken ct = default);
+    Task UpdateLastUsedAtAsync(int id, DateTime lastUsedAt, CancellationToken ct = default);
+    Task<int> CountActiveByUserIdAsync(int userId, CancellationToken ct = default);
 }

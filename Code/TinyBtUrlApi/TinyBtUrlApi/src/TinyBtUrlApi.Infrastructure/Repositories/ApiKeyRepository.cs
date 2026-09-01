@@ -70,4 +70,17 @@ public class ApiKeyRepository : IApiKeyRepository
 
         return true;
     }
+
+    public async Task UpdateLastUsedAtAsync(int id, DateTime lastUsedAt, CancellationToken ct = default)
+    {
+        await _dbContext.ApiKeys
+            .Where(k => k.Id == id)
+            .ExecuteUpdateAsync(s => s.SetProperty(k => k.LastUsedAt, lastUsedAt), ct);
+    }
+
+    public async Task<int> CountActiveByUserIdAsync(int userId, CancellationToken ct = default)
+    {
+        return await _dbContext.ApiKeys
+            .CountAsync(k => k.UserId == userId && k.RevokedAt == null, ct);
+    }
 }
