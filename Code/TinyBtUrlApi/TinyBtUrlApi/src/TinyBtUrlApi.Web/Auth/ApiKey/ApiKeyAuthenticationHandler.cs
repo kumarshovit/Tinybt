@@ -41,6 +41,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
 
         if (string.IsNullOrWhiteSpace(providedApiKey) || !providedApiKey.StartsWith("lbt_live_"))
         {
+            Logger.LogWarning("Invalid API Key format or missing prefix. Length provided: {KeyLength}", providedApiKey?.Length ?? 0);
             return AuthenticateResult.Fail("Invalid API Key.");
         }
 
@@ -50,20 +51,30 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
         // 2. Lookup by Hash
         var apiKeyEntity = await _apiKeyRepository.FindByHashAsync(incomingHash, Context.RequestAborted);
 
+        // 2b. Fallback to Legacy Hash if not found
         if (apiKeyEntity == null)
         {
+            var legacyHash = _apiKeyGeneratorService.LegacyHashKey(providedApiKey);
+            apiKeyEntity = await _apiKeyRepository.FindByHashAsync(legacyHash, Context.RequestAborted);
+        }
+
+        if (apiKeyEntity == null)
+        {
+            Logger.LogWarning("API Key not found or invalid. Hashes checked: new={IncomingHash}, legacy={LegacyHash}", incomingHash, _apiKeyGeneratorService.LegacyHashKey(providedApiKey));
             return AuthenticateResult.Fail("Invalid API Key.");
         }
 
         // 3. Check Revoked
         if (apiKeyEntity.RevokedAt != null)
         {
+            Logger.LogWarning("API Key revoked. Key ID: {ApiKeyId}", apiKeyEntity.Id);
             return AuthenticateResult.Fail("Invalid API Key.");
         }
 
         // 4. Check Expired
         if (apiKeyEntity.ExpiresAt != null && apiKeyEntity.ExpiresAt <= _timeProvider.GetUtcNow().UtcDateTime)
         {
+            Logger.LogWarning("API Key expired. Key ID: {ApiKeyId}, ExpiredAt: {ExpiresAt}", apiKeyEntity.Id, apiKeyEntity.ExpiresAt);
             return AuthenticateResult.Fail("Invalid API Key.");
         }
 
@@ -88,6 +99,8 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
         var ticket = new AuthenticationTicket(
             principal,
             ApiKeyAuthenticationOptions.DefaultScheme);
+
+        Logger.LogInformation("API key authenticated successfully. Key ID: {ApiKeyId}, UserId: {UserId}", apiKeyEntity.Id, apiKeyEntity.UserId);
 
         return AuthenticateResult.Success(ticket);
     }

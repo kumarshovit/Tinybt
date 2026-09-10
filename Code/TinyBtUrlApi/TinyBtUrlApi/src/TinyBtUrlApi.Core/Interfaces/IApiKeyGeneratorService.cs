@@ -6,4 +6,5 @@ public interface IApiKeyGeneratorService
 {
     ApiKeyGenerationResult GenerateKey();
     string HashKey(string rawKey);
+    string LegacyHashKey(string rawKey);
 }
