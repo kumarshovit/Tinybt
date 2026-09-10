@@ -5,13 +5,9 @@ using FastEndpoints;
 using Mediator;
 using TinyBtUrlApi.UseCases.ApiKeys.DeleteApiKey;
 using TinyBtUrlApi.Web.Configurations;
+using TinyBtUrlApi.Web.Endpoints.ApiKeys.Requests;
 
 namespace TinyBtUrlApi.Web.Endpoints.ApiKeys;
-
-public class DeleteApiKeyRequest
-{
-    public int Id { get; set; }
-}
 
 public class DeleteApiKeyEndpoint : Endpoint<DeleteApiKeyRequest>
 {

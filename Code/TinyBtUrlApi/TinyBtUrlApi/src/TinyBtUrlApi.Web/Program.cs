@@ -96,7 +96,26 @@ var app = builder.Build();
 // ---------------------------
 // Middleware Pipeline
 // ---------------------------
-app.UseExceptionHandler();
+app.UseExceptionHandler(errorApp =>
+{
+  errorApp.Run(async context =>
+  {
+    context.Response.StatusCode = 500;
+    context.Response.ContentType = "application/json";
+
+    var error = context.Features.Get<IExceptionHandlerFeature>();
+    if (error != null)
+    {
+      var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+      logger.LogError(error.Error, "Unhandled exception");
+
+      await context.Response.WriteAsJsonAsync(new
+      {
+        message = "An unexpected error occurred."
+      });
+    }
+  });
+});
 
 // ✅ CORS before Authentication
 app.UseCors("AllowFrontend");

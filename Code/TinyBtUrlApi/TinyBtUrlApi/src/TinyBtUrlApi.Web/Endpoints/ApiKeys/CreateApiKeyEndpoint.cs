@@ -40,7 +40,7 @@ public class CreateApiKeyEndpoint : Endpoint<CreateApiKeyRequest, CreateApiKeyRe
             return;
         }
 
-        var command = new CreateApiKeyCommand(userId, req.Name);
+        var command = new CreateApiKeyCommand(userId, req.Name, req.ExpiresAt);
         var result = await _mediator.Send(command, ct);
 
         if (!result.Success)
@@ -55,7 +55,8 @@ public class CreateApiKeyEndpoint : Endpoint<CreateApiKeyRequest, CreateApiKeyRe
             Id = result.Id,
             Prefix = result.Prefix,
             RawKey = result.RawKey,
-            CreatedAt = result.CreatedAt
+            CreatedAt = result.CreatedAt,
+            ExpiresAt = result.ExpiresAt
         };
 
         await Send.CreatedAtAsync<CreateApiKeyEndpoint>(new { id = result.Id }, response, cancellation: ct);

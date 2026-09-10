@@ -41,6 +41,7 @@ public class CreateApiKeyHandler : IRequestHandler<CreateApiKeyCommand, CreateAp
             request.UserId,
             request.Name,
             generatedKeyInfo,
+            request.ExpiresAt,
             ct);
 
         return new CreateApiKeyResult
@@ -49,7 +50,8 @@ public class CreateApiKeyHandler : IRequestHandler<CreateApiKeyCommand, CreateAp
             Id = apiKeyEntity.Id,
             Prefix = generatedKeyInfo.Prefix,
             RawKey = generatedKeyInfo.RawKey,
-            CreatedAt = apiKeyEntity.CreatedAt
+            CreatedAt = apiKeyEntity.CreatedAt,
+            ExpiresAt = apiKeyEntity.ExpiresAt
         };
     }
 }

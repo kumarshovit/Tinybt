@@ -8,4 +8,5 @@ public class CreateApiKeyResponse
     public string Prefix { get; set; } = string.Empty;
     public string RawKey { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
+    public DateTime? ExpiresAt { get; set; }
 }

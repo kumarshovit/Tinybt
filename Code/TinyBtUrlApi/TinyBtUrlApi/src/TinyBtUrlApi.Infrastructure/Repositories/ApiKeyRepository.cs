@@ -18,7 +18,7 @@ public class ApiKeyRepository : IApiKeyRepository
         _dbContext = dbContext;
     }
 
-    public async Task<ApiKey> CreateAsync(int userId, string name, ApiKeyGenerationResult keyInfo, CancellationToken ct = default)
+    public async Task<ApiKey> CreateAsync(int userId, string name, ApiKeyGenerationResult keyInfo, DateTime? expiresAt = null, CancellationToken ct = default)
     {
         var apiKey = new ApiKey
         {
@@ -26,7 +26,8 @@ public class ApiKeyRepository : IApiKeyRepository
             Name = name,
             KeyPrefix = keyInfo.Prefix,
             KeyHash = keyInfo.Hash,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            ExpiresAt = expiresAt
         };
 
         _dbContext.ApiKeys.Add(apiKey);
@@ -41,12 +42,18 @@ public class ApiKeyRepository : IApiKeyRepository
             .FirstOrDefaultAsync(k => k.KeyHash == keyHash, ct);
     }
 
-    public async Task<System.Collections.Generic.List<ApiKey>> GetByUserIdAsync(int userId, CancellationToken ct = default)
+    public async Task<System.Collections.Generic.List<ApiKey>> GetByUserIdAsync(int userId, bool includeRevoked = false, CancellationToken ct = default)
     {
-        return await _dbContext.ApiKeys
+        var query = _dbContext.ApiKeys
             .AsNoTracking()
-            .Where(k => k.UserId == userId)
-            .ToListAsync(ct);
+            .Where(k => k.UserId == userId);
+
+        if (!includeRevoked)
+        {
+            query = query.Where(k => k.RevokedAt == null);
+        }
+
+        return await query.ToListAsync(ct);
     }
 
     public async Task<bool> RevokeAsync(int id, int userId, CancellationToken ct = default)

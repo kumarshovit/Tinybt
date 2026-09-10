@@ -6,11 +6,13 @@ using FastEndpoints;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using TinyBtUrlApi.Core.Interfaces;
+using TinyBtUrlApi.Web.Configurations;
+using TinyBtUrlApi.Web.Endpoints.ApiKeys.Requests;
 using TinyBtUrlApi.Web.Endpoints.ApiKeys.Responses;
 
 namespace TinyBtUrlApi.Web.Endpoints.ApiKeys;
 
-public class GetApiKeysEndpoint : EndpointWithoutRequest<GetApiKeysResponse>
+public class GetApiKeysEndpoint : Endpoint<GetApiKeysRequest, GetApiKeysResponse>
 {
     private readonly IApiKeyRepository _apiKeyRepository;
 
@@ -22,6 +24,7 @@ public class GetApiKeysEndpoint : EndpointWithoutRequest<GetApiKeysResponse>
     public override void Configure()
     {
         Get("/api/v1/api-keys");
+        Options(x => x.RequireRateLimiting(RateLimitConfigs.ApiKeyManagementPolicy));
         AuthSchemes(JwtBearerDefaults.AuthenticationScheme);
         Description(b => b
             .WithTags("API Keys")
@@ -34,7 +37,7 @@ public class GetApiKeysEndpoint : EndpointWithoutRequest<GetApiKeysResponse>
         });
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(GetApiKeysRequest req, CancellationToken ct)
     {
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
@@ -43,7 +46,7 @@ public class GetApiKeysEndpoint : EndpointWithoutRequest<GetApiKeysResponse>
             return;
         }
 
-        var keys = await _apiKeyRepository.GetByUserIdAsync(userId, ct);
+        var keys = await _apiKeyRepository.GetByUserIdAsync(userId, req.IncludeRevoked, ct);
 
         var response = new GetApiKeysResponse
         {

@@ -4,5 +4,6 @@ namespace TinyBtUrlApi.UseCases.ApiKeys.CreateApiKey;
 
 public record CreateApiKeyCommand(
     int UserId,
-    string Name
+    string Name,
+    DateTime? ExpiresAt = null
 ) : IRequest<CreateApiKeyResult>;

@@ -5,7 +5,7 @@ import { loginUser } from "../services/authService";
 import GoogleLogin from "../components/auth/GoogleLogin";
 import SEO from "../components/SEO";
 import logo from "../assets/logo.png";
-import sideImage from "../assets/Gemini_Generated_Image_l13183l13183l131.png";
+import sideImage from "../assets/WhatsApp Image 2026-09-10 at 1.38.57 PM.jpeg";
 
 const Login = () => {
   const [email, setEmail] = useState("");
