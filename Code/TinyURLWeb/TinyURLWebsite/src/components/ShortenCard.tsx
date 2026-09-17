@@ -343,7 +343,8 @@ export default function ShortenCard({ onUrlCreated }: any) {
                   color: "white"
                 }),
                 menu: (base) => ({ ...base, color: 'black' }),
-                singleValue: (base) => ({ ...base, color: "white" })
+                singleValue: (base) => ({ ...base, color: "white" }),
+                input: (base) => ({ ...base, color: "white" })
               }}
               onChange={(selected) => {
                 setTags(
