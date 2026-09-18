@@ -25,6 +25,11 @@ public class CreateApiKeyHandler : IRequestHandler<CreateApiKeyCommand, CreateAp
             return new CreateApiKeyResult { Success = false, Message = "API Key Name is required." };
         }
 
+        if (request.Name.Length > 100)
+        {
+            return new CreateApiKeyResult { Success = false, Message = "API Key Name cannot exceed 100 characters." };
+        }
+
         var activeKeyCount = await _apiKeyRepository.CountActiveByUserIdAsync(request.UserId, ct);
         if (activeKeyCount >= MaxApiKeysPerUser)
         {
@@ -33,6 +38,11 @@ public class CreateApiKeyHandler : IRequestHandler<CreateApiKeyCommand, CreateAp
                 Success = false,
                 Message = $"Maximum number of active API keys ({MaxApiKeysPerUser}) reached. Revoke an existing key before creating a new one."
             };
+        }
+
+        if (request.ExpiresAt.HasValue && request.ExpiresAt.Value <= DateTime.UtcNow)
+        {
+            return new CreateApiKeyResult { Success = false, Message = "Expiry date must be in the future." };
         }
 
         var generatedKeyInfo = _apiKeyGeneratorService.GenerateKey();

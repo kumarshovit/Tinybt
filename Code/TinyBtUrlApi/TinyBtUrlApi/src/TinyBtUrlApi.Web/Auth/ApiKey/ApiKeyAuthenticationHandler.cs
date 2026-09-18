@@ -60,7 +60,7 @@ public class ApiKeyAuthenticationHandler : AuthenticationHandler<ApiKeyAuthentic
 
         if (apiKeyEntity == null)
         {
-            Logger.LogWarning("API Key not found or invalid. Hashes checked: new={IncomingHash}, legacy={LegacyHash}", incomingHash, _apiKeyGeneratorService.LegacyHashKey(providedApiKey));
+            Logger.LogWarning("API Key not found. Prefix: {KeyPrefix}", providedApiKey.Substring(0, Math.Min(17, providedApiKey.Length)));
             return AuthenticateResult.Fail("Invalid API Key.");
         }
 

@@ -75,9 +75,9 @@ public class CreateDeveloperShortUrlEndpoint
         var response = new CreateDeveloperShortUrlResponse
         {
             Id = result.Id ?? 0,
-            ShortCode = result.ShortCode,
+            ShortCode = result.ShortCode ?? string.Empty,
             ShortUrl = shortUrl,
-            LongUrl = result.LongUrl,
+            LongUrl = result.LongUrl ?? string.Empty,
             ExpirationDate = result.ExpirationDate,
             CreatedAt = result.CreatedAt ?? System.DateTime.UtcNow,
             IsPasswordProtected = result.IsPasswordProtected
