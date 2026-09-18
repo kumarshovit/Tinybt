@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { logoutUser } from "../services/authService";
 import { getUserRole } from "../utils/auth";
 import { BarChart3, Menu, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import logo from "../assets/logo.png";
 
 const Navbar = () => {
@@ -11,16 +11,8 @@ const Navbar = () => {
 
   const location = useLocation();
 
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const token =
-    typeof window === "undefined" || !mounted ? null : localStorage.getItem("token");
-
-  const role = typeof window === "undefined" || !mounted ? null : getUserRole();
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const role = typeof window !== "undefined" ? getUserRole() : null;
 
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -35,13 +27,13 @@ const Navbar = () => {
   const isLanding = location.pathname === "/" || location.pathname === "/dashboard";
 
   const navLinkClass = (path: string) => {
-    return `transition-all duration-300 hover:-translate-y-1 hover:scale-105 ${location.pathname === path
-      ? "text-blue-600 font-semibold"
+    return `transition-colors duration-200 font-medium ${location.pathname === path
+      ? "text-blue-600"
       : "text-gray-700 hover:text-blue-600"
       }`;
   };
 
-  const defaultLinkClass = "text-gray-700 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1 hover:scale-105";
+  const defaultLinkClass = "text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium";
 
   return (
 
@@ -52,7 +44,7 @@ const Navbar = () => {
         {/* Logo */}
         <Link
           to={token ? "/dashboard" : "/"}
-          className="flex items-center transition-transform duration-300 hover:scale-105 hover:-translate-y-1 block"
+          className="flex items-center transition-opacity duration-200 hover:opacity-80 block"
         >
           <img
             src={logo}

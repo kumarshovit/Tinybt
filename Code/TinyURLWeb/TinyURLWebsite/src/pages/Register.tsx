@@ -5,10 +5,13 @@ import { registerUser } from "../services/authService";
 import { validateEmail, validatePassword } from "../utils/validators";
 import GoogleLogin from "../components/auth/GoogleLogin";
 import SEO from "../components/SEO";
+import logo from "../assets/logo.png";
+import sideImage from "../assets/WhatsApp Image 2026-09-18 at 4.55.27 PM.jpeg";
 
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -33,6 +36,10 @@ const Register = () => {
       return setError("Password must be 8+ chars, 1 uppercase & 1 number");
     }
 
+    if (password !== confirmPassword) {
+      return setError("Passwords do not match");
+    }
+
     try {
       setLoading(true);
 
@@ -54,7 +61,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-screen flex bg-gray-50">
       <SEO
         title="Create Account – LinkBT"
         description="Sign up for a free LinkBT account and start shortening URLs, creating custom branded links, and tracking click analytics in seconds."
@@ -62,115 +69,151 @@ const Register = () => {
         noindex
       />
 
-      <div className="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl">
-        {/* Heading */}
-        <h2 className="text-3xl font-bold text-center text-gray-800">
-          Create Account 🚀
-        </h2>
+      {/* Left side: Register form */}
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center px-4 relative">
+        {/* Logo at the top left */}
+        <div className="absolute top-6 left-6 md:top-8 md:left-12">
+          <Link to="/">
+            <img src={logo} alt="LinkBT Logo" className="h-10 object-contain" />
+          </Link>
+        </div>
 
-        <p className="text-center text-gray-500 mt-2 mb-6">
-          Start managing your short links today
-        </p>
+        <div className="bg-white w-full max-w-md p-8 sm:p-10 rounded-xl shadow-xl mt-16 lg:mt-0">
+          {/* Heading */}
+          <h2 className="text-[26px] font-bold text-center text-[#1E293B] mb-2 leading-tight">
+            Create Your LinkBT Account
+          </h2>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Email
-            </label>
+          <p className="text-center text-[13px] text-gray-700 mb-6 font-medium">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-[#02629b] font-semibold hover:underline"
+            >
+              Login
+            </Link>
+          </p>
 
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Email */}
+            <div>
+              <label className="block text-xs font-bold text-slate-800 mb-1">
+                Email Address <span className="text-red-500">*</span>
+              </label>
 
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Password
-            </label>
-
-            <div className="relative">
               <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                className="w-full px-4 py-2 pr-12 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                type="email"
+                placeholder="Email Address"
+                className="w-full px-4 py-2 border border-slate-400 rounded focus:ring-1 focus:ring-slate-500 focus:outline-none transition text-sm"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
-
-              {/* Eye Toggle */}
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
             </div>
 
-            <p className="text-xs text-gray-400 mt-1">
-              Must be 8+ characters, include 1 uppercase & 1 number.
-            </p>
+            {/* Password */}
+            <div>
+              <label className="block text-xs font-bold text-slate-800 mb-1">
+                Create Password <span className="text-red-500">*</span>
+              </label>
+
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Create Password"
+                  className="w-full px-4 py-2 pr-12 border border-slate-400 rounded focus:ring-1 focus:ring-slate-500 focus:outline-none transition text-sm"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+
+                {/* Eye Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-800"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-xs font-bold text-slate-800 mb-1">
+                Confirm Password <span className="text-red-500">*</span>
+              </label>
+
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Confirm Password"
+                  className="w-full px-4 py-2 pr-12 border border-slate-400 rounded focus:ring-1 focus:ring-slate-500 focus:outline-none transition text-sm"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+
+                {/* Eye Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-800"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Error */}
+            {error && <p className="text-red-500 text-sm text-center font-medium">{error}</p>}
+
+            {/* Success */}
+            {message && (
+              <p className="text-green-500 text-sm text-center font-medium">{message}</p>
+            )}
+
+            {/* Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#465466] text-white py-[10px] rounded font-semibold hover:bg-[#334155] transition disabled:opacity-60 flex items-center justify-center gap-2 text-sm mt-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Registering...</span>
+                </>
+              ) : (
+                "Register Now"
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center my-6">
+            <hr className="flex-grow border-slate-200" />
+            <span className="mx-3 text-slate-600 text-xs font-medium">continue with:</span>
+            <hr className="flex-grow border-slate-200" />
           </div>
 
-          {/* Error */}
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-
-          {/* Success */}
-          {message && (
-            <p className="text-green-500 text-sm text-center">{message}</p>
-          )}
-
-          {/* Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-60 flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Creating Account...</span>
-              </>
-            ) : (
-              "Register"
-            )}
-          </button>
-        </form>
-
-        {/* Login Link */}
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-blue-600 font-semibold hover:underline"
-          >
-            Login
-          </Link>
-        </p>
-
-        {/* Divider */}
-        <div className="flex items-center my-4">
-          <hr className="flex-grow border-gray-300" />
-
-          <span className="mx-2 text-gray-400 text-sm">OR</span>
-
-          <hr className="flex-grow border-gray-300" />
-        </div>
-
-        {/* Google Login */}
-        <div className="flex justify-center">
-          <GoogleLogin />
+          {/* Google Login */}
+          <div className="flex justify-center space-x-4 mb-2">
+            <GoogleLogin />
+          </div>
         </div>
       </div>
+
+      {/* Right side: Image */}
+      <div className="hidden lg:block lg:w-1/2 relative bg-[#111827]">
+        <img
+          src={sideImage}
+          alt="Join LinkBT"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      </div>
+
     </div>
   );
 };
