@@ -22,8 +22,23 @@ const app = (
 
 const root = document.getElementById("root")!;
 
-if (root.hasChildNodes()) {
+const prerenderedRoutes = [
+  "/",
+  "/contact",
+  "/terms",
+  "/privacy-policy",
+  "/login",
+  "/register",
+  "/forgot-password",
+];
+
+const isPrerenderedRoute =
+  typeof window !== "undefined" &&
+  prerenderedRoutes.includes(window.location.pathname);
+
+if (root.hasChildNodes() && isPrerenderedRoute) {
   hydrateRoot(root, app);
 } else {
+  root.innerHTML = "";
   createRoot(root).render(app);
 }
