@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import CreatableSelect from "react-select/creatable";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { QrCode, AlertCircle, CheckCircle, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
@@ -13,6 +14,7 @@ import {
 let memoryGuestUrlResult: any = null;
 
 export default function ShortenCard({ onUrlCreated }: any) {
+  const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -95,15 +97,8 @@ export default function ShortenCard({ onUrlCreated }: any) {
   /* ============================= */
 
   const resetCaptcha = () => {
-
-    if (!isAuthenticated) {
-
-      setCaptchaToken("");
-
-      turnstileRef.current?.reset();
-
-    }
-
+    setCaptchaToken("");
+    turnstileRef.current?.reset();
   };
 
 
@@ -192,12 +187,13 @@ export default function ShortenCard({ onUrlCreated }: any) {
 
   const handleCreate = async () => {
 
-
     setError("");
-
     setResult(null);
 
-
+    if (!isAuthenticated) {
+      navigate("/login", { state: { message: "Please login first" } });
+      return;
+    }
 
     if (!longUrl.trim()) {
 
@@ -247,28 +243,12 @@ export default function ShortenCard({ onUrlCreated }: any) {
 
 
 
-    if (isAuthenticated) {
-
-      await performCreate();
-
-      return;
-
-    }
-
-
-
-
-
-    if (!captchaToken) {
+    if (siteKey && !captchaToken) {
       setError(
         "Please complete the CAPTCHA verification."
       );
       return;
     }
-
-
-
-
 
     await performCreate(captchaToken);
 
@@ -437,7 +417,7 @@ export default function ShortenCard({ onUrlCreated }: any) {
           </button>
         </div>
 
-        {!isAuthenticated && siteKey && (
+        {isAuthenticated && siteKey && (
           <div className="mb-4 flex justify-center">
             <Turnstile
               ref={turnstileRef}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { loginUser } from "../services/authService";
 import GoogleLogin from "../components/auth/GoogleLogin";
@@ -8,9 +8,10 @@ import logo from "../assets/logo.png";
 import sideImage from "../assets/WhatsApp Image 2026-09-10 at 1.38.57 PM.jpeg";
 
 const Login = () => {
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(location.state?.message || "");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [isBlocked, setIsBlocked] = useState(false);

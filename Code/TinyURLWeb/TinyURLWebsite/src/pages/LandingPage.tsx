@@ -85,7 +85,7 @@ export default function LandingPage() {
                 to="/register"
                 className="bg-blue-600 font-semibold text-white px-8 py-3.5 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-600/30"
               >
-                Get Started Free
+                Sign Up
               </Link>
 
               <Link

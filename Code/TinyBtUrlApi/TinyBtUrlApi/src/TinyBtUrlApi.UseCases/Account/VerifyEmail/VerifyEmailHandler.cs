@@ -23,6 +23,16 @@ public class VerifyEmailHandler
     if (user == null)
       return "Invalid or expired token.";
 
+    // Check expiration timestamp (format: <guid>.<unixExpiry>)
+    var parts = query.Token.Split('.');
+    if (parts.Length == 2 && long.TryParse(parts[1], out var expiryUnix))
+    {
+      if (DateTimeOffset.UtcNow.ToUnixTimeSeconds() > expiryUnix)
+      {
+        return "Verification link has expired. Please sign up or request a new verification email.";
+      }
+    }
+
     user.IsEmailVerified = true;
     user.EmailVerificationToken = null;
 

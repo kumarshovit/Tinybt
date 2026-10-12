@@ -46,8 +46,8 @@ apiClient.interceptors.response.use(
 );
 
 // 🔹 Register
-export const registerUser = async (email: string, password: string) => {
-  const response = await apiClient.post("/register", { email, password });
+export const registerUser = async (email: string, password: string, captchaToken?: string) => {
+  const response = await apiClient.post("/register", { email, password, captchaToken });
   return response.data;
 };
 
@@ -103,6 +103,6 @@ export const logoutUser = async () => {
 
   localStorage.removeItem("token");
   localStorage.removeItem("refreshToken");
-  
+
 };
 export default apiClient;

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Turnstile } from "@marsidev/react-turnstile";
 import { registerUser } from "../services/authService";
 import { validateEmail, validatePassword } from "../utils/validators";
 import GoogleLogin from "../components/auth/GoogleLogin";
@@ -19,6 +20,11 @@ const Register = () => {
 
   // ✅ Show/Hide Password
   const [showPassword, setShowPassword] = useState(false);
+
+  // ✅ Turnstile CAPTCHA
+  const [captchaToken, setCaptchaToken] = useState("");
+  const turnstileRef = useRef<any>(null);
+  const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY || "";
 
   const navigate = useNavigate();
 
@@ -40,21 +46,28 @@ const Register = () => {
       return setError("Passwords do not match");
     }
 
+    if (siteKey && !captchaToken) {
+      return setError("Please complete the CAPTCHA verification.");
+    }
+
     try {
       setLoading(true);
 
-      const response = await registerUser(email, password);
+      const response = await registerUser(email, password, captchaToken);
 
       setMessage(response.message);
 
       setEmail("");
       setPassword("");
+      setCaptchaToken("");
 
       setTimeout(() => {
         navigate("/login");
       }, 2000);
     } catch (err: any) {
       setError(err.response?.data?.message || "Registration failed");
+      turnstileRef.current?.reset();
+      setCaptchaToken("");
     } finally {
       setLoading(false);
     }
@@ -172,6 +185,27 @@ const Register = () => {
             {/* Success */}
             {message && (
               <p className="text-green-500 text-sm text-center font-medium">{message}</p>
+            )}
+
+            {/* CAPTCHA */}
+            {siteKey && (
+              <div className="mb-2 flex justify-center">
+                <Turnstile
+                  ref={turnstileRef}
+                  siteKey={siteKey}
+                  onSuccess={(token) => {
+                    setCaptchaToken(token);
+                    setError("");
+                  }}
+                  onError={() => {
+                    setError("CAPTCHA verification failed.");
+                    setCaptchaToken("");
+                  }}
+                  onExpire={() => {
+                    setCaptchaToken("");
+                  }}
+                />
+              </div>
             )}
 
             {/* Button */}

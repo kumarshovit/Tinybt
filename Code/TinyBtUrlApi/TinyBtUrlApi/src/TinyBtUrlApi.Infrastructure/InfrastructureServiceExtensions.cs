@@ -72,6 +72,10 @@ public static class InfrastructureServiceExtensions
     services.Configure<GoogleSafeBrowsingOptions>(config.GetSection("GoogleSafeBrowsing"));
     services.AddHttpClient<IGoogleSafeBrowsingService, GoogleSafeBrowsingService>();
 
+    // Email Validation
+    services.Configure<AbstractEmailValidationOptions>(config.GetSection("AbstractEmailValidation"));
+    services.AddHttpClient<IEmailValidationService, AbstractEmailValidationService>();
+
     // Redirect Resolution
     services.AddHttpClient<IUrlRedirectResolver, UrlRedirectResolver>()
         .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler

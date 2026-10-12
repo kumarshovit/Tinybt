@@ -44,8 +44,10 @@ public static class ServiceConfigs
         new RegisterHandler(
             sp.GetRequiredService<IRepository<User>>(),
             sp.GetRequiredService<IEmailSender>(),
+            sp.GetRequiredService<IEmailValidationService>(),
             frontendUrl!,
-            smtpFrom!
+            smtpFrom!,
+            sp.GetService<ICaptchaService>()
         ));
 
     services.AddScoped<LogoutHandler>();

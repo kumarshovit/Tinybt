@@ -15,4 +15,6 @@ public class RegisterDto
       ErrorMessage = "Password must contain at least 8 characters, including uppercase, lowercase, number, and special character."
   )]
   public string Password { get; set; } = string.Empty;
+
+  public string? CaptchaToken { get; set; }
 }
