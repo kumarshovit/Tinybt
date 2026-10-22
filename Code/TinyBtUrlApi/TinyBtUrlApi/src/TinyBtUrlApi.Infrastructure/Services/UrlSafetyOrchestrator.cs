@@ -14,6 +14,7 @@ public class UrlSafetyOrchestrator : IUrlSafetyOrchestrator
 {
     private readonly IUrlhausService _urlhausService;
     private readonly IGoogleSafeBrowsingService _safeBrowsingService;
+    private readonly ICloudflareUrlScannerService _cloudflareScanner;
     private readonly IUrlRepository _urlRepository;
     private readonly IOptions<SafetyRecheckOptions> _recheckOptions;
     private readonly ILogger<UrlSafetyOrchestrator> _logger;
@@ -21,12 +22,14 @@ public class UrlSafetyOrchestrator : IUrlSafetyOrchestrator
     public UrlSafetyOrchestrator(
         IUrlhausService urlhausService,
         IGoogleSafeBrowsingService safeBrowsingService,
+        ICloudflareUrlScannerService cloudflareScanner,
         IUrlRepository urlRepository,
         IOptions<SafetyRecheckOptions> recheckOptions,
         ILogger<UrlSafetyOrchestrator> logger)
     {
         _urlhausService = urlhausService;
         _safeBrowsingService = safeBrowsingService;
+        _cloudflareScanner = cloudflareScanner;
         _urlRepository = urlRepository;
         _recheckOptions = recheckOptions;
         _logger = logger;
@@ -74,6 +77,29 @@ public class UrlSafetyOrchestrator : IUrlSafetyOrchestrator
         {
             _logger.LogError(ex, "Error while checking URLs against Google Safe Browsing.");
             return UrlSafetyCheckResult.ApiError("Google Safe Browsing verification failed due to error.");
+        }
+
+        // 3. Cloudflare URL Scanner check
+        try
+        {
+            foreach (var u in urlList)
+            {
+                var cfResult = await _cloudflareScanner.QuickCheckUrlAsync(u, cancellationToken);
+                if (cfResult.IsMalicious)
+                {
+                    _logger.LogWarning("Cloudflare URL Scanner blocked URL: {Url}, Categories: {Categories}",
+                        u, string.Join(", ", cfResult.Categories));
+                    return UrlSafetyCheckResult.Unsafe(
+                        "cloudflare_url_scanner",
+                        string.Join("_", cfResult.Categories),
+                        u,
+                        cfResult.Description ?? "Identified as malicious by Cloudflare URL Scanner.");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error while checking URLs against Cloudflare URL Scanner.");
         }
 
         return UrlSafetyCheckResult.Safe();

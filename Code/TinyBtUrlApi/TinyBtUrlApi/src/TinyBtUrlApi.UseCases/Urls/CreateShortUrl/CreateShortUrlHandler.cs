@@ -18,6 +18,7 @@ public class CreateShortUrlHandler
   private readonly IGoogleSafeBrowsingService _safeBrowsingService;
   private readonly IUrlRedirectResolver _urlRedirectResolver;
   private readonly IUrlhausService _urlhausService;
+  private readonly ICloudflareUrlScannerService _cloudflareScanner;
 
   public CreateShortUrlHandler(
       IUrlRepository repo,
@@ -27,7 +28,8 @@ public class CreateShortUrlHandler
       ICaptchaService captchaService,
       IGoogleSafeBrowsingService safeBrowsingService,
       IUrlRedirectResolver urlRedirectResolver,
-      IUrlhausService urlhausService)
+      IUrlhausService urlhausService,
+      ICloudflareUrlScannerService cloudflareScanner)
   {
     _repo = repo;
     _shortCodeService = shortCodeService;
@@ -37,6 +39,7 @@ public class CreateShortUrlHandler
     _safeBrowsingService = safeBrowsingService;
     _urlRedirectResolver = urlRedirectResolver;
     _urlhausService = urlhausService;
+    _cloudflareScanner = cloudflareScanner;
   }
 
   public async ValueTask<CreateShortUrlResult> Handle(
@@ -125,6 +128,20 @@ public class CreateShortUrlHandler
         Success = false,
         Message = urlhausResult.Description ?? "The URL has been identified as a malware distribution URL."
       };
+    }
+
+    // 🔹 1.5 Cloudflare URL Scanner behavioral and network validation
+    foreach (var urlToCheck in urlsToCheck)
+    {
+      var cloudflareResult = await _cloudflareScanner.QuickCheckUrlAsync(urlToCheck, ct);
+      if (cloudflareResult.IsMalicious)
+      {
+        return new CreateShortUrlResult
+        {
+          Success = false,
+          Message = cloudflareResult.Description ?? "The destination URL or a redirect hop has been identified as malicious by Cloudflare URL Scanner."
+        };
+      }
     }
 
     string shortCode;

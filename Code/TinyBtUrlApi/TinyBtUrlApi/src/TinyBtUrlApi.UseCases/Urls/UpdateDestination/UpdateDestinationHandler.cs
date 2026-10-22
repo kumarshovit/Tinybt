@@ -12,17 +12,23 @@ public class UpdateDestinationHandler : IRequestHandler<UpdateDestinationCommand
   private readonly IUrlSecurityValidator _urlSecurityValidator;
   private readonly IUrlRedirectResolver _urlRedirectResolver;
   private readonly IGoogleSafeBrowsingService _safeBrowsingService;
+  private readonly IUrlhausService _urlhausService;
+  private readonly ICloudflareUrlScannerService _cloudflareScanner;
 
   public UpdateDestinationHandler(
       IUrlRepository repo,
       IUrlSecurityValidator urlSecurityValidator,
       IUrlRedirectResolver urlRedirectResolver,
-      IGoogleSafeBrowsingService safeBrowsingService)
+      IGoogleSafeBrowsingService safeBrowsingService,
+      IUrlhausService urlhausService,
+      ICloudflareUrlScannerService cloudflareScanner)
   {
     _repo = repo;
     _urlSecurityValidator = urlSecurityValidator;
     _urlRedirectResolver = urlRedirectResolver;
     _safeBrowsingService = safeBrowsingService;
+    _urlhausService = urlhausService;
+    _cloudflareScanner = cloudflareScanner;
   }
 
   public async ValueTask<bool> Handle(UpdateDestinationCommand request, CancellationToken ct)
@@ -49,6 +55,17 @@ public class UpdateDestinationHandler : IRequestHandler<UpdateDestinationCommand
 
     var safeBrowsingResult = await _safeBrowsingService.CheckUrlsAsync(urlsToCheck, ct);
     if (!safeBrowsingResult.IsSafe) return false;
+
+    // Check URLhaus on all hops
+    var urlhausResult = await _urlhausService.CheckUrlsAsync(urlsToCheck, ct);
+    if (!urlhausResult.IsSafe) return false;
+
+    // Check Cloudflare on all hops
+    foreach (var urlToCheck in urlsToCheck)
+    {
+      var cloudflareResult = await _cloudflareScanner.QuickCheckUrlAsync(urlToCheck, ct);
+      if (cloudflareResult.IsMalicious) return false;
+    }
 
     url.LongUrl = normalizedUrl;
     await _repo.UpdateAsync(url);

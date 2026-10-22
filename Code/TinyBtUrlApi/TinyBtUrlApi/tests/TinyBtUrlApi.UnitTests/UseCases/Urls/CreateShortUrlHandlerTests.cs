@@ -19,6 +19,7 @@ public class CreateShortUrlHandlerTests
     private readonly IGoogleSafeBrowsingService _safeBrowsingService = Substitute.For<IGoogleSafeBrowsingService>();
     private readonly IUrlRedirectResolver _redirectResolver = Substitute.For<IUrlRedirectResolver>();
     private readonly IUrlhausService _urlhausService = Substitute.For<IUrlhausService>();
+    private readonly ICloudflareUrlScannerService _cloudflareScanner = Substitute.For<ICloudflareUrlScannerService>();
 
     private readonly CreateShortUrlHandler _handler;
 
@@ -32,7 +33,8 @@ public class CreateShortUrlHandlerTests
             _captchaService,
             _safeBrowsingService,
             _redirectResolver,
-            _urlhausService);
+            _urlhausService,
+            _cloudflareScanner);
 
         _captchaService.VerifyTokenAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(true);
@@ -42,6 +44,9 @@ public class CreateShortUrlHandlerTests
 
         _urlhausService.CheckUrlsAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(new UrlhausResult { IsSafe = true }));
+
+        _cloudflareScanner.QuickCheckUrlAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(CloudflareScanResult.Safe()));
     }
 
     [Fact]
@@ -153,5 +158,44 @@ public class CreateShortUrlHandlerTests
         result.Message.ShouldNotBeNull();
         result.Message.ShouldContain("URLhaus");
         result.Message.ShouldContain(malwareHop);
+    }
+
+    [Fact]
+    public async Task Handle_MaliciousUrlFlaggedByCloudflare_RejectsShortUrlCreation()
+    {
+        // Arrange
+        var targetUrl = "https://allegro-lokalnie.black951ibg.sbs/";
+
+        _redirectResolver.ResolveChainAsync(targetUrl, Arg.Any<CancellationToken>())
+            .Returns(UrlRedirectResolutionResult.CreateSuccess(targetUrl, new List<string> { targetUrl }));
+
+        _safeBrowsingService.CheckUrlsAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+            .Returns(new SafeBrowsingResult { IsSafe = true });
+
+        _urlhausService.CheckUrlsAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new UrlhausResult { IsSafe = true }));
+
+        _cloudflareScanner.QuickCheckUrlAsync(targetUrl, Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(CloudflareScanResult.Malicious(
+                "test-uuid-123",
+                new List<string> { "Phishing" },
+                "The destination URL has been identified as malicious by Cloudflare URL Scanner.")));
+
+        var command = new CreateShortUrlCommand(
+            LongUrl: targetUrl,
+            CustomAlias: null,
+            ExpirationDate: null,
+            UserId: 1,
+            IpAddress: "1.2.3.4",
+            CaptchaToken: null,
+            Password: null);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Success.ShouldBeFalse();
+        result.Message.ShouldNotBeNull();
+        result.Message.ShouldContain("Cloudflare URL Scanner");
     }
 }

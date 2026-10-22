@@ -14,6 +14,7 @@
       CS1591;
       NETSDK1206
     </NoWarn>
+    <UserSecretsId>509dde81-6565-48b1-b701-9eaf907f9fb0</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

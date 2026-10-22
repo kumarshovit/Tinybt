@@ -119,6 +119,13 @@ public class UrlSafetyRecheckBackgroundService : BackgroundService
                     var cloudflareScanner = scope.ServiceProvider.GetService<ICloudflareUrlScannerService>();
                     if (cloudflareScanner != null)
                     {
+                        var cfOptions = scope.ServiceProvider.GetService<IOptions<CloudflareUrlScannerOptions>>()?.Value;
+                        var delayMs = cfOptions?.DelayBetweenScansMs ?? 3000;
+                        if (delayMs > 0)
+                        {
+                            await Task.Delay(delayMs, cancellationToken);
+                        }
+
                         var cfResult = await cloudflareScanner.ScanAndPollAsync(url.LongUrl, cancellationToken);
                         if (cfResult.IsMalicious)
                         {

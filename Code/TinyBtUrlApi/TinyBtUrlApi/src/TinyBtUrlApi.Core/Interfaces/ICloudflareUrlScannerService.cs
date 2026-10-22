@@ -22,4 +22,16 @@ public interface ICloudflareUrlScannerService
     /// Submits and polls until scan completion or timeout. Recommended for background workers.
     /// </summary>
     Task<CloudflareScanResult> ScanAndPollAsync(string url, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Searches existing Cloudflare URL scan intelligence for a given URL or domain.
+    /// Returns cached scan verdict if found, or null if no previous scan exists.
+    /// </summary>
+    Task<CloudflareScanResult?> SearchScanAsync(string url, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Fast check for URL creation or real-time evaluation: checks search cache first,
+    /// submits scan, and polls up to a short fast-timeout (default 5s) before failing open.
+    /// </summary>
+    Task<CloudflareScanResult> QuickCheckUrlAsync(string url, CancellationToken cancellationToken = default);
 }
