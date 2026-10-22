@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using TinyBtUrlApi.Web.Extensions;
 
 namespace TinyBtUrlApi.Web.Configurations;
 
@@ -17,6 +18,12 @@ public static class RateLimitConfigs
   /// Separated from key management because URL creation is a different workload.
   /// </summary>
   public const string DeveloperApiUrlCreationPolicy = "DeveloperApiUrlCreationRateLimit";
+
+  /// <summary>
+  /// Policy name applied to Public URL creation endpoint (/api/urls).
+  /// Enforces per-IP volumetric rate limits to prevent automated flooding.
+  /// </summary>
+  public const string PublicUrlCreationPolicy = "PublicUrlCreationRateLimit";
 
 
   public static IServiceCollection AddDeveloperApiRateLimiting(
@@ -99,6 +106,27 @@ public static class RateLimitConfigs
           {
             PermitLimit = urlCreationPermitLimit.Value,
             Window = TimeSpan.FromSeconds(urlCreationWindowInSeconds.Value),
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 0
+          });
+      });
+
+      // Public URL Creation Policy (per IP address)
+      var publicSection = configuration.GetSection("PublicUrlCreation:RateLimiting");
+      var publicPermitLimit = publicSection.GetValue<int?>("PermitLimit") ?? 30;
+      var publicWindowInSeconds = publicSection.GetValue<int?>("WindowInSeconds") ?? 60;
+
+      options.AddPolicy(PublicUrlCreationPolicy, httpContext =>
+      {
+        var clientIp = httpContext.GetClientIpAddress();
+        var partitionKey = $"public_url_{clientIp}";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+          partitionKey,
+          _ => new FixedWindowRateLimiterOptions
+          {
+            PermitLimit = publicPermitLimit,
+            Window = TimeSpan.FromSeconds(publicWindowInSeconds),
             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
             QueueLimit = 0
           });

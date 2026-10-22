@@ -133,6 +133,9 @@ public class CloudflareScanPage
 
 public class CloudflareScanSearchResponse
 {
+    [JsonPropertyName("results")]
+    public List<CloudflareScanSearchItem>? Results { get; set; }
+
     [JsonPropertyName("success")]
     public bool Success { get; set; }
 
@@ -151,6 +154,9 @@ public class CloudflareScanSearchResult
 
 public class CloudflareScanSearchItem
 {
+    [JsonPropertyName("task")]
+    public CloudflareScanTask? Task { get; set; }
+
     [JsonPropertyName("uuid")]
     public string? Uuid { get; set; }
 

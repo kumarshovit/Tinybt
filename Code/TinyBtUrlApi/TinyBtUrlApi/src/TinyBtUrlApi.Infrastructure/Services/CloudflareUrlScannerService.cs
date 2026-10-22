@@ -148,7 +148,8 @@ public class CloudflareUrlScannerService : ICloudflareUrlScannerService
                 return null;
 
             var searchResult = await response.Content.ReadFromJsonAsync<CloudflareScanSearchResponse>(cancellationToken: cancellationToken);
-            var item = searchResult?.Result?.Tasks?.FirstOrDefault();
+            var item = searchResult?.Results?.FirstOrDefault() ?? searchResult?.Result?.Tasks?.FirstOrDefault();
+            var uuid = item?.Task?.Uuid ?? item?.Uuid ?? string.Empty;
             if (item?.Verdicts != null)
             {
                 var isMalicious = item.Verdicts.Malicious == true || item.Verdicts.Overall?.Malicious == true;
@@ -156,13 +157,13 @@ public class CloudflareUrlScannerService : ICloudflareUrlScannerService
                 {
                     var categories = item.Verdicts.Categories ?? item.Verdicts.Overall?.Categories ?? new List<string> { "Malicious" };
                     return CloudflareScanResult.Malicious(
-                        item.Uuid ?? string.Empty,
+                        uuid,
                         categories,
-                        $"Cloudflare URL Scanner historical verdict: Malicious ({string.Join(", ", categories)})"
+                        $"Cloudflare URL Scanner verdict: Malicious ({string.Join(", ", categories)})"
                     );
                 }
 
-                return CloudflareScanResult.Safe(item.Uuid);
+                return CloudflareScanResult.Safe(uuid);
             }
 
             return null;

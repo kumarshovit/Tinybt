@@ -20,6 +20,7 @@ public class CreateShortUrlHandlerTests
     private readonly IUrlRedirectResolver _redirectResolver = Substitute.For<IUrlRedirectResolver>();
     private readonly IUrlhausService _urlhausService = Substitute.For<IUrlhausService>();
     private readonly ICloudflareUrlScannerService _cloudflareScanner = Substitute.For<ICloudflareUrlScannerService>();
+    private readonly IUrlAbuseTrackingService _abuseTrackingService = Substitute.For<IUrlAbuseTrackingService>();
 
     private readonly CreateShortUrlHandler _handler;
 
@@ -34,7 +35,13 @@ public class CreateShortUrlHandlerTests
             _safeBrowsingService,
             _redirectResolver,
             _urlhausService,
-            _cloudflareScanner);
+            _cloudflareScanner,
+            _abuseTrackingService);
+
+        TimeSpan? retryAfter = null;
+        string? reason = null;
+        _abuseTrackingService.IsIpBlocked(Arg.Any<string?>(), out retryAfter, out reason)
+            .Returns(false);
 
         _captchaService.VerifyTokenAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(true);
@@ -197,5 +204,78 @@ public class CreateShortUrlHandlerTests
         result.Success.ShouldBeFalse();
         result.Message.ShouldNotBeNull();
         result.Message.ShouldContain("Cloudflare URL Scanner");
+    }
+
+    [Fact]
+    public async Task Handle_WhenIpIsBlocked_RejectsImmediatelyWithoutCheckingThreatApis()
+    {
+        // Arrange
+        var testIp = "203.0.113.42";
+        TimeSpan? retryAfter = TimeSpan.FromMinutes(12);
+        string? reason = "IP blocked due to spam.";
+
+        _abuseTrackingService.IsIpBlocked(testIp, out Arg.Any<TimeSpan?>(), out Arg.Any<string?>())
+            .Returns(x =>
+            {
+                x[1] = retryAfter;
+                x[2] = reason;
+                return true;
+            });
+
+        var command = new CreateShortUrlCommand(
+            LongUrl: "https://example.com/safe-page",
+            CustomAlias: null,
+            ExpirationDate: null,
+            UserId: 1,
+            IpAddress: testIp,
+            CaptchaToken: null,
+            Password: null);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Success.ShouldBeFalse();
+        result.IsBlocked.ShouldBeTrue();
+        result.RetryAfterSeconds.ShouldBe((int)retryAfter.Value.TotalSeconds);
+        result.Message.ShouldContain("IP blocked due to spam.");
+
+        // Verify threat APIs were NOT called (saves quota and latency)
+        await _safeBrowsingService.DidNotReceiveWithAnyArgs().CheckUrlsAsync(default!, default);
+        await _urlhausService.DidNotReceiveWithAnyArgs().CheckUrlsAsync(default!, default);
+    }
+
+    [Fact]
+    public async Task Handle_WhenThreatDetected_RecordsMaliciousAttemptForIp()
+    {
+        // Arrange
+        var testIp = "198.51.100.99";
+        var maliciousUrl = "https://malware.testing.google.test/malware";
+
+        _redirectResolver.ResolveChainAsync(maliciousUrl, Arg.Any<CancellationToken>())
+            .Returns(UrlRedirectResolutionResult.CreateSuccess(maliciousUrl, new List<string> { maliciousUrl }));
+
+        _safeBrowsingService.CheckUrlsAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+            .Returns(new SafeBrowsingResult { IsSafe = false, ThreatType = "MALWARE", FlaggedUrl = maliciousUrl });
+
+        var command = new CreateShortUrlCommand(
+            LongUrl: maliciousUrl,
+            CustomAlias: null,
+            ExpirationDate: null,
+            UserId: 1,
+            IpAddress: testIp,
+            CaptchaToken: null,
+            Password: null);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Success.ShouldBeFalse();
+        _abuseTrackingService.Received(1).RecordMaliciousAttempt(
+            testIp,
+            maliciousUrl,
+            "GoogleSafeBrowsing",
+            "MALWARE");
     }
 }

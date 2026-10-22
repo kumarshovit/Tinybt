@@ -10,6 +10,7 @@ using TinyBtUrlApi.Web.Auth.ApiKey;
 using TinyBtUrlApi.Web.Configurations;
 using TinyBtUrlApi.Web.Endpoints.ApiKeys.Urls.Requests;
 using TinyBtUrlApi.Web.Endpoints.ApiKeys.Urls.Responses;
+using TinyBtUrlApi.Web.Extensions;
 
 namespace TinyBtUrlApi.Web.Endpoints.ApiKeys.Urls;
 
@@ -45,7 +46,7 @@ public class CreateDeveloperShortUrlEndpoint
             return;
         }
 
-        var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var ipAddress = HttpContext.GetClientIpAddress();
 
         // Push directly into the existing business logic layer
         var command = new CreateShortUrlCommand(
@@ -62,7 +63,19 @@ public class CreateDeveloperShortUrlEndpoint
 
         if (!result.Success)
         {
-            HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            if (result.IsBlocked)
+            {
+                HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                if (result.RetryAfterSeconds.HasValue)
+                {
+                    HttpContext.Response.Headers.RetryAfter = result.RetryAfterSeconds.Value.ToString();
+                }
+            }
+            else
+            {
+                HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            }
+
             await HttpContext.Response.WriteAsJsonAsync(new { message = result.Message }, ct);
             return;
         }

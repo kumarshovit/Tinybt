@@ -19,6 +19,7 @@ public class CreateShortUrlHandler
   private readonly IUrlRedirectResolver _urlRedirectResolver;
   private readonly IUrlhausService _urlhausService;
   private readonly ICloudflareUrlScannerService _cloudflareScanner;
+  private readonly IUrlAbuseTrackingService _abuseTrackingService;
 
   public CreateShortUrlHandler(
       IUrlRepository repo,
@@ -29,7 +30,8 @@ public class CreateShortUrlHandler
       IGoogleSafeBrowsingService safeBrowsingService,
       IUrlRedirectResolver urlRedirectResolver,
       IUrlhausService urlhausService,
-      ICloudflareUrlScannerService cloudflareScanner)
+      ICloudflareUrlScannerService cloudflareScanner,
+      IUrlAbuseTrackingService abuseTrackingService)
   {
     _repo = repo;
     _shortCodeService = shortCodeService;
@@ -40,12 +42,25 @@ public class CreateShortUrlHandler
     _urlRedirectResolver = urlRedirectResolver;
     _urlhausService = urlhausService;
     _cloudflareScanner = cloudflareScanner;
+    _abuseTrackingService = abuseTrackingService;
   }
 
   public async ValueTask<CreateShortUrlResult> Handle(
       CreateShortUrlCommand request,
       CancellationToken ct)
   {
+    // 🔹 -1. IP Abuse & Malicious Lockout Check (Fails immediately without hitting external APIs or DB)
+    if (_abuseTrackingService.IsIpBlocked(request.IpAddress, out var retryAfter, out var blockReason))
+    {
+      return new CreateShortUrlResult
+      {
+        Success = false,
+        IsBlocked = true,
+        RetryAfterSeconds = (int?)retryAfter?.TotalSeconds,
+        Message = blockReason ?? $"Your IP address is temporarily blocked due to multiple malicious URL submissions. Please try again in {Math.Ceiling(retryAfter?.TotalMinutes ?? 0)} minute(s)."
+      };
+    }
+
     // 🔹 0. CAPTCHA Validation for unauthenticated users
     if (request.UserId == null)
     {
@@ -112,6 +127,12 @@ public class CreateShortUrlHandler
     var safeBrowsingResult = await _safeBrowsingService.CheckUrlsAsync(urlsToCheck, ct);
     if (!safeBrowsingResult.IsSafe)
     {
+      _abuseTrackingService.RecordMaliciousAttempt(
+          request.IpAddress,
+          safeBrowsingResult.FlaggedUrl ?? normalizedUrl,
+          "GoogleSafeBrowsing",
+          safeBrowsingResult.ThreatType ?? "Unsafe");
+
       return new CreateShortUrlResult
       {
         Success = false,
@@ -123,6 +144,12 @@ public class CreateShortUrlHandler
     var urlhausResult = await _urlhausService.CheckUrlsAsync(urlsToCheck, ct);
     if (!urlhausResult.IsSafe)
     {
+      _abuseTrackingService.RecordMaliciousAttempt(
+          request.IpAddress,
+          urlhausResult.FlaggedUrl ?? normalizedUrl,
+          "URLhaus",
+          urlhausResult.ThreatType ?? "Malware");
+
       return new CreateShortUrlResult
       {
         Success = false,
@@ -136,6 +163,12 @@ public class CreateShortUrlHandler
       var cloudflareResult = await _cloudflareScanner.QuickCheckUrlAsync(urlToCheck, ct);
       if (cloudflareResult.IsMalicious)
       {
+        _abuseTrackingService.RecordMaliciousAttempt(
+            request.IpAddress,
+            urlToCheck,
+            "CloudflareURLScanner",
+            string.Join(",", cloudflareResult.Categories));
+
         return new CreateShortUrlResult
         {
           Success = false,

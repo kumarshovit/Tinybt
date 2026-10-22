@@ -3,6 +3,8 @@ using Mediator;
 using Microsoft.Extensions.Configuration;
 using TinyBtUrlApi.UseCases.Urls.CreateShortUrl;
 using System.Security.Claims;
+using TinyBtUrlApi.Web.Configurations;
+using TinyBtUrlApi.Web.Extensions;
 
 namespace TinyBtUrlApi.Web.Endpoints.Urls;
 
@@ -22,6 +24,7 @@ public class CreateShortUrlEndpoint
   {
     Post("/api/urls");
     AllowAnonymous();
+    Options(x => x.RequireRateLimiting(RateLimitConfigs.PublicUrlCreationPolicy));
     Description(x => x.WithTags("Url Management"));
   }
 
@@ -39,7 +42,7 @@ public class CreateShortUrlEndpoint
       }
     }
 
-    var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+    var ipAddress = HttpContext.GetClientIpAddress();
 
     var result = await _mediator.Send(
         new CreateShortUrlCommand(
@@ -54,10 +57,21 @@ public class CreateShortUrlEndpoint
         ct
     );
 
-    // 🔴 Validation fail case
+    // 🔴 Validation / Abuse fail case
     if (!result.Success)
     {
-      HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+      if (result.IsBlocked)
+      {
+        HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        if (result.RetryAfterSeconds.HasValue)
+        {
+          HttpContext.Response.Headers.RetryAfter = result.RetryAfterSeconds.Value.ToString();
+        }
+      }
+      else
+      {
+        HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+      }
 
       await HttpContext.Response.WriteAsJsonAsync(new
       {

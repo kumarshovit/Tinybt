@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -16,6 +16,8 @@ public record CreateShortUrlResult
   public DateTime? ExpirationDate { get; init; }
   public DateTime? CreatedAt { get; init; }
   public bool IsPasswordProtected { get; init; }
+  public bool IsBlocked { get; init; }
+  public int? RetryAfterSeconds { get; init; }
 }
 
 
