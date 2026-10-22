@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using TinyBtUrlApi.Core.DTOs;
@@ -89,4 +89,10 @@ public interface IUrlRepository
     DateTime? startDate,
     DateTime? endDate,
     CancellationToken ct);
+
+  // Safety Flagging & Verification
+  Task FlagUrlAsync(int urlId, string reason, CancellationToken ct = default);
+  Task UnflagUrlAsync(int urlId, CancellationToken ct = default);
+  Task UpdateLastSafetyCheckAsync(int urlId, CancellationToken ct = default);
+  Task<List<UrlMapping>> GetUrlsForSafetyRecheckAsync(int batchSize, CancellationToken ct = default);
 }

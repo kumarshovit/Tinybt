@@ -1,11 +1,13 @@
-﻿using Mediator;
+using Mediator;
 using TinyBtUrlApi.Core.Entities;
 using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Models;
 
 namespace TinyBtUrlApi.UseCases.Urls.RedirectUrl;
 
-public class RedirectUrlHandler(IUrlRepository repo)
+public class RedirectUrlHandler(
+    IUrlRepository repo,
+    IUrlSafetyOrchestrator safetyOrchestrator)
     : IRequestHandler<RedirectUrlQuery, RedirectResult>
 {
   public async ValueTask<RedirectResult> Handle(
@@ -21,9 +23,18 @@ public class RedirectUrlHandler(IUrlRepository repo)
         url.ExpirationDate.Value < DateTime.UtcNow)
       return new RedirectResult(RedirectStatus.Expired);
 
+    // 🛡️ Safety Flag Check — pre-existing flag
+    if (url.IsFlagged)
+      return new RedirectResult(RedirectStatus.Blocked, url, url.FlaggedReason);
+
     // 🔐 Password-protected — early exit, no click logged
     if (url.IsPasswordProtected)
       return new RedirectResult(RedirectStatus.PasswordProtected, url);
+
+    // 🛡️ Redirect-time safety recheck (with caching & auto-flagging handled by orchestrator)
+    var safetyResult = await safetyOrchestrator.CheckRedirectSafetyAsync(url, ct);
+    if (!safetyResult.IsSafe)
+      return new RedirectResult(RedirectStatus.Blocked, url, safetyResult.Description);
 
     url.ClickCount++;
 

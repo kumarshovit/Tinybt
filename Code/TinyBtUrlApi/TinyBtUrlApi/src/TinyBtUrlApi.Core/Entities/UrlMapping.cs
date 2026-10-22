@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using TinyBtUrlApi.Core.Models;
@@ -27,4 +27,10 @@ public class UrlMapping
   // Password Protection
   public bool IsPasswordProtected { get; set; } = false;
   public string? PasswordHash { get; set; }
+
+  // Safety Flagging
+  public bool IsFlagged { get; set; } = false;
+  public string? FlaggedReason { get; set; }
+  public DateTime? FlaggedAt { get; set; }
+  public DateTime? LastSafetyCheckAt { get; set; }
 }

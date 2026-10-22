@@ -4,6 +4,7 @@ using TinyBtUrlApi.Core.Entities;
 using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Models;
 using TinyBtUrlApi.Core.Services;
+
 namespace TinyBtUrlApi.UseCases.Urls.CreateShortUrl;
 
 public class CreateShortUrlHandler
@@ -16,6 +17,7 @@ public class CreateShortUrlHandler
   private readonly ICaptchaService _captchaService;
   private readonly IGoogleSafeBrowsingService _safeBrowsingService;
   private readonly IUrlRedirectResolver _urlRedirectResolver;
+  private readonly IUrlhausService _urlhausService;
 
   public CreateShortUrlHandler(
       IUrlRepository repo,
@@ -24,7 +26,8 @@ public class CreateShortUrlHandler
       IUrlSecurityValidator urlSecurityValidator,
       ICaptchaService captchaService,
       IGoogleSafeBrowsingService safeBrowsingService,
-      IUrlRedirectResolver urlRedirectResolver)
+      IUrlRedirectResolver urlRedirectResolver,
+      IUrlhausService urlhausService)
   {
     _repo = repo;
     _shortCodeService = shortCodeService;
@@ -33,6 +36,7 @@ public class CreateShortUrlHandler
     _captchaService = captchaService;
     _safeBrowsingService = safeBrowsingService;
     _urlRedirectResolver = urlRedirectResolver;
+    _urlhausService = urlhausService;
   }
 
   public async ValueTask<CreateShortUrlResult> Handle(
@@ -109,6 +113,17 @@ public class CreateShortUrlHandler
       {
         Success = false,
         Message = safeBrowsingResult.Description ?? "The destination URL or a redirect hop has been identified as unsafe."
+      };
+    }
+
+    // 🔹 1.4 URLhaus (abuse.ch) malware database validation for all hops
+    var urlhausResult = await _urlhausService.CheckUrlsAsync(urlsToCheck, ct);
+    if (!urlhausResult.IsSafe)
+    {
+      return new CreateShortUrlResult
+      {
+        Success = false,
+        Message = urlhausResult.Description ?? "The URL has been identified as a malware distribution URL."
       };
     }
 

@@ -1,4 +1,4 @@
-﻿using TinyBtUrlApi.Core.Interfaces;
+using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Options;
 using TinyBtUrlApi.Core.Services;
 using TinyBtUrlApi.Infrastructure.Data;
@@ -71,6 +71,25 @@ public static class InfrastructureServiceExtensions
 
     services.Configure<GoogleSafeBrowsingOptions>(config.GetSection("GoogleSafeBrowsing"));
     services.AddHttpClient<IGoogleSafeBrowsingService, GoogleSafeBrowsingService>();
+
+    // URLhaus (abuse.ch) Malware URL Database
+    services.Configure<UrlhausOptions>(config.GetSection("Urlhaus"));
+    services.AddSingleton<UrlhausFeedStore>();
+    services.AddHostedService<UrlhausBackgroundService>();
+    services.AddScoped<IUrlhausService, UrlhausService>();
+    services.AddHttpClient("UrlhausFeed");
+
+    // URL Safety Orchestrator (combines URLhaus + GSB for quick rechecks)
+    services.Configure<SafetyRecheckOptions>(config.GetSection("SafetyRecheck"));
+    services.AddScoped<IUrlSafetyOrchestrator, UrlSafetyOrchestrator>();
+
+    // Background Periodic URL Safety Recheck Job
+    services.Configure<BackgroundRecheckOptions>(config.GetSection("BackgroundRecheck"));
+    services.AddHostedService<UrlSafetyRecheckBackgroundService>();
+
+    // Cloudflare URL Scanner (Behavioral & Network scanning)
+    services.Configure<CloudflareUrlScannerOptions>(config.GetSection("CloudflareUrlScanner"));
+    services.AddHttpClient<ICloudflareUrlScannerService, CloudflareUrlScannerService>();
 
     // Email Validation
     services.Configure<AbstractEmailValidationOptions>(config.GetSection("AbstractEmailValidation"));

@@ -197,6 +197,99 @@ public class UrlRedirectResolverTests
         result.ErrorMessage.ShouldContain("flagged as malicious/spam");
     }
 
+    [Fact]
+    public async Task ResolveChainAsync_JavaScriptLocationReplace_FollowsRedirect()
+    {
+        // Arrange
+        var handler = new MockHttpMessageHandler(req =>
+        {
+            if (req.RequestUri?.ToString() == "https://cloaked-landing.com/")
+            {
+                var html = @"<!DOCTYPE html><html><head><script>location.replace('https://real-destination.com/login');</script></head><body>Loading...</body></html>";
+                var resp = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(html, System.Text.Encoding.UTF8, "text/html")
+                };
+                return resp;
+            }
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+
+        var client = new HttpClient(handler);
+        var resolver = new UrlRedirectResolver(client, _securityValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
+
+        // Act
+        var result = await resolver.ResolveChainAsync("https://cloaked-landing.com/");
+
+        // Assert
+        result.Success.ShouldBeTrue();
+        result.FinalUrl.ShouldBe("https://real-destination.com/login");
+        result.RedirectChain.Count.ShouldBe(2);
+        result.RedirectChain[0].ShouldBe("https://cloaked-landing.com/");
+        result.RedirectChain[1].ShouldBe("https://real-destination.com/login");
+    }
+
+    [Fact]
+    public async Task ResolveChainAsync_JavaScriptWindowLocationAssign_FollowsRedirect()
+    {
+        // Arrange
+        var handler = new MockHttpMessageHandler(req =>
+        {
+            if (req.RequestUri?.ToString() == "https://js-redirect.com/")
+            {
+                var html = @"<html><head><script type=""text/javascript"">window.location.href = ""https://final-app.com/home"";</script></head></html>";
+                var resp = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(html, System.Text.Encoding.UTF8, "text/html")
+                };
+                return resp;
+            }
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+
+        var client = new HttpClient(handler);
+        var resolver = new UrlRedirectResolver(client, _securityValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
+
+        // Act
+        var result = await resolver.ResolveChainAsync("https://js-redirect.com/");
+
+        // Assert
+        result.Success.ShouldBeTrue();
+        result.FinalUrl.ShouldBe("https://final-app.com/home");
+        result.RedirectChain.Count.ShouldBe(2);
+        result.RedirectChain[1].ShouldBe("https://final-app.com/home");
+    }
+
+    [Fact]
+    public async Task ResolveChainAsync_HtmlMetaRefresh_FollowsRedirect()
+    {
+        // Arrange
+        var handler = new MockHttpMessageHandler(req =>
+        {
+            if (req.RequestUri?.ToString() == "https://meta-refresh.com/")
+            {
+                var html = @"<html><head><meta http-equiv=""refresh"" content=""0; url=https://meta-destination.com/index""></head></html>";
+                var resp = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(html, System.Text.Encoding.UTF8, "text/html")
+                };
+                return resp;
+            }
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+
+        var client = new HttpClient(handler);
+        var resolver = new UrlRedirectResolver(client, _securityValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
+
+        // Act
+        var result = await resolver.ResolveChainAsync("https://meta-refresh.com/");
+
+        // Assert
+        result.Success.ShouldBeTrue();
+        result.FinalUrl.ShouldBe("https://meta-destination.com/index");
+        result.RedirectChain.Count.ShouldBe(2);
+    }
+
     private class MockHttpMessageHandler : HttpMessageHandler
     {
         private readonly Func<HttpRequestMessage, HttpResponseMessage> _handler;

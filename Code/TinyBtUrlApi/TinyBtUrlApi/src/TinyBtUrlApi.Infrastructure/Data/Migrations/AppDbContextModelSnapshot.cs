@@ -159,14 +159,26 @@ namespace TinyBtUrlApi.Infrastructure.Data.Migrations
                     b.Property<DateTime?>("ExpirationDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("FlaggedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FlaggedReason")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("IpAddress")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsFlagged")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsPasswordProtected")
                         .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastSafetyCheckAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("LongUrl")
                         .IsRequired()
@@ -190,6 +202,42 @@ namespace TinyBtUrlApi.Infrastructure.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("UrlMappings");
+                });
+
+            modelBuilder.Entity("TinyBtUrlApi.Core.Entities.UrlReport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Details")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsReviewed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ReportedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReporterIp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShortCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UrlReports");
                 });
 
             modelBuilder.Entity("TinyBtUrlApi.Core.Entities.UrlTag", b =>

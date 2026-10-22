@@ -104,6 +104,14 @@ public class VerifyAccessAndRedirectEndpoint : EndpointWithoutRequest
             return;
         }
 
+        if (url.IsFlagged)
+        {
+            _logger.LogWarning("Access denied for {ShortCode}: URL flagged as unsafe ({Reason}).", shortCode, url.FlaggedReason);
+            HttpContext.Response.Redirect($"{frontendBaseUrl}/blocked-link", false);
+            await HttpContext.Response.CompleteAsync();
+            return;
+        }
+
         _logger.LogInformation("Access granted for {ShortCode}. Redirecting to long URL.", shortCode);
         HttpContext.Response.StatusCode = StatusCodes.Status302Found;
         HttpContext.Response.Headers.Location = url.LongUrl;

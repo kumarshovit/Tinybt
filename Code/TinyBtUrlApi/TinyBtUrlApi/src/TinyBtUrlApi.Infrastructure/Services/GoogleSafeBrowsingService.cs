@@ -66,10 +66,16 @@ public class GoogleSafeBrowsingService : IGoogleSafeBrowsingService
                 }
             };
 
+            _logger.LogDebug("Google Safe Browsing request: checking {Count} URLs: {Urls}", 
+                urlList.Count, string.Join(", ", urlList));
+
             var response = await _httpClient.PostAsJsonAsync(requestUri, requestModel, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var responseResult = await response.Content.ReadFromJsonAsync<SafeBrowsingResponse>(cancellationToken: cancellationToken);
+
+            _logger.LogDebug("Google Safe Browsing response: {MatchCount} matches found", 
+                responseResult?.Matches?.Count() ?? 0);
 
             if (responseResult?.Matches != null && responseResult.Matches.Any())
             {

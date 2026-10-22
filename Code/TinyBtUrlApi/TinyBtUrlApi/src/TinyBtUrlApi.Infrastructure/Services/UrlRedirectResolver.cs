@@ -27,6 +27,14 @@ public class UrlRedirectResolver : IUrlRedirectResolver
         @"<meta\s+[^>]*http-equiv\s*=\s*[""']?refresh[""']?[^>]*content\s*=\s*[""']?\d+;\s*url\s*=\s*([^""'>\s]+)[""']?",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
+    private static readonly Regex JsLocationAssignRegex = new(
+        @"(?:window\.|self\.|top\.)?location(?:\.href)?\s*=\s*[""']([^""']+)[""']",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static readonly Regex JsLocationMethodRegex = new(
+        @"(?:window\.|self\.|top\.)?location\.(?:replace|assign)\s*\(\s*[""']([^""']+)[""']\s*\)",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
     public UrlRedirectResolver(
         HttpClient httpClient,
         IUrlSecurityValidator urlSecurityValidator,
@@ -122,29 +130,57 @@ public class UrlRedirectResolver : IUrlRedirectResolver
                 }
                 else if (statusCode == 200)
                 {
-                    // Check for HTML meta refresh redirect (first 4KB of content)
+                    // Check for HTML meta refresh and JavaScript redirects (first 16KB of content)
                     try
                     {
                         var contentType = response.Content.Headers.ContentType?.MediaType;
                         if (string.IsNullOrEmpty(contentType) || contentType.Contains("html", StringComparison.OrdinalIgnoreCase))
                         {
                             using var stream = await response.Content.ReadAsStreamAsync(cts.Token);
-                            var buffer = new byte[4096];
+                            var buffer = new byte[16384];
                             var read = await stream.ReadAsync(buffer, 0, buffer.Length, cts.Token);
                             if (read > 0)
                             {
                                 var htmlSnippet = System.Text.Encoding.UTF8.GetString(buffer, 0, read);
-                                var match = MetaRefreshRegex.Match(htmlSnippet);
-                                if (match.Success)
+                                string? extractedTarget = null;
+
+                                // 1. Check for <meta http-equiv="refresh">
+                                var metaMatch = MetaRefreshRegex.Match(htmlSnippet);
+                                if (metaMatch.Success)
                                 {
-                                    var metaTarget = match.Groups[1].Value.Trim('\'', '"', ' ');
-                                    if (Uri.TryCreate(metaTarget, UriKind.Absolute, out var absUri))
+                                    extractedTarget = metaMatch.Groups[1].Value.Trim('\'', '"', ' ');
+                                }
+                                else
+                                {
+                                    // 2. Check for JavaScript location.replace("...") or location.assign("...")
+                                    var jsMethodMatch = JsLocationMethodRegex.Match(htmlSnippet);
+                                    if (jsMethodMatch.Success)
+                                    {
+                                        extractedTarget = jsMethodMatch.Groups[1].Value.Trim('\'', '"', ' ');
+                                    }
+                                    else
+                                    {
+                                        // 3. Check for JavaScript window.location = "..." or location.href = "..."
+                                        var jsAssignMatch = JsLocationAssignRegex.Match(htmlSnippet);
+                                        if (jsAssignMatch.Success)
+                                        {
+                                            extractedTarget = jsAssignMatch.Groups[1].Value.Trim('\'', '"', ' ');
+                                        }
+                                    }
+                                }
+
+                                if (!string.IsNullOrWhiteSpace(extractedTarget))
+                                {
+                                    if (Uri.TryCreate(extractedTarget, UriKind.Absolute, out var absUri) &&
+                                        (absUri.Scheme == Uri.UriSchemeHttp || absUri.Scheme == Uri.UriSchemeHttps))
                                     {
                                         nextUrl = absUri.ToString();
+                                        _logger.LogInformation("Detected client-side redirect in HTML from '{Current}' to '{Next}'", currentUrl, nextUrl);
                                     }
-                                    else if (Uri.TryCreate(new Uri(currentUrl), metaTarget, out var relUri))
+                                    else if (Uri.TryCreate(new Uri(currentUrl), extractedTarget, out var relUri))
                                     {
                                         nextUrl = relUri.ToString();
+                                        _logger.LogInformation("Detected relative client-side redirect in HTML from '{Current}' to '{Next}'", currentUrl, nextUrl);
                                     }
                                 }
                             }

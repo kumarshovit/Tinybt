@@ -18,6 +18,7 @@ public class CreateShortUrlHandlerTests
     private readonly ICaptchaService _captchaService = Substitute.For<ICaptchaService>();
     private readonly IGoogleSafeBrowsingService _safeBrowsingService = Substitute.For<IGoogleSafeBrowsingService>();
     private readonly IUrlRedirectResolver _redirectResolver = Substitute.For<IUrlRedirectResolver>();
+    private readonly IUrlhausService _urlhausService = Substitute.For<IUrlhausService>();
 
     private readonly CreateShortUrlHandler _handler;
 
@@ -30,13 +31,17 @@ public class CreateShortUrlHandlerTests
             _urlSecurityValidator,
             _captchaService,
             _safeBrowsingService,
-            _redirectResolver);
+            _redirectResolver,
+            _urlhausService);
 
         _captchaService.VerifyTokenAsync(Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
             .Returns(true);
 
         _urlSecurityValidator.ValidateUrlAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => UrlSecurityResult.CreateSuccess(callInfo.Arg<string>()));
+
+        _urlhausService.CheckUrlsAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new UrlhausResult { IsSafe = true }));
     }
 
     [Fact]
@@ -107,5 +112,46 @@ public class CreateShortUrlHandlerTests
         // Assert
         result.Success.ShouldBeTrue();
         result.ShortCode.ShouldNotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task Handle_UrlhausUnsafeHop_RejectsShortUrlCreation()
+    {
+        // Arrange
+        var initialUrl = "https://innocent-looking-site.com/link";
+        var malwareHop = "https://malware-domain.com/bad.exe";
+
+        _redirectResolver.ResolveChainAsync(initialUrl, Arg.Any<CancellationToken>())
+            .Returns(UrlRedirectResolutionResult.CreateSuccess(malwareHop, new List<string> { initialUrl, malwareHop }));
+
+        _safeBrowsingService.CheckUrlsAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+            .Returns(new SafeBrowsingResult { IsSafe = true });
+
+        _urlhausService.CheckUrlsAsync(Arg.Is<IEnumerable<string>>(urls => urls.Contains(malwareHop)), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new UrlhausResult
+            {
+                IsSafe = false,
+                ThreatType = "malware_download",
+                FlaggedUrl = malwareHop,
+                Description = $"The destination URL or a redirect hop ('{malwareHop}') has been identified as malware by URLhaus (malware_download)."
+            }));
+
+        var command = new CreateShortUrlCommand(
+            LongUrl: initialUrl,
+            CustomAlias: null,
+            ExpirationDate: null,
+            UserId: 1,
+            IpAddress: "1.2.3.4",
+            CaptchaToken: null,
+            Password: null);
+
+        // Act
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.Success.ShouldBeFalse();
+        result.Message.ShouldNotBeNull();
+        result.Message.ShouldContain("URLhaus");
+        result.Message.ShouldContain(malwareHop);
     }
 }

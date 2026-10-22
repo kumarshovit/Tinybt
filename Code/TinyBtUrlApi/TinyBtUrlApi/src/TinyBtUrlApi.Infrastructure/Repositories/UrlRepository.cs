@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml.Serialization;
@@ -565,6 +565,53 @@ public class UrlRepository : IUrlRepository
         .ToList();
 
     return grouped;
+  }
+
+  public async Task FlagUrlAsync(int urlId, string reason, CancellationToken ct = default)
+  {
+    var url = await _context.UrlMappings.FindAsync(new object[] { urlId }, ct);
+    if (url != null)
+    {
+      url.IsFlagged = true;
+      url.FlaggedReason = reason;
+      url.FlaggedAt = DateTime.UtcNow;
+      url.LastSafetyCheckAt = DateTime.UtcNow;
+      await _context.SaveChangesAsync(ct);
+    }
+  }
+
+  public async Task UnflagUrlAsync(int urlId, CancellationToken ct = default)
+  {
+    var url = await _context.UrlMappings.FindAsync(new object[] { urlId }, ct);
+    if (url != null)
+    {
+      url.IsFlagged = false;
+      url.FlaggedReason = null;
+      url.FlaggedAt = null;
+      url.LastSafetyCheckAt = DateTime.UtcNow;
+      await _context.SaveChangesAsync(ct);
+    }
+  }
+
+  public async Task UpdateLastSafetyCheckAsync(int urlId, CancellationToken ct = default)
+  {
+    var url = await _context.UrlMappings.FindAsync(new object[] { urlId }, ct);
+    if (url != null)
+    {
+      url.LastSafetyCheckAt = DateTime.UtcNow;
+      await _context.SaveChangesAsync(ct);
+    }
+  }
+
+  public async Task<List<UrlMapping>> GetUrlsForSafetyRecheckAsync(int batchSize, CancellationToken ct = default)
+  {
+    var now = DateTime.UtcNow;
+    return await _context.UrlMappings
+      .Where(u => !u.IsDeleted && !u.IsFlagged && (u.ExpirationDate == null || u.ExpirationDate > now))
+      .OrderBy(u => u.LastSafetyCheckAt.HasValue ? 1 : 0)
+      .ThenBy(u => u.LastSafetyCheckAt)
+      .Take(batchSize)
+      .ToListAsync(ct);
   }
 }
 

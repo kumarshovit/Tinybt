@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TinyBtUrlApi.Core.Entities;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -30,6 +30,7 @@ public class AppDbContext : DbContext
 
   public DbSet<ClickLog> ClickLogs { get; set; }
   public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
+  public DbSet<UrlReport> UrlReports => Set<UrlReport>();
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     base.OnModelCreating(modelBuilder);

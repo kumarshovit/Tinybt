@@ -83,6 +83,17 @@ public class QrRedirectEndpoint : EndpointWithoutRequest
             return;
         }
 
+        if (result.Status == RedirectStatus.Blocked)
+        {
+            HttpContext.Response.Redirect(
+                $"{frontendBaseUrl}/blocked-link",
+                false,
+                false
+            );
+            await HttpContext.Response.CompleteAsync();
+            return;
+        }
+
         // 🔐 QR-originated visit: source="QRCode" is embedded in the server-signed
         // token. The browser cannot alter this value.
         if (result.Status == RedirectStatus.PasswordProtected)

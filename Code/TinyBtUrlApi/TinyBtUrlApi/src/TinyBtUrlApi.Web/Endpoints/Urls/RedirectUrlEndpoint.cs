@@ -1,4 +1,4 @@
-﻿using FastEndpoints;
+using FastEndpoints;
 using Mediator;
 using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.UseCases.Urls.RedirectUrl;
@@ -75,6 +75,17 @@ public class RedirectUrlEndpoint : EndpointWithoutRequest
     {
       HttpContext.Response.Redirect(
           $"{frontendBaseUrl}/expired-link",
+          false,
+          false
+      );
+      await HttpContext.Response.CompleteAsync();
+      return;
+    }
+
+    if (result.Status == RedirectStatus.Blocked)
+    {
+      HttpContext.Response.Redirect(
+          $"{frontendBaseUrl}/blocked-link",
           false,
           false
       );
