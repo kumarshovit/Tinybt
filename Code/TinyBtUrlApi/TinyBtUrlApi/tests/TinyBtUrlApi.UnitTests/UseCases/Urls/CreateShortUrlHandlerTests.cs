@@ -21,21 +21,28 @@ public class CreateShortUrlHandlerTests
     private readonly IUrlhausService _urlhausService = Substitute.For<IUrlhausService>();
     private readonly ICloudflareUrlScannerService _cloudflareScanner = Substitute.For<ICloudflareUrlScannerService>();
     private readonly IUrlAbuseTrackingService _abuseTrackingService = Substitute.For<IUrlAbuseTrackingService>();
+    private readonly IUrlSafetyOrchestrator _safetyOrchestrator;
 
     private readonly CreateShortUrlHandler _handler;
 
     public CreateShortUrlHandlerTests()
     {
+        _safetyOrchestrator = new TinyBtUrlApi.Infrastructure.Services.UrlSafetyOrchestrator(
+            _urlhausService,
+            _safeBrowsingService,
+            _cloudflareScanner,
+            _redirectResolver,
+            _repo,
+            Microsoft.Extensions.Options.Options.Create(new TinyBtUrlApi.Core.Options.SafetyRecheckOptions()),
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<TinyBtUrlApi.Infrastructure.Services.UrlSafetyOrchestrator>.Instance);
+
         _handler = new CreateShortUrlHandler(
             _repo,
             _shortCodeService,
             _settingsRepo,
             _urlSecurityValidator,
             _captchaService,
-            _safeBrowsingService,
-            _redirectResolver,
-            _urlhausService,
-            _cloudflareScanner,
+            _safetyOrchestrator,
             _abuseTrackingService);
 
         TimeSpan? retryAfter = null;

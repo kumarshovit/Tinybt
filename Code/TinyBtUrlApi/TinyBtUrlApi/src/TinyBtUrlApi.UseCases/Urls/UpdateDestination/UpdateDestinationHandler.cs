@@ -10,25 +10,16 @@ public class UpdateDestinationHandler : IRequestHandler<UpdateDestinationCommand
 {
   private readonly IUrlRepository _repo;
   private readonly IUrlSecurityValidator _urlSecurityValidator;
-  private readonly IUrlRedirectResolver _urlRedirectResolver;
-  private readonly IGoogleSafeBrowsingService _safeBrowsingService;
-  private readonly IUrlhausService _urlhausService;
-  private readonly ICloudflareUrlScannerService _cloudflareScanner;
+  private readonly IUrlSafetyOrchestrator _safetyOrchestrator;
 
   public UpdateDestinationHandler(
       IUrlRepository repo,
       IUrlSecurityValidator urlSecurityValidator,
-      IUrlRedirectResolver urlRedirectResolver,
-      IGoogleSafeBrowsingService safeBrowsingService,
-      IUrlhausService urlhausService,
-      ICloudflareUrlScannerService cloudflareScanner)
+      IUrlSafetyOrchestrator safetyOrchestrator)
   {
     _repo = repo;
     _urlSecurityValidator = urlSecurityValidator;
-    _urlRedirectResolver = urlRedirectResolver;
-    _safeBrowsingService = safeBrowsingService;
-    _urlhausService = urlhausService;
-    _cloudflareScanner = cloudflareScanner;
+    _safetyOrchestrator = safetyOrchestrator;
   }
 
   public async ValueTask<bool> Handle(UpdateDestinationCommand request, CancellationToken ct)
@@ -44,28 +35,9 @@ public class UpdateDestinationHandler : IRequestHandler<UpdateDestinationCommand
 
     var normalizedUrl = securityResult.NormalizedUrl ?? request.NewLongUrl;
 
-    // Resolve redirect chain
-    var redirectResult = await _urlRedirectResolver.ResolveChainAsync(normalizedUrl, ct);
-    if (!redirectResult.Success) return false;
-
-    // Check Safe Browsing on all hops
-    var urlsToCheck = redirectResult.RedirectChain.Count > 0
-        ? redirectResult.RedirectChain
-        : new List<string> { normalizedUrl };
-
-    var safeBrowsingResult = await _safeBrowsingService.CheckUrlsAsync(urlsToCheck, ct);
-    if (!safeBrowsingResult.IsSafe) return false;
-
-    // Check URLhaus on all hops
-    var urlhausResult = await _urlhausService.CheckUrlsAsync(urlsToCheck, ct);
-    if (!urlhausResult.IsSafe) return false;
-
-    // Check Cloudflare on all hops
-    foreach (var urlToCheck in urlsToCheck)
-    {
-      var cloudflareResult = await _cloudflareScanner.QuickCheckUrlAsync(urlToCheck, ct);
-      if (cloudflareResult.IsMalicious) return false;
-    }
+    // Validate full pipeline (max 2 redirects + concurrent threat scans)
+    var pipelineResult = await _safetyOrchestrator.ValidateFullPipelineAsync(normalizedUrl, ct);
+    if (!pipelineResult.IsValid) return false;
 
     url.LongUrl = normalizedUrl;
     await _repo.UpdateAsync(url);

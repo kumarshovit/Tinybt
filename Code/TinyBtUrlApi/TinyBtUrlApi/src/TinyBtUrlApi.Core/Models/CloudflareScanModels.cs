@@ -197,4 +197,20 @@ public class CloudflareScanResult
             Categories = categories,
             Description = description
         };
+    public static CloudflareScanResult Pending(string? uuid = null, string description = "Cloudflare URL scan is still pending and processing.") =>
+        new()
+        {
+            IsSafe = false,
+            IsPending = true,
+            ScanUuid = uuid,
+            Description = description
+        };
+    public static CloudflareScanResult Inconclusive(string? uuid = null, string description = "Cloudflare URL scan was inconclusive or encountered an error.") =>
+        new()
+        {
+            IsSafe = false,
+            ErrorOccurred = true,
+            ScanUuid = uuid,
+            Description = description
+        };
 }

@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using TinyBtUrlApi.Core.Interfaces;
@@ -52,6 +53,41 @@ public class CloudflareUrlScannerService : ICloudflareUrlScannerService
                 var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
                 _logger.LogWarning("Failed to submit scan to Cloudflare URL Scanner. Status: {Status}, Body: {Body}",
                     response.StatusCode, errorBody);
+
+                // Handle HTTP 409 Conflict (scan already exists for this URL)
+                if (response.StatusCode == HttpStatusCode.Conflict)
+                {
+                    try
+                    {
+                        var conflictResult = JsonSerializer.Deserialize<CloudflareScanSubmitResponse>(errorBody);
+                        if (!string.IsNullOrWhiteSpace(conflictResult?.Result?.Uuid))
+                        {
+                            _logger.LogInformation("Recovered existing scan UUID {Uuid} from 409 response for {Url}", conflictResult.Result.Uuid, url);
+                            return conflictResult.Result.Uuid;
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore deserialization error and attempt regex recovery
+                    }
+
+                    var match = Regex.Match(
+                        errorBody,
+                        @"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
+                    if (match.Success)
+                    {
+                        _logger.LogInformation("Extracted existing scan UUID {Uuid} from 409 response for {Url}", match.Value, url);
+                        return match.Value;
+                    }
+
+                    var searchRes = await SearchScanAsync(url, cancellationToken);
+                    if (!string.IsNullOrWhiteSpace(searchRes?.ScanUuid))
+                    {
+                        _logger.LogInformation("Found existing scan UUID {Uuid} via search for 409 Conflict URL {Url}", searchRes.ScanUuid, url);
+                        return searchRes.ScanUuid;
+                    }
+                }
+
                 return null;
             }
 
@@ -166,6 +202,11 @@ public class CloudflareUrlScannerService : ICloudflareUrlScannerService
                 return CloudflareScanResult.Safe(uuid);
             }
 
+            if (!string.IsNullOrWhiteSpace(uuid))
+            {
+                return new CloudflareScanResult { IsSafe = true, ScanUuid = uuid, IsPending = true };
+            }
+
             return null;
         }
         catch (Exception ex)
@@ -180,20 +221,32 @@ public class CloudflareUrlScannerService : ICloudflareUrlScannerService
         if (!_options.Enabled || string.IsNullOrWhiteSpace(_options.ApiToken) || string.IsNullOrWhiteSpace(_options.AccountId))
             return CloudflareScanResult.Safe();
 
-        // 1. Fast check: see if Cloudflare already has an active scan verdict for this URL
+        // 1. Fast check: see if Cloudflare already has a scan verdict for this URL
         var existing = await SearchScanAsync(url, cancellationToken);
-        if (existing != null && existing.IsMalicious)
+        if (existing != null)
         {
-            _logger.LogWarning("URL found to be malicious via Cloudflare scan intelligence: {Url}", url);
-            return existing;
+            if (existing.IsMalicious)
+            {
+                _logger.LogWarning("URL found to be malicious via Cloudflare scan intelligence: {Url}", url);
+                return existing;
+            }
+
+            // If an existing scan has finished and is safe, return immediately without re-submitting
+            if (!existing.IsPending)
+            {
+                return existing;
+            }
         }
 
-        // 2. Submit new scan
-        var scanUuid = await SubmitScanAsync(url, cancellationToken);
+        // 2. Submit new scan (or reuse pending scan UUID if already queued)
+        var scanUuid = existing?.ScanUuid ?? await SubmitScanAsync(url, cancellationToken);
         if (string.IsNullOrWhiteSpace(scanUuid))
+        {
+            _logger.LogWarning("Cloudflare scan submission was inconclusive or failed for URL {Url}. Failing open to avoid blocking URL creation.", url);
             return CloudflareScanResult.Safe();
+        }
 
-        // 3. Fast poll with a short timeout (default 5s)
+        // 3. Fast poll with a short timeout
         var timeout = TimeSpan.FromSeconds(Math.Max(1, _options.QuickCheckTimeoutSeconds));
         var startTime = DateTime.UtcNow;
 
@@ -214,7 +267,9 @@ public class CloudflareUrlScannerService : ICloudflareUrlScannerService
             }
         }
 
-        // Fail open if quick check times out (background recheck or redirect recheck will follow up)
+        // Fail open if quick check times out (background recheck will follow up)
+        _logger.LogWarning("Cloudflare quick check for URL {Url} remained pending after {Timeout}s. UUID: {Uuid}. Failing open for short URL creation.",
+            url, timeout.TotalSeconds, scanUuid);
         return CloudflareScanResult.Safe(scanUuid);
     }
 

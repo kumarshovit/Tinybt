@@ -15,10 +15,7 @@ public class CreateShortUrlHandler
   private readonly ISettingsRepository _settingsRepo;
   private readonly IUrlSecurityValidator _urlSecurityValidator;
   private readonly ICaptchaService _captchaService;
-  private readonly IGoogleSafeBrowsingService _safeBrowsingService;
-  private readonly IUrlRedirectResolver _urlRedirectResolver;
-  private readonly IUrlhausService _urlhausService;
-  private readonly ICloudflareUrlScannerService _cloudflareScanner;
+  private readonly IUrlSafetyOrchestrator _safetyOrchestrator;
   private readonly IUrlAbuseTrackingService _abuseTrackingService;
 
   public CreateShortUrlHandler(
@@ -27,10 +24,7 @@ public class CreateShortUrlHandler
       ISettingsRepository settingsRepo,
       IUrlSecurityValidator urlSecurityValidator,
       ICaptchaService captchaService,
-      IGoogleSafeBrowsingService safeBrowsingService,
-      IUrlRedirectResolver urlRedirectResolver,
-      IUrlhausService urlhausService,
-      ICloudflareUrlScannerService cloudflareScanner,
+      IUrlSafetyOrchestrator safetyOrchestrator,
       IUrlAbuseTrackingService abuseTrackingService)
   {
     _repo = repo;
@@ -38,10 +32,7 @@ public class CreateShortUrlHandler
     _settingsRepo = settingsRepo;
     _urlSecurityValidator = urlSecurityValidator;
     _captchaService = captchaService;
-    _safeBrowsingService = safeBrowsingService;
-    _urlRedirectResolver = urlRedirectResolver;
-    _urlhausService = urlhausService;
-    _cloudflareScanner = cloudflareScanner;
+    _safetyOrchestrator = safetyOrchestrator;
     _abuseTrackingService = abuseTrackingService;
   }
 
@@ -108,73 +99,24 @@ public class CreateShortUrlHandler
 
     var normalizedUrl = securityResult.NormalizedUrl ?? request.LongUrl;
 
-    // 🔹 1.2 Multi-Hop Redirect Resolution & Chain Validation
-    var redirectResult = await _urlRedirectResolver.ResolveChainAsync(normalizedUrl, ct);
-    if (!redirectResult.Success)
+    // 🔹 1.2 Full Pipeline Validation (Redirect Resolution <= 2 hops + Concurrent Security Checks)
+    var pipelineResult = await _safetyOrchestrator.ValidateFullPipelineAsync(normalizedUrl, ct);
+    if (!pipelineResult.IsValid)
     {
-      return new CreateShortUrlResult
-      {
-        Success = false,
-        Message = redirectResult.ErrorMessage ?? "Failed to validate redirect chain."
-      };
-    }
-
-    // 🔹 1.3 Batch Google Safe Browsing validation for all hops in redirect chain
-    var urlsToCheck = redirectResult.RedirectChain.Count > 0
-        ? redirectResult.RedirectChain
-        : new List<string> { normalizedUrl };
-
-    var safeBrowsingResult = await _safeBrowsingService.CheckUrlsAsync(urlsToCheck, ct);
-    if (!safeBrowsingResult.IsSafe)
-    {
-      _abuseTrackingService.RecordMaliciousAttempt(
-          request.IpAddress,
-          safeBrowsingResult.FlaggedUrl ?? normalizedUrl,
-          "GoogleSafeBrowsing",
-          safeBrowsingResult.ThreatType ?? "Unsafe");
-
-      return new CreateShortUrlResult
-      {
-        Success = false,
-        Message = safeBrowsingResult.Description ?? "The destination URL or a redirect hop has been identified as unsafe."
-      };
-    }
-
-    // 🔹 1.4 URLhaus (abuse.ch) malware database validation for all hops
-    var urlhausResult = await _urlhausService.CheckUrlsAsync(urlsToCheck, ct);
-    if (!urlhausResult.IsSafe)
-    {
-      _abuseTrackingService.RecordMaliciousAttempt(
-          request.IpAddress,
-          urlhausResult.FlaggedUrl ?? normalizedUrl,
-          "URLhaus",
-          urlhausResult.ThreatType ?? "Malware");
-
-      return new CreateShortUrlResult
-      {
-        Success = false,
-        Message = urlhausResult.Description ?? "The URL has been identified as a malware distribution URL."
-      };
-    }
-
-    // 🔹 1.5 Cloudflare URL Scanner behavioral and network validation
-    foreach (var urlToCheck in urlsToCheck)
-    {
-      var cloudflareResult = await _cloudflareScanner.QuickCheckUrlAsync(urlToCheck, ct);
-      if (cloudflareResult.IsMalicious)
+      if (pipelineResult.IsAbuseAttempt)
       {
         _abuseTrackingService.RecordMaliciousAttempt(
             request.IpAddress,
-            urlToCheck,
-            "CloudflareURLScanner",
-            string.Join(",", cloudflareResult.Categories));
-
-        return new CreateShortUrlResult
-        {
-          Success = false,
-          Message = cloudflareResult.Description ?? "The destination URL or a redirect hop has been identified as malicious by Cloudflare URL Scanner."
-        };
+            pipelineResult.FlaggedUrl ?? normalizedUrl,
+            pipelineResult.ThreatSource ?? "ThreatIntelligence",
+            pipelineResult.ThreatType ?? "Unsafe");
       }
+
+      return new CreateShortUrlResult
+      {
+        Success = false,
+        Message = pipelineResult.ErrorMessage ?? "The destination URL or a redirect hop has been identified as unsafe."
+      };
     }
 
     string shortCode;

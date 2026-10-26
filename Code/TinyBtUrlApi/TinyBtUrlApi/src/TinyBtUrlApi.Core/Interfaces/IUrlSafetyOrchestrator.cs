@@ -24,4 +24,11 @@ public interface IUrlSafetyOrchestrator
     /// Evaluates safety at redirect time, respecting cache window and automatically updating/flagging the URL in repository.
     /// </summary>
     Task<UrlSafetyCheckResult> CheckRedirectSafetyAsync(UrlMapping url, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Executes the full validation pipeline: traces HTTP/HTML redirects (enforcing maximum 2 redirects),
+    /// and executes parallel threat intelligence checks (Google Safe Browsing, URLhaus, Cloudflare Scanner)
+    /// across all discovered hops. Short URLs may only be generated if this pipeline succeeds.
+    /// </summary>
+    Task<UrlValidationPipelineResult> ValidateFullPipelineAsync(string url, CancellationToken cancellationToken = default);
 }

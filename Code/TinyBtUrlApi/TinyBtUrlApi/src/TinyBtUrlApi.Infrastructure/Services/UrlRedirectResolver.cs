@@ -59,9 +59,10 @@ public class UrlRedirectResolver : IUrlRedirectResolver
         var chain = new List<string> { initialUrl };
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { initialUrl };
         var currentUrl = initialUrl;
-        var maxHops = Math.Max(1, _options.MaxRedirectHops);
+        var maxAllowedRedirects = Math.Max(0, _options.MaxAllowedRedirects);
+        var maxRequests = maxAllowedRedirects + 1;
 
-        for (int hop = 0; hop < maxHops; hop++)
+        for (int hop = 0; hop < maxRequests; hop++)
         {
             // 1. Validate security & DNS before connecting to currentUrl
             var securityCheck = await _urlSecurityValidator.ValidateUrlAsync(currentUrl, cancellationToken);
@@ -202,16 +203,21 @@ public class UrlRedirectResolver : IUrlRedirectResolver
                             "Circular redirect loop detected in URL.", chain);
                     }
 
+                    // Count actual redirect transitions already followed
+                    int currentRedirectCount = chain.Count - 1;
+                    if (currentRedirectCount >= maxAllowedRedirects)
+                    {
+                        _logger.LogWarning(
+                            "URL exceeded maximum allowed redirect limit of {MaxAllowedRedirects} redirects. Stopped before following next hop: {NextUrl}",
+                            maxAllowedRedirects, nextUrl);
+                        return UrlRedirectResolutionResult.CreateFailure(
+                            $"The submitted URL has too many redirects (maximum {maxAllowedRedirects} redirects allowed). URLs with excessive redirects are not permitted.",
+                            chain);
+                    }
+
                     visited.Add(nextUrl);
                     chain.Add(nextUrl);
                     currentUrl = nextUrl;
-
-                    if (hop == maxHops - 1)
-                    {
-                        _logger.LogWarning("Exceeded maximum redirect hops ({MaxHops}) for URL: {Url}", maxHops, initialUrl);
-                        return UrlRedirectResolutionResult.CreateFailure(
-                            $"URL exceeded the maximum allowed redirect limit of {maxHops} hops.", chain);
-                    }
                 }
                 else
                 {

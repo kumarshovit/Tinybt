@@ -31,7 +31,7 @@ public class UrlRedirectResolverTests
 
         _options = Options.Create(new UrlSecurityOptions
         {
-            MaxRedirectHops = 3,
+            MaxAllowedRedirects = 2,
             RedirectTimeoutMilliseconds = 2000,
             EnableRedirectChainValidation = true
         });
@@ -55,9 +55,38 @@ public class UrlRedirectResolverTests
     }
 
     [Fact]
-    public async Task ResolveChainAsync_MultiHopRedirect_ReturnsAllHopsAndFinalUrl()
+    public async Task ResolveChainAsync_SingleRedirect_ReturnsOriginalAndFinalUrl()
     {
-        // Arrange
+        // Arrange: 1 redirect (A -> B)
+        var handler = new MockHttpMessageHandler(req =>
+        {
+            if (req.RequestUri?.ToString() == "https://start.com/")
+            {
+                var resp = new HttpResponseMessage(HttpStatusCode.MovedPermanently);
+                resp.Headers.Location = new Uri("https://destination.com/final");
+                return resp;
+            }
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+
+        var client = new HttpClient(handler);
+        var resolver = new UrlRedirectResolver(client, _securityValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
+
+        // Act
+        var result = await resolver.ResolveChainAsync("https://start.com/");
+
+        // Assert
+        result.Success.ShouldBeTrue();
+        result.FinalUrl.ShouldBe("https://destination.com/final");
+        result.RedirectChain.Count.ShouldBe(2);
+        result.RedirectChain[0].ShouldBe("https://start.com/");
+        result.RedirectChain[1].ShouldBe("https://destination.com/final");
+    }
+
+    [Fact]
+    public async Task ResolveChainAsync_TwoRedirects_AllowedAndReturnsAllHops()
+    {
+        // Arrange: Exactly 2 redirects (A -> B -> C)
         var handler = new MockHttpMessageHandler(req =>
         {
             if (req.RequestUri?.ToString() == "https://start.com/")
@@ -91,49 +120,35 @@ public class UrlRedirectResolverTests
     }
 
     [Fact]
-    public async Task ResolveChainAsync_CircularLoop_FailsWithLoopError()
+    public async Task ResolveChainAsync_ThreeRedirects_RejectedBeforeRequestingThirdRedirect()
     {
-        // Arrange: A -> B -> A
+        // Arrange: 3 redirects (hop0 -> hop1 -> hop2 -> hop3)
+        // Requests made should be hop0, hop1, hop2 (which attempts redirect to hop3 and is blocked)
+        var requestedUrls = new List<string>();
         var handler = new MockHttpMessageHandler(req =>
         {
-            if (req.RequestUri?.ToString() == "https://loop-a.com/")
+            var uri = req.RequestUri?.ToString() ?? string.Empty;
+            requestedUrls.Add(uri);
+
+            if (uri == "https://hop0.com/")
             {
                 var resp = new HttpResponseMessage(HttpStatusCode.Found);
-                resp.Headers.Location = new Uri("https://loop-b.com/");
+                resp.Headers.Location = new Uri("https://hop1.com/");
                 return resp;
             }
-            if (req.RequestUri?.ToString() == "https://loop-b.com/")
+            if (uri == "https://hop1.com/")
             {
                 var resp = new HttpResponseMessage(HttpStatusCode.Found);
-                resp.Headers.Location = new Uri("https://loop-a.com/");
+                resp.Headers.Location = new Uri("https://hop2.com/");
+                return resp;
+            }
+            if (uri == "https://hop2.com/")
+            {
+                var resp = new HttpResponseMessage(HttpStatusCode.Found);
+                resp.Headers.Location = new Uri("https://hop3.com/");
                 return resp;
             }
             return new HttpResponseMessage(HttpStatusCode.OK);
-        });
-
-        var client = new HttpClient(handler);
-        var resolver = new UrlRedirectResolver(client, _securityValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
-
-        // Act
-        var result = await resolver.ResolveChainAsync("https://loop-a.com/");
-
-        // Assert
-        result.Success.ShouldBeFalse();
-        result.ErrorMessage.ShouldNotBeNull();
-        result.ErrorMessage.ShouldContain("Circular redirect loop detected");
-    }
-
-    [Fact]
-    public async Task ResolveChainAsync_ExceedsMaxHops_FailsWithMaxHopsError()
-    {
-        // Arrange: Chain of 5 hops with MaxRedirectHops = 3
-        int counter = 0;
-        var handler = new MockHttpMessageHandler(req =>
-        {
-            counter++;
-            var resp = new HttpResponseMessage(HttpStatusCode.Found);
-            resp.Headers.Location = new Uri($"https://hop{counter}.com/");
-            return resp;
         });
 
         var client = new HttpClient(handler);
@@ -145,7 +160,39 @@ public class UrlRedirectResolverTests
         // Assert
         result.Success.ShouldBeFalse();
         result.ErrorMessage.ShouldNotBeNull();
-        result.ErrorMessage.ShouldContain("exceeded the maximum allowed redirect limit");
+        result.ErrorMessage.ShouldContain("maximum 2 redirects allowed");
+        result.ErrorMessage.ShouldContain("too many redirects");
+
+        // Ensure hop3 was never requested
+        requestedUrls.ShouldNotContain("https://hop3.com/");
+        requestedUrls.Count.ShouldBe(3); // Only hop0, hop1, hop2 requested
+    }
+
+    [Fact]
+    public async Task ResolveChainAsync_RelativeLocationHeader_ResolvesCorrectly()
+    {
+        // Arrange
+        var handler = new MockHttpMessageHandler(req =>
+        {
+            if (req.RequestUri?.ToString() == "https://site.com/start")
+            {
+                var resp = new HttpResponseMessage(HttpStatusCode.Found);
+                resp.Headers.Location = new Uri("/relative-destination", UriKind.Relative);
+                return resp;
+            }
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+
+        var client = new HttpClient(handler);
+        var resolver = new UrlRedirectResolver(client, _securityValidator, _options, NullLogger<UrlRedirectResolver>.Instance);
+
+        // Act
+        var result = await resolver.ResolveChainAsync("https://site.com/start");
+
+        // Assert
+        result.Success.ShouldBeTrue();
+        result.FinalUrl.ShouldBe("https://site.com/relative-destination");
+        result.RedirectChain.Count.ShouldBe(2);
     }
 
     [Fact]
