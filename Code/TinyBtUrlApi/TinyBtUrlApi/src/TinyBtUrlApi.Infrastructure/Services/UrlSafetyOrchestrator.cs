@@ -147,10 +147,12 @@ public class UrlSafetyOrchestrator : IUrlSafetyOrchestrator
             if (cfTask.IsCompletedSuccessfully)
             {
                 var cfResult = cfTask.Result;
-                if (cfResult == null)
+                // If Cloudflare returned null or had an API error, bypass Cloudflare and depend on other verifications
+                if (cfResult == null || cfResult.ErrorOccurred)
                 {
-                    _logger.LogWarning("Cloudflare URL Scanner returned a null result.");
-                    return UrlSafetyCheckResult.ApiError("Cloudflare URL Scanner returned an inconclusive response.");
+                    _logger.LogWarning("Cloudflare URL Scanner encountered an API issue or error ({Reason}). Bypassing Cloudflare and depending on other verifications.",
+                        cfResult?.Description ?? "Null response");
+                    continue;
                 }
 
                 if (cfResult.IsMalicious)
@@ -165,23 +167,15 @@ public class UrlSafetyOrchestrator : IUrlSafetyOrchestrator
 
                 if (cfResult.IsPending)
                 {
-                    _logger.LogWarning("Cloudflare URL Scanner verdict is still pending.");
+                    _logger.LogWarning("Cloudflare URL Scanner verdict is still pending after maximum wait.");
                     return UrlSafetyCheckResult.Pending(
                         "Cloudflare URL Scanner",
                         cfResult.Description ?? "Security verification for this URL is still processing. Please try again in a few moments.");
                 }
-
-                if (cfResult.ErrorOccurred)
-                {
-                    _logger.LogWarning("Cloudflare URL Scanner returned an error or was inconclusive.");
-                    return UrlSafetyCheckResult.ApiError(
-                        cfResult.Description ?? "Cloudflare URL Scanner verification was inconclusive or encountered an error.");
-                }
             }
             else if (cfTask.IsFaulted)
             {
-                _logger.LogError(cfTask.Exception, "Error while checking URLs against Cloudflare URL Scanner.");
-                return UrlSafetyCheckResult.ApiError($"Cloudflare URL Scanner verification failed: {cfTask.Exception?.InnerException?.Message ?? "faulted"}");
+                _logger.LogWarning(cfTask.Exception, "Error while checking URLs against Cloudflare URL Scanner. Depending on other verification providers.");
             }
         }
 

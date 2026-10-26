@@ -242,17 +242,17 @@ public class CloudflareUrlScannerService : ICloudflareUrlScannerService
         var scanUuid = existing?.ScanUuid ?? await SubmitScanAsync(url, cancellationToken);
         if (string.IsNullOrWhiteSpace(scanUuid))
         {
-            _logger.LogWarning("Cloudflare scan submission was inconclusive or failed for URL {Url}. Failing open to avoid blocking URL creation.", url);
-            return CloudflareScanResult.Safe();
+            _logger.LogWarning("Cloudflare scan submission was inconclusive or failed for URL {Url} due to an API issue. Returning error result so system falls back to other verifications.", url);
+            return CloudflareScanResult.Inconclusive(null, "Cloudflare scan submission failed due to an API issue.");
         }
 
-        // 3. Fast poll with a short timeout
+        // 3. Poll and wait for Cloudflare scanner while it is still running
         var timeout = TimeSpan.FromSeconds(Math.Max(1, _options.QuickCheckTimeoutSeconds));
         var startTime = DateTime.UtcNow;
 
         while (DateTime.UtcNow - startTime < timeout && !cancellationToken.IsCancellationRequested)
         {
-            await Task.Delay(1500, cancellationToken);
+            await Task.Delay(2000, cancellationToken);
 
             var result = await GetScanResultAsync(scanUuid, cancellationToken);
             if (result.IsMalicious)
@@ -261,16 +261,24 @@ public class CloudflareUrlScannerService : ICloudflareUrlScannerService
                 return result;
             }
 
-            if (!result.IsPending && !result.ErrorOccurred)
+            // If an API error occurred during polling, return immediately so other verifications can proceed
+            if (result.ErrorOccurred)
+            {
+                _logger.LogWarning("Cloudflare scan result endpoint returned an API error for URL {Url}. Falling back to other verifications.", url);
+                return result;
+            }
+
+            // If scan has completed and is no longer pending, return result
+            if (!result.IsPending)
             {
                 return result;
             }
         }
 
-        // Fail open if quick check times out (background recheck will follow up)
-        _logger.LogWarning("Cloudflare quick check for URL {Url} remained pending after {Timeout}s. UUID: {Uuid}. Failing open for short URL creation.",
+        // Scan remained pending after the extended timeout
+        _logger.LogWarning("Cloudflare quick check for URL {Url} remained pending after {Timeout}s. UUID: {Uuid}.",
             url, timeout.TotalSeconds, scanUuid);
-        return CloudflareScanResult.Safe(scanUuid);
+        return CloudflareScanResult.Pending(scanUuid, "Cloudflare scan was still running after timeout.");
     }
 
     public async Task<CloudflareScanResult> ScanAndPollAsync(string url, CancellationToken cancellationToken = default)

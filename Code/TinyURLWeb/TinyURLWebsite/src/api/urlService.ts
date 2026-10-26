@@ -305,3 +305,126 @@ export const verifyPassword = async (
   const data = await res.json();
   return { success: true, message: undefined, redirectTo: data.redirectTo as string };
 };
+
+/* ============================= */
+/* 🛡️ DESTINATION PREVIEW        */
+/* ============================= */
+
+export interface UrlPreviewData {
+  shortCode: string;
+  destinationDomain: string;
+  destinationUrl: string;
+  isSafe: boolean;
+  expirationDate?: string;
+}
+
+export interface UrlPreviewResult {
+  success: boolean;
+  isBlocked?: boolean;
+  isExpired?: boolean;
+  isNotFound?: boolean;
+  message?: string;
+  data?: UrlPreviewData;
+}
+
+export const getPreview = async (
+  shortCode: string,
+  token: string
+): Promise<UrlPreviewResult> => {
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/urls/${shortCode}/preview?t=${encodeURIComponent(token)}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    if (!res.ok) {
+      try {
+        const err = await res.json();
+        return {
+          success: false,
+          isBlocked: res.status === 451 || !!err.isBlocked,
+          isExpired: res.status === 410,
+          isNotFound: res.status === 404,
+          message: err.message || "Failed to load destination preview.",
+        };
+      } catch {
+        return {
+          success: false,
+          isBlocked: res.status === 451,
+          isExpired: res.status === 410,
+          isNotFound: res.status === 404,
+          message: "Failed to load destination preview.",
+        };
+      }
+    }
+
+    const data: UrlPreviewData = await res.json();
+    return {
+      success: true,
+      data,
+    };
+  } catch {
+    return {
+      success: false,
+      message: "Network error. Please check your connection and try again.",
+    };
+  }
+};
+
+/* ============================= */
+/* 🚀 CONTINUE REDIRECT          */
+/* ============================= */
+
+export interface ContinueRedirectResult {
+  success: boolean;
+  isBlocked?: boolean;
+  message?: string;
+  redirectTo?: string;
+}
+
+export const continueRedirect = async (
+  shortCode: string,
+  token: string
+): Promise<ContinueRedirectResult> => {
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/urls/${shortCode}/continue`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      }
+    );
+
+    if (!res.ok) {
+      try {
+        const err = await res.json();
+        return {
+          success: false,
+          isBlocked: res.status === 451,
+          message: err.message || "Redirection failed. Please try again.",
+        };
+      } catch {
+        return {
+          success: false,
+          isBlocked: res.status === 451,
+          message: "Redirection failed. Please try again.",
+        };
+      }
+    }
+
+    const data = await res.json();
+    return {
+      success: true,
+      redirectTo: data.redirectTo as string,
+    };
+  } catch {
+    return {
+      success: false,
+      message: "Network error. Please check your connection and try again.",
+    };
+  }
+};

@@ -1,4 +1,4 @@
-﻿using Ardalis.SharedKernel;
+using Ardalis.SharedKernel;
 using TinyBtUrlApi.UseCases.Urls.VerifyUrlPassword;
 using System.Linq;
 using TinyBtUrlApi.Core.Interfaces;
@@ -82,6 +82,8 @@ public static class ServiceConfigs
     services.AddScoped<IPasswordResetRepository, PasswordResetRepository>();
     services.AddScoped<IQrCodeService, QrCodeService>();
     services.AddScoped<VerifyUrlPasswordHandler>();
+    services.AddScoped<TinyBtUrlApi.UseCases.Urls.PreviewUrl.GetUrlPreviewHandler>();
+    services.AddScoped<TinyBtUrlApi.UseCases.Urls.PreviewUrl.ContinueRedirectHandler>();
 
     logger.LogInformation("{Project} services registered", "Infrastructure");
 

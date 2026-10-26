@@ -20,6 +20,8 @@ import FeaturesPage from "./pages/FeaturesPage";
 import SecurityPage from "./pages/SecurityPage";
 import PricingPage from "./pages/PricingPage";
 import PasswordProtectedPage from "./pages/PasswordProtectedPage";
+import BlockedLinkPage from "./pages/BlockedLinkPage";
+import InterstitialPage from "./pages/InterstitialPage";
 
 // Lazily loaded: authenticated / heavy pages (recharts, react-select, etc.)
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -134,6 +136,12 @@ export default function App() {
                 </AdminRoute>
               }
             />
+
+            {/* 🛡️ Blocked link warning */}
+            <Route path="/blocked-link" element={<BlockedLinkPage />} />
+
+            {/* 🔍 Destination preview / Interstitial page */}
+            <Route path="/preview/:shortCode" element={<InterstitialPage />} />
 
             {/* 🔐 Password-protected short URL — must come before /:shortCode */}
             <Route path="/protected/:shortCode" element={<PasswordProtectedPage />} />

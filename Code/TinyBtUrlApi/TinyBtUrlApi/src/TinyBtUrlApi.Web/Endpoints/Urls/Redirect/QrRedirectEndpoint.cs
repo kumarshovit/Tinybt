@@ -108,8 +108,15 @@ public class QrRedirectEndpoint : EndpointWithoutRequest
             return;
         }
 
-        HttpContext.Response.StatusCode = StatusCodes.Status302Found;
-        HttpContext.Response.Headers.Location = result.Url!.LongUrl;
+        // Destination Preview (Phase 1):
+        // Issue a signed preview token encoding source="QRCode".
+        // Redirect the visitor to the LinkBT destination preview page.
+        var previewToken = _tokenService.Protect(shortCode, "QRCode");
+        HttpContext.Response.Redirect(
+            $"{frontendBaseUrl}/preview/{shortCode}?t={Uri.EscapeDataString(previewToken)}",
+            false,
+            false
+        );
         await HttpContext.Response.CompleteAsync();
     }
 }

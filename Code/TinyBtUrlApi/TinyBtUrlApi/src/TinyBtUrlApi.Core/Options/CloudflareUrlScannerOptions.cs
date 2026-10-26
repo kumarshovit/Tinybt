@@ -8,15 +8,15 @@ public class CloudflareUrlScannerOptions
 
     /// <summary>
     /// Maximum time in seconds to wait for a submitted scan to complete.
-    /// Default: 60 seconds.
+    /// Default: 90 seconds.
     /// </summary>
-    public int ScanTimeoutSeconds { get; set; } = 60;
+    public int ScanTimeoutSeconds { get; set; } = 90;
 
     /// <summary>
     /// Maximum time in seconds to wait for a quick scan check during URL creation/orchestration.
-    /// Default: 5 seconds.
+    /// Default: 60 seconds.
     /// </summary>
-    public int QuickCheckTimeoutSeconds { get; set; } = 30;
+    public int QuickCheckTimeoutSeconds { get; set; } = 60;
 
     /// <summary>
     /// Delay between successive scans in milliseconds (to respect rate limits).

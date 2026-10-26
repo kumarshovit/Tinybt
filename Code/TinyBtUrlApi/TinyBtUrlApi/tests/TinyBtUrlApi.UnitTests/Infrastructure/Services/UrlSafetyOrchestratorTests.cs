@@ -274,6 +274,32 @@ public class UrlSafetyOrchestratorTests
     }
 
     [Fact]
+    public async Task ValidateFullPipelineAsync_CloudflareApiError_DependsOnOtherVerifications()
+    {
+        // Arrange: Cloudflare has an API error, but URLhaus & Google Safe Browsing report Safe
+        var initialUrl = "https://safe-url-cf-down.com";
+        _redirectResolver.ResolveChainAsync(initialUrl, Arg.Any<CancellationToken>())
+            .Returns(UrlRedirectResolutionResult.CreateSuccess(initialUrl, new List<string> { initialUrl }));
+
+        _urlhausService.CheckUrlsAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+            .Returns(new UrlhausResult { IsSafe = true });
+
+        _safeBrowsingService.CheckUrlsAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
+            .Returns(new SafeBrowsingResult { IsSafe = true });
+
+        _cloudflareScanner.QuickCheckUrlAsync(initialUrl, Arg.Any<CancellationToken>())
+            .Returns(CloudflareScanResult.Inconclusive("test-uuid-error", "Cloudflare API connection failed"));
+
+        var orchestrator = CreateOrchestrator();
+
+        // Act
+        var result = await orchestrator.ValidateFullPipelineAsync(initialUrl);
+
+        // Assert: Succeeds because URLhaus and Google Safe Browsing verified safety
+        result.IsValid.ShouldBeTrue();
+    }
+
+    [Fact]
     public async Task ValidateFullPipelineAsync_ConcurrentExecution_RunsUrlhausSafeBrowsingAndCloudflareConcurrently()
     {
         // Arrange: Introduce a delay in each provider to verify concurrency via Task.WhenAll

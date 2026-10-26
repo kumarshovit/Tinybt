@@ -99,7 +99,7 @@ public class RedirectUrlHandlerTests
     }
 
     [Fact]
-    public async Task Handle_SafeUrl_IncrementsClickAndReturnsFound()
+    public async Task Handle_SafeUrl_ReturnsFoundWithoutLoggingClick()
     {
         var url = new UrlMapping
         {
@@ -114,8 +114,9 @@ public class RedirectUrlHandlerTests
         var result = await _handler.Handle(query, CancellationToken.None);
 
         result.Status.ShouldBe(RedirectStatus.Found);
-        url.ClickCount.ShouldBe(1);
-        await _repo.Received(1).LogClickAsync(Arg.Any<ClickLog>(), Arg.Any<CancellationToken>());
-        await _repo.Received(1).UpdateAsync(url);
+        // Clicks are now logged in ContinueRedirectHandler when user clicks Continue
+        url.ClickCount.ShouldBe(0);
+        await _repo.DidNotReceive().LogClickAsync(Arg.Any<ClickLog>(), Arg.Any<CancellationToken>());
+        await _repo.DidNotReceive().UpdateAsync(url);
     }
 }
