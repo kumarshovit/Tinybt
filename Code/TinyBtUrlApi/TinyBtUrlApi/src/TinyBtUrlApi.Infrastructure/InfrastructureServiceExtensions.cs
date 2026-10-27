@@ -105,6 +105,13 @@ public static class InfrastructureServiceExtensions
             MaxAutomaticRedirections = 1
         });
 
+    // Destination Screenshot Storage, In-memory Queue & Background Worker
+    services.Configure<ScreenshotOptions>(config.GetSection("Screenshots"));
+    services.AddSingleton<ScreenshotQueue>();
+    services.AddSingleton<IScreenshotQueue>(sp => sp.GetRequiredService<ScreenshotQueue>());
+    services.AddScoped<IScreenshotStorage, ScreenshotStorageService>();
+    services.AddHostedService<ScreenshotBackgroundWorker>();
+
     logger.LogInformation("{Project} services registered", "Infrastructure");
 
 

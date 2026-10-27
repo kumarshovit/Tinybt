@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics;
 using TinyBtUrlApi.Web.Auth.Create;
 using TinyBtUrlApi.Web.Configurations;
 using TinyBtUrlApi.Web.Profile.Delete;
@@ -119,6 +119,47 @@ app.UseExceptionHandler(errorApp =>
 
 // ✅ CORS before Authentication
 app.UseCors("AllowFrontend");
+
+// ---------------------------
+// Static Files (Screenshots)
+// ---------------------------
+var screenshotStorageConfig = app.Configuration.GetValue<string>("Screenshots:StoragePath");
+var rawStoragePath = string.IsNullOrWhiteSpace(screenshotStorageConfig) ? "wwwroot/screenshots" : screenshotStorageConfig;
+var resolvedStoragePath = Path.IsPathRooted(rawStoragePath)
+    ? rawStoragePath
+    : Path.Combine(app.Environment.ContentRootPath, rawStoragePath);
+
+if (!Directory.Exists(resolvedStoragePath))
+{
+    Directory.CreateDirectory(resolvedStoragePath);
+}
+
+var webRoot = app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+if (!Directory.Exists(webRoot))
+{
+    Directory.CreateDirectory(webRoot);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.CacheControl = "public, max-age=86400";
+    }
+});
+
+if (!resolvedStoragePath.StartsWith(webRoot, StringComparison.OrdinalIgnoreCase))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(resolvedStoragePath),
+        RequestPath = "/screenshots",
+        OnPrepareResponse = ctx =>
+        {
+            ctx.Context.Response.Headers.CacheControl = "public, max-age=86400";
+        }
+    });
+}
 
 app.UseAuthentication();
 app.UseAuthorization();

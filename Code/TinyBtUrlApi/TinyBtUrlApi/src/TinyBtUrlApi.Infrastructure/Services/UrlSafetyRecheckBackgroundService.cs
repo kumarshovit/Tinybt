@@ -113,6 +113,20 @@ public class UrlSafetyRecheckBackgroundService : BackgroundService
                         url.ShortCode, url.LongUrl, result.ThreatSource, result.ThreatType);
 
                     await repository.FlagUrlAsync(url.Id, $"{result.ThreatSource}:{result.ThreatType}", cancellationToken);
+
+                    // Clean up screenshot file if not referenced by any other live link
+                    if (!string.IsNullOrWhiteSpace(url.ScreenshotPath))
+                    {
+                        var storage = scope.ServiceProvider.GetService<IScreenshotStorage>();
+                        if (storage != null)
+                        {
+                            var isReferenced = await storage.IsPathReferencedByAnotherLiveLinkAsync(url.ScreenshotPath, url.Id, cancellationToken);
+                            if (!isReferenced)
+                            {
+                                await storage.DeleteAsync(url.ScreenshotPath, cancellationToken);
+                            }
+                        }
+                    }
                 }
                 else if (config.IncludeCloudflareScanner)
                 {
@@ -134,6 +148,19 @@ public class UrlSafetyRecheckBackgroundService : BackgroundService
                                 url.ShortCode, url.LongUrl, string.Join(", ", cfResult.Categories));
 
                             await repository.FlagUrlAsync(url.Id, $"cloudflare:malicious_{string.Join("_", cfResult.Categories)}", cancellationToken);
+
+                            if (!string.IsNullOrWhiteSpace(url.ScreenshotPath))
+                            {
+                                var storage = scope.ServiceProvider.GetService<IScreenshotStorage>();
+                                if (storage != null)
+                                {
+                                    var isReferenced = await storage.IsPathReferencedByAnotherLiveLinkAsync(url.ScreenshotPath, url.Id, cancellationToken);
+                                    if (!isReferenced)
+                                    {
+                                        await storage.DeleteAsync(url.ScreenshotPath, cancellationToken);
+                                    }
+                                }
+                            }
                             continue;
                         }
                     }

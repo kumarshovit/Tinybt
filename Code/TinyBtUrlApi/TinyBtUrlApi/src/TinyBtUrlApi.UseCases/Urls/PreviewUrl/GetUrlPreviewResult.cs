@@ -20,8 +20,16 @@ public class GetUrlPreviewResult
     public string? DestinationUrl { get; set; }
     public DateTime? ExpirationDate { get; set; }
     public string? Message { get; set; }
+    public string? ScreenshotUrl { get; set; }
+    public TinyBtUrlApi.Core.Models.ScreenshotStatus ScreenshotStatus { get; set; } = TinyBtUrlApi.Core.Models.ScreenshotStatus.None;
 
-    public static GetUrlPreviewResult Ok(string shortCode, string domain, string destinationUrl, DateTime? expirationDate) =>
+    public static GetUrlPreviewResult Ok(
+        string shortCode,
+        string domain,
+        string destinationUrl,
+        DateTime? expirationDate,
+        string? screenshotUrl = null,
+        TinyBtUrlApi.Core.Models.ScreenshotStatus screenshotStatus = TinyBtUrlApi.Core.Models.ScreenshotStatus.None) =>
         new()
         {
             Success = true,
@@ -29,7 +37,9 @@ public class GetUrlPreviewResult
             ShortCode = shortCode,
             DestinationDomain = domain,
             DestinationUrl = destinationUrl,
-            ExpirationDate = expirationDate
+            ExpirationDate = expirationDate,
+            ScreenshotUrl = screenshotUrl,
+            ScreenshotStatus = screenshotStatus
         };
 
     public static GetUrlPreviewResult Invalid(string message = "Invalid or expired preview token.") =>

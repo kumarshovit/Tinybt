@@ -33,4 +33,11 @@ public class UrlMapping
   public string? FlaggedReason { get; set; }
   public DateTime? FlaggedAt { get; set; }
   public DateTime? LastSafetyCheckAt { get; set; }
+
+  // Screenshot & Deduplication
+  public string? LongUrlHash { get; set; }
+  public string? CloudflareScanUuid { get; set; }
+  public string? ScreenshotPath { get; set; }
+  public ScreenshotStatus ScreenshotStatus { get; set; } = ScreenshotStatus.None;
+  public DateTime? ScreenshotFetchedAt { get; set; }
 }

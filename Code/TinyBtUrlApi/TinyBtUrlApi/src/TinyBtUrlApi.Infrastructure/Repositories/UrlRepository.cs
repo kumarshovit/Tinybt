@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml.Serialization;
@@ -611,6 +611,52 @@ public class UrlRepository : IUrlRepository
       .OrderBy(u => u.LastSafetyCheckAt.HasValue ? 1 : 0)
       .ThenBy(u => u.LastSafetyCheckAt)
       .Take(batchSize)
+      .ToListAsync(ct);
+  }
+
+  public async Task<UrlMapping?> GetExistingScreenshotAsync(string longUrlHash, CancellationToken ct = default)
+  {
+    if (string.IsNullOrWhiteSpace(longUrlHash))
+      return null;
+
+    return await _context.UrlMappings
+      .AsNoTracking()
+      .Where(x => x.LongUrlHash == longUrlHash
+               && !x.IsDeleted
+               && !x.IsFlagged
+               && !x.IsPasswordProtected
+               && x.ScreenshotStatus == ScreenshotStatus.Ready
+               && x.ScreenshotPath != null)
+      .OrderByDescending(x => x.CreatedAt)
+      .FirstOrDefaultAsync(ct);
+  }
+
+  public async Task UpdateScreenshotStatusAsync(int id, ScreenshotStatus status, string? path, string? scanUuid, CancellationToken ct = default)
+  {
+    var url = await _context.UrlMappings.FindAsync(new object[] { id }, ct);
+    if (url != null)
+    {
+      url.ScreenshotStatus = status;
+      if (!string.IsNullOrWhiteSpace(path))
+        url.ScreenshotPath = path;
+      if (!string.IsNullOrWhiteSpace(scanUuid))
+        url.CloudflareScanUuid = scanUuid;
+      if (status == ScreenshotStatus.Ready)
+        url.ScreenshotFetchedAt = DateTime.UtcNow;
+
+      await _context.SaveChangesAsync(ct);
+    }
+  }
+
+  public async Task<List<UrlMapping>> GetPendingScreenshotsAsync(int limit = 50, CancellationToken ct = default)
+  {
+    return await _context.UrlMappings
+      .Where(x => !x.IsDeleted
+               && !x.IsFlagged
+               && !x.IsPasswordProtected
+               && x.ScreenshotStatus == ScreenshotStatus.Pending)
+      .OrderBy(x => x.CreatedAt)
+      .Take(limit)
       .ToListAsync(ct);
   }
 }

@@ -316,6 +316,8 @@ export interface UrlPreviewData {
   destinationUrl: string;
   isSafe: boolean;
   expirationDate?: string;
+  screenshotUrl?: string | null;
+  screenshotStatus?: "None" | "Pending" | "Ready" | "Failed";
 }
 
 export interface UrlPreviewResult {

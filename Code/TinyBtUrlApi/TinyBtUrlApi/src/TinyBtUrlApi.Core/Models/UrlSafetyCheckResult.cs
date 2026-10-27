@@ -9,8 +9,9 @@ public class UrlSafetyCheckResult
     public string? Description { get; init; }
     public bool WasApiError { get; init; }          // true if API failed (could not verify)
     public bool IsPending { get; init; }            // true if verification is still pending/queued
+    public string? ScanUuid { get; init; }
 
-    public static UrlSafetyCheckResult Safe() => new() { IsSafe = true };
+    public static UrlSafetyCheckResult Safe(string? scanUuid = null) => new() { IsSafe = true, ScanUuid = scanUuid };
 
     public static UrlSafetyCheckResult Unsafe(string source, string threatType, string flaggedUrl, string description) =>
         new()

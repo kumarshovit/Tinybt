@@ -179,7 +179,11 @@ public class UrlSafetyOrchestrator : IUrlSafetyOrchestrator
             }
         }
 
-        return UrlSafetyCheckResult.Safe();
+        // Capture scan UUID of the final destination URL in the chain
+        var destinationCfTask = cfTasks.LastOrDefault();
+        string? destinationScanUuid = destinationCfTask?.IsCompletedSuccessfully == true ? destinationCfTask.Result?.ScanUuid : null;
+
+        return UrlSafetyCheckResult.Safe(destinationScanUuid);
     }
 
     public async Task<UrlValidationPipelineResult> ValidateFullPipelineAsync(string url, CancellationToken cancellationToken = default)
@@ -235,7 +239,7 @@ public class UrlSafetyOrchestrator : IUrlSafetyOrchestrator
         }
 
         var finalUrl = redirectResult.FinalUrl ?? urlsToCheck.Last();
-        return UrlValidationPipelineResult.Success(finalUrl, urlsToCheck);
+        return UrlValidationPipelineResult.Success(finalUrl, urlsToCheck, safetyCheck.ScanUuid);
     }
 
     public async Task<UrlSafetyCheckResult> CheckRedirectSafetyAsync(UrlMapping url, CancellationToken cancellationToken = default)

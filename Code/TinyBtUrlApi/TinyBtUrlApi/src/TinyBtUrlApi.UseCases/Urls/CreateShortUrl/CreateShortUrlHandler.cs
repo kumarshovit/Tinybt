@@ -17,6 +17,7 @@ public class CreateShortUrlHandler
   private readonly ICaptchaService _captchaService;
   private readonly IUrlSafetyOrchestrator _safetyOrchestrator;
   private readonly IUrlAbuseTrackingService _abuseTrackingService;
+  private readonly IScreenshotQueue _screenshotQueue;
 
   public CreateShortUrlHandler(
       IUrlRepository repo,
@@ -25,7 +26,8 @@ public class CreateShortUrlHandler
       IUrlSecurityValidator urlSecurityValidator,
       ICaptchaService captchaService,
       IUrlSafetyOrchestrator safetyOrchestrator,
-      IUrlAbuseTrackingService abuseTrackingService)
+      IUrlAbuseTrackingService abuseTrackingService,
+      IScreenshotQueue screenshotQueue)
   {
     _repo = repo;
     _shortCodeService = shortCodeService;
@@ -34,6 +36,7 @@ public class CreateShortUrlHandler
     _captchaService = captchaService;
     _safetyOrchestrator = safetyOrchestrator;
     _abuseTrackingService = abuseTrackingService;
+    _screenshotQueue = screenshotQueue;
   }
 
   public async ValueTask<CreateShortUrlResult> Handle(
@@ -164,21 +167,49 @@ public class CreateShortUrlHandler
       expirationDate = null;
     }
 
+    var longUrlHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(normalizedUrl)));
+    var isPasswordProtected = !string.IsNullOrWhiteSpace(request.Password);
+    string? screenshotPath = null;
+    string? scanUuid = null;
+    var screenshotStatus = ScreenshotStatus.None;
+    DateTime? screenshotFetchedAt = null;
+
+    if (!isPasswordProtected)
+    {
+      var existingScreenshot = await _repo.GetExistingScreenshotAsync(longUrlHash, ct);
+      if (existingScreenshot != null)
+      {
+        screenshotPath = existingScreenshot.ScreenshotPath;
+        scanUuid = existingScreenshot.CloudflareScanUuid;
+        screenshotStatus = ScreenshotStatus.Ready;
+        screenshotFetchedAt = existingScreenshot.ScreenshotFetchedAt;
+      }
+      else if (!string.IsNullOrWhiteSpace(pipelineResult.CloudflareScanUuid))
+      {
+        scanUuid = pipelineResult.CloudflareScanUuid;
+        screenshotStatus = ScreenshotStatus.Pending;
+      }
+    }
 
     var mapping = new UrlMapping
     {
       LongUrl = normalizedUrl,
+      LongUrlHash = longUrlHash,
       ShortCode = shortCode,
       CreatedAt = DateTime.UtcNow,
       ClickCount = 0,
       ExpirationDate = expirationDate,
       IsDeleted = false,
       UserId = request.UserId,
-      IpAddress = request.IpAddress
+      IpAddress = request.IpAddress,
+      CloudflareScanUuid = scanUuid,
+      ScreenshotPath = screenshotPath,
+      ScreenshotStatus = screenshotStatus,
+      ScreenshotFetchedAt = screenshotFetchedAt
     };
 
     // 🔐 Password Protection
-    if (!string.IsNullOrWhiteSpace(request.Password))
+    if (isPasswordProtected)
     {
       mapping.IsPasswordProtected = true;
       mapping.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
@@ -186,6 +217,12 @@ public class CreateShortUrlHandler
 
     // 🔹 4. Save to DB
     await _repo.AddAsync(mapping);
+
+    // Enqueue for screenshot download ONLY after SaveChanges (mapping.Id exists)
+    if (mapping.ScreenshotStatus == ScreenshotStatus.Pending)
+    {
+      await _screenshotQueue.EnqueueAsync(mapping.Id, ct);
+    }
 
     // 🔹 5. Return Success Result
 

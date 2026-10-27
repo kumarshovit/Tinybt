@@ -21,6 +21,7 @@ public class CreateShortUrlHandlerTests
     private readonly IUrlhausService _urlhausService = Substitute.For<IUrlhausService>();
     private readonly ICloudflareUrlScannerService _cloudflareScanner = Substitute.For<ICloudflareUrlScannerService>();
     private readonly IUrlAbuseTrackingService _abuseTrackingService = Substitute.For<IUrlAbuseTrackingService>();
+    private readonly IScreenshotQueue _screenshotQueue = Substitute.For<IScreenshotQueue>();
     private readonly IUrlSafetyOrchestrator _safetyOrchestrator;
 
     private readonly CreateShortUrlHandler _handler;
@@ -43,7 +44,8 @@ public class CreateShortUrlHandlerTests
             _urlSecurityValidator,
             _captchaService,
             _safetyOrchestrator,
-            _abuseTrackingService);
+            _abuseTrackingService,
+            _screenshotQueue);
 
         TimeSpan? retryAfter = null;
         string? reason = null;

@@ -1,6 +1,8 @@
 using FastEndpoints;
 using Mediator;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using TinyBtUrlApi.Core.Models;
 using TinyBtUrlApi.UseCases.Urls.PreviewUrl;
 
 namespace TinyBtUrlApi.Web.Endpoints.Urls.Preview;
@@ -8,10 +10,12 @@ namespace TinyBtUrlApi.Web.Endpoints.Urls.Preview;
 public class GetUrlPreviewEndpoint : EndpointWithoutRequest
 {
     private readonly IMediator _mediator;
+    private readonly IConfiguration _configuration;
 
-    public GetUrlPreviewEndpoint(IMediator mediator)
+    public GetUrlPreviewEndpoint(IMediator mediator, IConfiguration configuration)
     {
         _mediator = mediator;
+        _configuration = configuration;
     }
 
     public override void Configure()
@@ -73,13 +77,34 @@ public class GetUrlPreviewEndpoint : EndpointWithoutRequest
 
             case GetUrlPreviewStatus.Success:
             default:
+                string? absoluteScreenshotUrl = null;
+                if (result.ScreenshotStatus == ScreenshotStatus.Ready && !string.IsNullOrWhiteSpace(result.ScreenshotUrl))
+                {
+                    string apiBaseUrl;
+                    if (HttpContext.Request.Host.Host.Contains("localhost"))
+                    {
+                        apiBaseUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+                    }
+                    else
+                    {
+                        var configDomain = _configuration["BaseUrl:ApiDomain"] ?? _configuration["BaseUrl:ShortUrlDomain"];
+                        apiBaseUrl = !string.IsNullOrWhiteSpace(configDomain)
+                            ? configDomain.TrimEnd('/')
+                            : $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+                    }
+
+                    absoluteScreenshotUrl = $"{apiBaseUrl.TrimEnd('/')}/{result.ScreenshotUrl.TrimStart('/')}";
+                }
+
                 await Send.OkAsync(new
                 {
                     shortCode = result.ShortCode,
                     destinationDomain = result.DestinationDomain,
                     destinationUrl = result.DestinationUrl,
                     isSafe = true,
-                    expirationDate = result.ExpirationDate
+                    expirationDate = result.ExpirationDate,
+                    screenshotUrl = absoluteScreenshotUrl,
+                    screenshotStatus = result.ScreenshotStatus.ToString()
                 }, ct);
                 return;
         }

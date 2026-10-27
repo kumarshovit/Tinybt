@@ -15,17 +15,19 @@ public class UrlValidationPipelineResult
     public string? FlaggedUrl { get; init; }
     public List<string> RedirectChain { get; init; } = new();
     public string? FinalUrl { get; init; }
+    public string? CloudflareScanUuid { get; init; }
     public bool IsAbuseAttempt => !string.IsNullOrEmpty(ThreatSource) 
                                   && ThreatSource != "redirect_limit" 
                                   && ThreatSource != "pending_or_inconclusive" 
                                   && ThreatSource != "api_error";
 
-    public static UrlValidationPipelineResult Success(string finalUrl, List<string> chain) =>
+    public static UrlValidationPipelineResult Success(string finalUrl, List<string> chain, string? cloudflareScanUuid = null) =>
         new()
         {
             IsValid = true,
             FinalUrl = finalUrl,
-            RedirectChain = chain
+            RedirectChain = chain,
+            CloudflareScanUuid = cloudflareScanUuid
         };
 
     public static UrlValidationPipelineResult RedirectLimitExceeded(string message, List<string> chain) =>

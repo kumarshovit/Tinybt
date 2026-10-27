@@ -313,4 +313,65 @@ public class CloudflareUrlScannerService : ICloudflareUrlScannerService
 
         return CloudflareScanResult.Safe(scanUuid);
     }
+
+    public async Task<byte[]?> DownloadScreenshotAsync(string scanUuid, CancellationToken cancellationToken = default)
+    {
+        if (!_options.Enabled || string.IsNullOrWhiteSpace(_options.ApiToken) || string.IsNullOrWhiteSpace(_options.AccountId))
+        {
+            _logger.LogWarning("Cloudflare URL Scanner is disabled or credentials missing for screenshot download.");
+            return null;
+        }
+
+        if (string.IsNullOrWhiteSpace(scanUuid))
+            return null;
+
+        try
+        {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(TimeSpan.FromSeconds(15)); // Strict 15s timeout
+
+            var requestUrl = $"https://api.cloudflare.com/client/v4/accounts/{_options.AccountId}/urlscanner/v2/screenshots/{scanUuid}.png?resolution=desktop";
+
+            using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.ApiToken);
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("image/png"));
+
+            var response = await _httpClient.SendAsync(request, cts.Token);
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                _logger.LogInformation("Screenshot for scan UUID {Uuid} is not ready yet (404 Not Found).", scanUuid);
+                return null;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync(cts.Token);
+                _logger.LogWarning("Failed to download screenshot for scan UUID {Uuid}. Status: {Status}, Body: {Body}",
+                    scanUuid, response.StatusCode, errorBody);
+                return null;
+            }
+
+            var contentType = response.Content.Headers.ContentType?.MediaType;
+            if (!string.Equals(contentType, "image/png", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(contentType, "application/octet-stream", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning("Unexpected content type {ContentType} when downloading screenshot for scan UUID {Uuid}.",
+                    contentType, scanUuid);
+            }
+
+            var bytes = await response.Content.ReadAsByteArrayAsync(cts.Token);
+            return bytes;
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogWarning("Screenshot download timed out after 15s for scan UUID {Uuid}.", scanUuid);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception while downloading screenshot from Cloudflare for scan UUID {Uuid}.", scanUuid);
+            return null;
+        }
+    }
 }

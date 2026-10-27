@@ -75,7 +75,9 @@ public class GetUrlPreviewHandler : IRequestHandler<GetUrlPreviewQuery, GetUrlPr
             url.ShortCode,
             domain,
             url.LongUrl,
-            url.ExpirationDate
+            url.ExpirationDate,
+            url.ScreenshotPath,
+            url.ScreenshotStatus
         );
     }
 }

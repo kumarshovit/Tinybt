@@ -95,4 +95,9 @@ public interface IUrlRepository
   Task UnflagUrlAsync(int urlId, CancellationToken ct = default);
   Task UpdateLastSafetyCheckAsync(int urlId, CancellationToken ct = default);
   Task<List<UrlMapping>> GetUrlsForSafetyRecheckAsync(int batchSize, CancellationToken ct = default);
+
+  // Screenshots
+  Task<UrlMapping?> GetExistingScreenshotAsync(string longUrlHash, CancellationToken ct = default);
+  Task UpdateScreenshotStatusAsync(int id, ScreenshotStatus status, string? path, string? scanUuid, CancellationToken ct = default);
+  Task<List<UrlMapping>> GetPendingScreenshotsAsync(int limit = 50, CancellationToken ct = default);
 }

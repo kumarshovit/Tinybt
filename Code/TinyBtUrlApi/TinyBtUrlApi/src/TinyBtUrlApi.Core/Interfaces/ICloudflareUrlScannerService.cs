@@ -34,4 +34,10 @@ public interface ICloudflareUrlScannerService
     /// submits scan, and polls up to a short fast-timeout (default 5s) before failing open.
     /// </summary>
     Task<CloudflareScanResult> QuickCheckUrlAsync(string url, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Downloads the destination screenshot (PNG) for a completed scan UUID.
+    /// Returns binary image bytes or null if still pending or failed.
+    /// </summary>
+    Task<byte[]?> DownloadScreenshotAsync(string scanUuid, CancellationToken cancellationToken = default);
 }
