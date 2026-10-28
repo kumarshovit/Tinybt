@@ -12,33 +12,50 @@ if (typeof window !== "undefined") {
   setupLoadingInterceptors();
 }
 
-const app = (
-  <React.StrictMode>
-    <HelmetProvider>
-      <App />
-    </HelmetProvider>
-  </React.StrictMode>
-);
-
 const root = document.getElementById("root")!;
 
-const prerenderedRoutes = [
-  "/",
-  "/contact",
-  "/terms",
-  "/privacy-policy",
-  "/login",
-  "/register",
-  "/forgot-password",
-];
-
-const isPrerenderedRoute =
+const isMsalPopup =
   typeof window !== "undefined" &&
-  prerenderedRoutes.includes(window.location.pathname);
+  Boolean(window.opener) &&
+  (window.location.hash.includes("code=") ||
+    window.location.hash.includes("error=") ||
+    window.location.search.includes("code="));
 
-if (root.hasChildNodes() && isPrerenderedRoute) {
-  hydrateRoot(root, app);
+if (isMsalPopup) {
+  // Prevent mounting the entire website inside the Microsoft popup window
+  root.innerHTML =
+    '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0B1120;color:#94a3b8;font-family:system-ui,sans-serif;font-size:14px;">Completing sign-in, please wait...</div>';
+
+  import("./services/msalService").then(({ getMsalInstance }) => {
+    getMsalInstance();
+  });
 } else {
-  root.innerHTML = "";
-  createRoot(root).render(app);
+  const app = (
+    <React.StrictMode>
+      <HelmetProvider>
+        <App />
+      </HelmetProvider>
+    </React.StrictMode>
+  );
+
+  const prerenderedRoutes = [
+    "/",
+    "/contact",
+    "/terms",
+    "/privacy-policy",
+    "/login",
+    "/register",
+    "/forgot-password",
+  ];
+
+  const isPrerenderedRoute =
+    typeof window !== "undefined" &&
+    prerenderedRoutes.includes(window.location.pathname);
+
+  if (root.hasChildNodes() && isPrerenderedRoute) {
+    hydrateRoot(root, app);
+  } else {
+    root.innerHTML = "";
+    createRoot(root).render(app);
+  }
 }

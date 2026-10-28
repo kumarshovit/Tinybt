@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Loader2, ShieldCheck, Zap, Lock, Sparkles } from "lucide-react";
 import GoogleLogin from "../components/auth/GoogleLogin";
+import MicrosoftLogin from "../components/auth/MicrosoftLogin";
 import SEO from "../components/SEO";
 import logo from "../assets/logo.png";
 import sideImage from "../assets/WhatsApp Image 2026-09-10 at 1.38.57 PM.jpeg";
@@ -90,14 +91,18 @@ const Login = () => {
           {loading && (
             <div className="flex items-center justify-center gap-2.5 py-2.5 mb-4 text-sm text-blue-400 font-medium">
               <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
-              <span>Connecting with Google...</span>
+              <span>Authenticating securely...</span>
             </div>
           )}
 
-          {/* Google Sign-In Button */}
-          <div className="flex flex-col items-center justify-center py-2 px-2 rounded-2xl bg-slate-900/50 border border-slate-800/80 shadow-inner">
+          {/* Social Sign-In Buttons */}
+          <div className="flex flex-col items-center justify-center gap-3 py-3 px-2 rounded-2xl bg-slate-900/50 border border-slate-800/80 shadow-inner">
             <GoogleLogin
               theme="filled_blue"
+              onError={(msg) => setError(msg)}
+              onLoading={(val) => setLoading(val)}
+            />
+            <MicrosoftLogin
               onError={(msg) => setError(msg)}
               onLoading={(val) => setLoading(val)}
             />

@@ -1,4 +1,4 @@
-﻿using Ardalis.SharedKernel;
+using Ardalis.SharedKernel;
 using System.ComponentModel.DataAnnotations;
 
 namespace TinyBtUrlApi.Core.Models;
@@ -27,6 +27,8 @@ public class User : IAggregateRoot
   public DateTime? LockoutEnd { get; set; }
   public string? GoogleId { get; set; }
   public bool IsGoogleAccount { get; set; }
+  public string? MicrosoftId { get; set; }
+  public bool IsMicrosoftAccount { get; set; }
 
   public string? PasswordResetToken { get; set; }
   public DateTime? ResetTokenExpiry { get; set; }

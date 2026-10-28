@@ -183,6 +183,7 @@ app.MapChangePasswordEndpoint();
 app.MapUpdateNameEndpoint();
 app.MapDeleteAccountEndpoint();
 app.MapGoogleLoginEndpoint();
+app.MapMicrosoftLoginEndpoint();
 app.MapForgotPasswordEndpoint();
 app.MapLogoutEndpoint();
 app.MapResetPasswordEndpoint();

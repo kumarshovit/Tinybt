@@ -473,6 +473,12 @@ namespace TinyBtUrlApi.Infrastructure.Data.Migrations
                     b.Property<bool>("IsGoogleAccount")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsMicrosoftAccount")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MicrosoftId")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime?>("LockoutEnd")
                         .HasColumnType("datetime2");
 

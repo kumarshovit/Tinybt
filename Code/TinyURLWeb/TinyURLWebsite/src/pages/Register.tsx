@@ -5,6 +5,7 @@ import { Turnstile } from "@marsidev/react-turnstile";
 import { registerUser } from "../services/authService";
 import { validateEmail, validatePassword } from "../utils/validators";
 import GoogleLogin from "../components/auth/GoogleLogin";
+import MicrosoftLogin from "../components/auth/MicrosoftLogin";
 import SEO from "../components/SEO";
 import logo from "../assets/logo.png";
 import sideImage from "../assets/WhatsApp Image 2026-09-18 at 4.55.27 PM.jpeg";
@@ -233,8 +234,13 @@ const Register = () => {
           </div>
 
           {/* Google Login */}
-          <div className="flex justify-center space-x-4 mb-2">
+          <div className="flex flex-col items-center justify-center gap-3 mb-2">
             <GoogleLogin />
+
+            <MicrosoftLogin
+              onError={(msg) => setError(msg)}
+              onLoading={(val) => setLoading(val)}
+            />
           </div>
         </div>
       </div>
@@ -253,3 +259,4 @@ const Register = () => {
 };
 
 export default Register;
+

@@ -72,6 +72,8 @@ public static class ServiceConfigs
     services.AddScoped<UpdateUserRoleHandler>();
     services.AddScoped<GoogleLoginHandler>();
     services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+    services.AddScoped<MicrosoftLoginHandler>();
+    services.AddScoped<IMicrosoftAuthService, MicrosoftAuthService>();
     services.AddScoped<ChangePasswordHandler>();
     // Email
     services.AddScoped<IEmailSender, EmailService>();

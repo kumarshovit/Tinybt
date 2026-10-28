@@ -86,6 +86,30 @@ export const loginUser = async (email: string, password: string) => {
   return response.data;
 };
 
+// 🔹 Microsoft Login
+export const microsoftLoginUser = async (idToken: string) => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
+
+  const response = await apiClient.post("/microsoft-login", { token: idToken });
+
+  const token =
+    response.data.token ||
+    response.data.accessToken;
+
+  if (!token) {
+    throw new Error("Token not received from backend");
+  }
+
+  localStorage.setItem("token", token);
+
+  if (response.data.refreshToken) {
+    localStorage.setItem("refreshToken", response.data.refreshToken);
+  }
+
+  return response.data;
+};
+
 // 🔹 Google Login
 export const googleLoginUser = async (idToken: string) => {
   localStorage.removeItem("token");
