@@ -8,14 +8,15 @@ const apiClient = axios.create({
   baseURL: API,
 });
 
-// 🔹 Attach JWT automatically (EXCLUDE login/register/verify)
+// 🔹 Attach JWT automatically (EXCLUDE login/register/verify/google-login)
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
 
   const isPublicEndpoint =
     config.url?.includes("/login") ||
     config.url?.includes("/register") ||
-    config.url?.includes("/verify");
+    config.url?.includes("/verify") ||
+    config.url?.includes("/google-login");
 
   if (token && !isPublicEndpoint) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -33,7 +34,8 @@ apiClient.interceptors.response.use(
     const isPublicEndpoint =
       originalRequest?.url?.includes("/login") ||
       originalRequest?.url?.includes("/register") ||
-      originalRequest?.url?.includes("/verify");
+      originalRequest?.url?.includes("/verify") ||
+      originalRequest?.url?.includes("/google-login");
 
     if (error.response?.status === 401 && !isPublicEndpoint) {
       localStorage.removeItem("token");
@@ -66,6 +68,30 @@ export const loginUser = async (email: string, password: string) => {
   localStorage.removeItem("refreshToken");
 
   const response = await apiClient.post("/login", { email, password });
+
+  const token =
+    response.data.token ||
+    response.data.accessToken;
+
+  if (!token) {
+    throw new Error("Token not received from backend");
+  }
+
+  localStorage.setItem("token", token);
+
+  if (response.data.refreshToken) {
+    localStorage.setItem("refreshToken", response.data.refreshToken);
+  }
+
+  return response.data;
+};
+
+// 🔹 Google Login
+export const googleLoginUser = async (idToken: string) => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("refreshToken");
+
+  const response = await apiClient.post("/google-login", { token: idToken });
 
   const token =
     response.data.token ||

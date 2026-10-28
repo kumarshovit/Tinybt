@@ -129,15 +129,23 @@ var resolvedStoragePath = Path.IsPathRooted(rawStoragePath)
     ? rawStoragePath
     : Path.Combine(app.Environment.ContentRootPath, rawStoragePath);
 
-if (!Directory.Exists(resolvedStoragePath))
-{
-    Directory.CreateDirectory(resolvedStoragePath);
-}
-
 var webRoot = app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot");
-if (!Directory.Exists(webRoot))
+
+try
 {
+  if (!Directory.Exists(resolvedStoragePath))
+  {
+    Directory.CreateDirectory(resolvedStoragePath);
+  }
+
+  if (!Directory.Exists(webRoot))
+  {
     Directory.CreateDirectory(webRoot);
+  }
+}
+catch (Exception ex)
+{
+  startupLogger.LogWarning(ex, "Could not initialize static file directories on startup.");
 }
 
 app.UseStaticFiles(new StaticFileOptions

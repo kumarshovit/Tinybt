@@ -1,4 +1,4 @@
-﻿using FastEndpoints;
+using FastEndpoints;
 using TinyBtUrlApi.Core.DTOs;
 using TinyBtUrlApi.UseCases.Account.Register;
 
@@ -22,19 +22,11 @@ public class RegisterEndpoint : Endpoint<RegisterDto, RegisterResponse>
 
   public override async Task HandleAsync(RegisterDto req, CancellationToken ct)
   {
-    var result = await _handler.Handle(new RegisterQuery(req));
-
-    if (!result.Success)
-    {
-      await Send.ResultAsync(
-          Results.BadRequest(result)
-      );
-
-      return;
-    }
-
     await Send.ResultAsync(
-        Results.Ok(result)
+      Results.BadRequest(new
+      {
+        message = "Direct email registration is disabled. Please sign in with Google."
+      })
     );
   }
 }

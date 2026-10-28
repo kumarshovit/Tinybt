@@ -150,7 +150,7 @@ export default function PricingPage() {
                 </ul>
               </div>
 
-              <Link to="/register" className="mt-8 w-full block text-center bg-white/5 hover:bg-blue-600 border border-white/10 hover:border-transparent text-white font-semibold py-3.5 rounded-xl transition-all duration-300">
+              <Link to="/login" className="mt-8 w-full block text-center bg-white/5 hover:bg-blue-600 border border-white/10 hover:border-transparent text-white font-semibold py-3.5 rounded-xl transition-all duration-300">
                 Subscribe Now
               </Link>
             </div>
@@ -205,7 +205,7 @@ export default function PricingPage() {
                 </ul>
               </div>
 
-              <Link to="/register" className="mt-8 w-full block text-center bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/25">
+              <Link to="/login" className="mt-8 w-full block text-center bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3.5 rounded-xl transition-all duration-300 shadow-lg shadow-blue-500/25">
                 Subscribe Now
               </Link>
             </div>

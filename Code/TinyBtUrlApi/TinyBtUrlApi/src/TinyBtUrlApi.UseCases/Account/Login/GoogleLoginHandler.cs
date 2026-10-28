@@ -1,4 +1,4 @@
-﻿using TinyBtUrlApi.Core.Interfaces;
+using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Models;
 using TinyBtUrlApi.Core.Specifications;
 
@@ -36,11 +36,13 @@ public class GoogleLoginHandler
     // 2️⃣ Check if user already exists
     var spec = new UserByEmailSpec(googleUser.Email!);
     var user = await _repository.FirstOrDefaultAsync(spec);
-    // 🚨 BLOCK DELETED USERS
-    if (user != null && user.IsDeleted)
+
+    // 🚨 BLOCK DELETED OR INACTIVE USERS
+    if (user != null && (user.IsDeleted || !user.IsActive))
     {
       return null;
     }
+
     // 3️⃣ If user not found → create new
     if (user == null)
     {
@@ -53,7 +55,10 @@ public class GoogleLoginHandler
         LoginProvider = "Google",
         IsEmailVerified = true,
         PasswordHash = BCrypt.Net.BCrypt
-              .HashPassword(Guid.NewGuid().ToString())
+              .HashPassword(Guid.NewGuid().ToString()),
+        CreatedAt = DateTime.UtcNow,
+        Role = "User",
+        IsActive = true
       };
 
       await _repository.AddAsync(user);
@@ -65,6 +70,24 @@ public class GoogleLoginHandler
           user.LockoutEnd > DateTime.UtcNow)
       {
         return null;
+      }
+
+      // Link Google account if not linked
+      bool updated = false;
+      if (string.IsNullOrEmpty(user.GoogleId))
+      {
+        user.GoogleId = googleUser.GoogleId;
+        user.IsGoogleAccount = true;
+        updated = true;
+      }
+      if (!user.IsEmailVerified)
+      {
+        user.IsEmailVerified = true;
+        updated = true;
+      }
+      if (updated)
+      {
+        await _repository.UpdateAsync(user);
       }
     }
 

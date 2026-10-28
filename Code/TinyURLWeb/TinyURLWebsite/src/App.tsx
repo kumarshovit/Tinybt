@@ -4,11 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 // Eagerly loaded: pages visible before login + redirect handler
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
-import Register from "./pages/Register";
 import ShortUrlRedirect from "./pages/ShortUrlRedirect";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
-import VerifyEmail from "./pages/Verify";
 import ExpiredLinkPage from "./pages/ExpiredLinkPage";
 import ContactPage from "./pages/ContactPage";
 import TermsPage from "./pages/TermsPage";
@@ -59,12 +55,12 @@ export default function App() {
 
             <Route
               path="/register"
-              element={token ? <Navigate to="/dashboard" /> : <Register />}
+              element={<Navigate to="/login" replace />}
             />
 
-            <Route path="/verify-email" element={<VerifyEmail />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/verify-email" element={<Navigate to="/login" replace />} />
+            <Route path="/forgot-password" element={<Navigate to="/login" replace />} />
+            <Route path="/reset-password" element={<Navigate to="/login" replace />} />
 
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/expired-link" element={<ExpiredLinkPage />} />

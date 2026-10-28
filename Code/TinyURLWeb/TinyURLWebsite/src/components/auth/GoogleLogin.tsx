@@ -1,6 +1,5 @@
-import { useEffect } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { googleLoginUser } from "../../services/authService";
 
 declare global {
   interface Window {
@@ -8,55 +7,89 @@ declare global {
   }
 }
 
-const GoogleLogin = () => {
-  const navigate = useNavigate();
+interface GoogleLoginProps {
+  onError?: (msg: string) => void;
+  onLoading?: (loading: boolean) => void;
+  theme?: "outline" | "filled_blue" | "filled_black";
+}
+
+const GoogleLogin = ({ onError, onLoading, theme = "filled_blue" }: GoogleLoginProps) => {
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (!clientId) {
+      onError?.("Google Client ID is missing. Please check environment configuration.");
+      return;
+    }
+
     const initializeGoogle = () => {
-      if (!window.google) return;
+      if (!window.google?.accounts?.id) return;
 
       window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        client_id: clientId,
         callback: handleCredentialResponse,
       });
 
-      window.google.accounts.id.renderButton(
-        document.getElementById("googleBtn"),
-        {
-          theme: "outline",
+      const btnContainer = document.getElementById("googleBtn");
+      if (btnContainer) {
+        btnContainer.innerHTML = "";
+        window.google.accounts.id.renderButton(btnContainer, {
+          theme: theme,
           size: "large",
-        },
-      );
+          shape: "rectangular",
+          width: 320,
+          logo_alignment: "left",
+          text: "continue_with",
+        });
+        setIsReady(true);
+      }
     };
 
-    // 🔥 Wait until script loads
-    const interval = setInterval(() => {
-      if (window.google) {
-        initializeGoogle();
-        clearInterval(interval);
-      }
-    }, 100);
+    if (window.google?.accounts?.id) {
+      initializeGoogle();
+    } else {
+      const interval = setInterval(() => {
+        if (window.google?.accounts?.id) {
+          initializeGoogle();
+          clearInterval(interval);
+        }
+      }, 150);
 
-    return () => clearInterval(interval);
+      return () => clearInterval(interval);
+    }
   }, []);
 
   const handleCredentialResponse = async (response: any) => {
     try {
-      const res = await  axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/google-login`,
-        { token: response.credential },
-      );
+      onLoading?.(true);
+      onError?.("");
 
-      localStorage.setItem("token", res.data.accessToken);
-      localStorage.setItem("refreshToken", res.data.refreshToken);
+      await googleLoginUser(response.credential);
 
-      navigate("/dashboard");
-    } catch (error) {
+      // Force full reload into dashboard so auth state & token headers sync
+      window.location.replace("/dashboard");
+    } catch (error: any) {
+      onLoading?.(false);
       console.error("Google login failed", error);
+      const serverMessage =
+        error.response?.data?.message ||
+        (typeof error.response?.data === "string" ? error.response.data : null) ||
+        "Google sign-in failed. Please try again.";
+      onError?.(serverMessage);
     }
   };
 
-  return <div id="googleBtn"></div>;
+  return (
+    <div className="flex flex-col items-center justify-center w-full min-h-[44px]">
+      <div id="googleBtn" className="flex justify-center w-full" />
+      {!isReady && !import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+        <p className="text-sm text-red-500 mt-2">
+          Google Client ID not configured.
+        </p>
+      )}
+    </div>
+  );
 };
 
 export default GoogleLogin;

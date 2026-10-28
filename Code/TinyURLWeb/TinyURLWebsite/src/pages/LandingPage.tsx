@@ -82,7 +82,7 @@ export default function LandingPage() {
             <div className="flex gap-4">
 
               <Link
-                to="/register"
+                to="/login"
                 className="bg-blue-600 font-semibold text-white px-8 py-3.5 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-600/30"
               >
                 Sign Up
@@ -147,10 +147,10 @@ export default function LandingPage() {
           <div className="flex flex-wrap justify-center gap-4 mt-10">
 
             <Link
-              to="/register"
+              to="/login"
               className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition"
             >
-              Create Free Account
+              Get Started with Google
             </Link>
 
             <Link

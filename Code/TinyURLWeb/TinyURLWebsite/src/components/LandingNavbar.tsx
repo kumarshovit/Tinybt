@@ -44,7 +44,7 @@ export default function LandingNavbar() {
           </Link>
 
           <Link
-            to="/register"
+            to="/login"
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
           >
             Sign Up
