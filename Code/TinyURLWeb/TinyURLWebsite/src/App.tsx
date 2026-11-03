@@ -28,128 +28,127 @@ const AdminPage = lazy(() => import("./pages/AdminPage"));
 const DeveloperDashboard = lazy(() => import("./pages/DeveloperDashboard"));
 
 import ProtectedRoute from "./routes/ProtectedRoute";
+import PublicOnlyRoute from "./routes/PublicOnlyRoute";
 import AdminRoute from "./components/auth/AdminRoute";
 import { LoadingProvider } from "./context/LoadingContext";
 import GlobalLoadingPanel from "./components/common/GlobalLoadingPanel";
 import PageLoadingFallback from "./components/common/PageLoadingFallback";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 
 export default function App() {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
   return (
-    <LoadingProvider>
-      <BrowserRouter>
-        <AnalyticsTracker />
-        <GlobalLoadingPanel />
+    <ErrorBoundary>
+      <LoadingProvider>
+        <BrowserRouter>
+          <AnalyticsTracker />
+          <GlobalLoadingPanel />
 
-        <Suspense fallback={<PageLoadingFallback />}>
-          <Routes>
-            {/* Landing */}
-            <Route path="/" element={<LandingPage />} />
+          <Suspense fallback={<PageLoadingFallback />}>
+            <Routes>
+              {/* Landing */}
+              <Route path="/" element={<LandingPage />} />
 
-            {/* Auth Pages */}
-            <Route
-              path="/login"
-              element={token ? <Navigate to="/dashboard" /> : <Login />}
-            />
+              {/* Auth Pages */}
+              <Route
+                path="/login"
+                element={
+                  <PublicOnlyRoute>
+                    <Login />
+                  </PublicOnlyRoute>
+                }
+              />
 
-            <Route
-              path="/register"
-              element={<Navigate to="/login" replace />}
-            />
+              <Route
+                path="/register"
+                element={<Navigate to="/login" replace />}
+              />
 
-            <Route path="/verify-email" element={<Navigate to="/login" replace />} />
-            <Route path="/forgot-password" element={<Navigate to="/login" replace />} />
-            <Route path="/reset-password" element={<Navigate to="/login" replace />} />
+              <Route path="/verify-email" element={<Navigate to="/login" replace />} />
+              <Route path="/forgot-password" element={<Navigate to="/login" replace />} />
+              <Route path="/reset-password" element={<Navigate to="/login" replace />} />
 
-            <Route path="/contact" element={<ContactPage />} />
-            <Route path="/expired-link" element={<ExpiredLinkPage />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/faq" element={<FaqPage />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
-            <Route path="/features" element={<FeaturesPage />} />
-            <Route path="/pricing" element={<PricingPage />} />
-            <Route path="/security" element={<SecurityPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/expired-link" element={<ExpiredLinkPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/faq" element={<FaqPage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="/features" element={<FeaturesPage />} />
+              <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/security" element={<SecurityPage />} />
 
-            {/* Protected Routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
+              {/* Protected Routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/analytics"
-              element={
-                <ProtectedRoute>
-                  <AnalyticsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
- 
-            path="/developer"
- 
-            element={
- 
-              <ProtectedRoute>
- 
-                <DeveloperDashboard />
- 
-              </ProtectedRoute>
- 
-            }
- 
-          />
+              <Route
+                path="/analytics"
+                element={
+                  <ProtectedRoute>
+                    <AnalyticsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/developer"
+                element={
+                  <ProtectedRoute>
+                    <DeveloperDashboard />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <ProfilePage />
+                  </ProtectedRoute>
+                }
+              />
 
-            <Route
-              path="/tags/:id"
-              element={
-                <ProtectedRoute>
-                  <TagManagement />
-                </ProtectedRoute>
-              }
-            />
+              <Route
+                path="/tags/:id"
+                element={
+                  <ProtectedRoute>
+                    <TagManagement />
+                  </ProtectedRoute>
+                }
+              />
 
-            {/* Admin */}
-            <Route
-              path="/admin"
-              element={
-                <AdminRoute>
-                  <AdminPage />
-                </AdminRoute>
-              }
-            />
+              {/* Admin */}
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <AdminPage />
+                  </AdminRoute>
+                }
+              />
 
-            {/* 🛡️ Blocked link warning */}
-            <Route path="/blocked-link" element={<BlockedLinkPage />} />
+              {/* 🛡️ Blocked link warning */}
+              <Route path="/blocked-link" element={<BlockedLinkPage />} />
 
-            {/* 🔍 Destination preview / Interstitial page */}
-            <Route path="/preview/:shortCode" element={<InterstitialPage />} />
+              {/* 🔍 Destination preview / Interstitial page */}
+              <Route path="/preview/:shortCode" element={<InterstitialPage />} />
 
-            {/* 🔐 Password-protected short URL — must come before /:shortCode */}
-            <Route path="/protected/:shortCode" element={<PasswordProtectedPage />} />
+              {/* 🔐 Password-protected short URL — must come before /:shortCode */}
+              <Route path="/protected/:shortCode" element={<PasswordProtectedPage />} />
 
-            <Route path="/:shortCode" element={<ShortUrlRedirect />} />
+              <Route path="/:shortCode" element={<ShortUrlRedirect />} />
 
-            {/* Fallback */}
-            <Route path="/not-found" element={<NotFoundPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
-    </LoadingProvider>
+              {/* Fallback */}
+              <Route path="/not-found" element={<NotFoundPage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
+        </BrowserRouter>
+      </LoadingProvider>
+    </ErrorBoundary>
   );
 }

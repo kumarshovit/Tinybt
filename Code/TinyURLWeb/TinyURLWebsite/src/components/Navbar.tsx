@@ -1,4 +1,4 @@
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { logoutUser } from "../services/authService";
 import { getUserRole } from "../utils/auth";
 import { BarChart3, Menu, X } from "lucide-react";
@@ -7,7 +7,7 @@ import logo from "../assets/logo.png";
 
 const Navbar = () => {
 
-  const navigate = useNavigate();
+
 
   const location = useLocation();
 
@@ -17,10 +17,12 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = async () => {
-
-    await logoutUser();
-
-    navigate("/");
+    try {
+      await logoutUser();
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
+    window.location.href = '/login';
   };
 
   // ✅ Active Link Style

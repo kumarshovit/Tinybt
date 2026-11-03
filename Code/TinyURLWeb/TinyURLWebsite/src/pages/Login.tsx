@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Loader2, ShieldCheck, Zap, Lock, Sparkles } from "lucide-react";
+import { Loader2, Zap, Sparkles, BarChart3, QrCode } from "lucide-react";
+import { Turnstile } from "@marsidev/react-turnstile";
 import GoogleLogin from "../components/auth/GoogleLogin";
 import MicrosoftLogin from "../components/auth/MicrosoftLogin";
 import SEO from "../components/SEO";
@@ -12,11 +13,16 @@ const Login = () => {
   const [error, setError] = useState(location.state?.message || "");
   const [loading, setLoading] = useState(false);
 
+  // 🛡️ Cloudflare Turnstile State
+  const [captchaToken, setCaptchaToken] = useState("");
+  const turnstileRef = useRef<any>(null);
+  const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY || "";
+
   return (
     <div className="min-h-screen flex bg-[#0B1120] text-gray-100 font-sans selection:bg-blue-500/30 overflow-hidden relative">
       <SEO
         title="Sign In – LinkBT"
-        description="Sign in or register for LinkBT with your Google account to manage short links, analytics, and custom domains."
+        description="Sign in to your LinkBT account with Google or Microsoft to manage short links, analytics, and dynamic QR codes."
         canonical="/login"
         noindex
       />
@@ -43,7 +49,7 @@ const Login = () => {
           {/* Badge */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20 mb-5">
             <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-            <span>Secure Social Authentication</span>
+            <span>Fast & Seamless Access</span>
           </div>
 
           {/* Heading */}
@@ -52,31 +58,31 @@ const Login = () => {
               Welcome to LinkBT
             </h1>
             <p className="text-slate-400 text-sm mt-2 font-normal leading-relaxed">
-              Sign in or create your LinkBT account instantly with Google
+              Sign in with Google or Microsoft to manage links, track analytics, and generate QR codes.
             </p>
           </div>
 
-          {/* Feature / Trust Badges */}
-          <div className="space-y-3 mb-7 bg-slate-900/70 p-4 rounded-2xl border border-slate-800/90 backdrop-blur-sm">
+          {/* Feature Badges */}
+          <div className="space-y-3 mb-6 bg-slate-900/70 p-4 rounded-2xl border border-slate-800/90 backdrop-blur-sm">
             <div className="flex items-center text-xs text-slate-300">
               <div className="p-1.5 rounded-lg bg-blue-500/15 text-blue-400 mr-3 shrink-0">
                 <Zap className="w-4 h-4" />
               </div>
-              <span className="font-medium">1-Click instant sign-in — no passwords to remember</span>
+              <span className="font-medium">1-Click instant sign-in with Google or Microsoft</span>
             </div>
             
             <div className="flex items-center text-xs text-slate-300">
               <div className="p-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 mr-3 shrink-0">
-                <ShieldCheck className="w-4 h-4" />
+                <BarChart3 className="w-4 h-4" />
               </div>
-              <span className="font-medium">Verified Google identity prevents bot & spam abuses</span>
+              <span className="font-medium">Real-time click tracking, geolocation & referrer analytics</span>
             </div>
             
             <div className="flex items-center text-xs text-slate-300">
               <div className="p-1.5 rounded-lg bg-indigo-500/15 text-indigo-400 mr-3 shrink-0">
-                <Lock className="w-4 h-4" />
+                <QrCode className="w-4 h-4" />
               </div>
-              <span className="font-medium">End-to-end encrypted OAuth 2.0 session tokens</span>
+              <span className="font-medium">Custom branded aliases, dynamic QR codes & tags</span>
             </div>
           </div>
 
@@ -95,8 +101,31 @@ const Login = () => {
             </div>
           )}
 
-          {/* Social Sign-In Buttons */}
-          <div className="flex flex-col items-center justify-center gap-3 py-3 px-2 rounded-2xl bg-slate-900/50 border border-slate-800/80 shadow-inner">
+          {/* 🛡️ Cloudflare Turnstile Human Verification */}
+          {siteKey && (
+            <div className="mb-5 flex flex-col items-center justify-center">
+              <Turnstile
+                ref={turnstileRef}
+                siteKey={siteKey}
+                onSuccess={(token) => {
+                  setCaptchaToken(token);
+                  setError("");
+                }}
+                onError={() => {
+                  setError("Security verification failed. Please refresh and try again.");
+                  setCaptchaToken("");
+                }}
+                onExpire={() => {
+                  setCaptchaToken("");
+                }}
+              />
+            </div>
+          )}
+
+          {/* Social Sign-In Buttons (Protected by Turnstile) */}
+          <div className={`flex flex-col items-center justify-center gap-3 py-3 px-2 rounded-2xl bg-slate-900/50 border border-slate-800/80 shadow-inner transition-all duration-300 ${
+            siteKey && !captchaToken ? "opacity-40 pointer-events-none select-none grayscale" : "opacity-100"
+          }`}>
             <GoogleLogin
               theme="filled_blue"
               onError={(msg) => setError(msg)}
@@ -107,6 +136,12 @@ const Login = () => {
               onLoading={(val) => setLoading(val)}
             />
           </div>
+
+          {siteKey && !captchaToken && (
+            <p className="text-center text-[11px] text-slate-400 mt-2.5">
+              Please complete the security check above to sign in.
+            </p>
+          )}
 
           {/* Legal / Policy Disclaimer */}
           <p className="text-center text-xs text-slate-400 mt-7 leading-relaxed">

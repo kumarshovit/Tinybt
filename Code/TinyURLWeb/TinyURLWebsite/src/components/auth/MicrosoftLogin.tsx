@@ -30,7 +30,7 @@ const MicrosoftLogin = ({ onError, onLoading }: MicrosoftLoginProps) => {
       await microsoftLoginUser(idToken);
 
       // 3. Navigate into dashboard
-      window.location.replace("/dashboard");
+      window.location.href = "/dashboard";
     } catch (error: any) {
       setLoading(false);
       onLoading?.(false);

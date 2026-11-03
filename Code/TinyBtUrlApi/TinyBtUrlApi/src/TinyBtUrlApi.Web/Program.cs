@@ -1,4 +1,5 @@
-using Microsoft.AspNetCore.Diagnostics;
+﻿using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.HttpOverrides;
 using TinyBtUrlApi.Web.Auth.Create;
 using TinyBtUrlApi.Web.Configurations;
 using TinyBtUrlApi.Web.Profile.Delete;
@@ -96,6 +97,15 @@ var app = builder.Build();
 // ---------------------------
 // Middleware Pipeline
 // ---------------------------
+// ✅ Forward headers from IIS reverse proxy (client IP, HTTPS scheme)
+var forwardedOptions = new ForwardedHeadersOptions
+{
+  ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+};
+forwardedOptions.KnownNetworks.Clear();
+forwardedOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(forwardedOptions);
+
 app.UseExceptionHandler(errorApp =>
 {
   errorApp.Run(async context =>

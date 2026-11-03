@@ -23,7 +23,7 @@ public class RedirectUrlEndpoint : EndpointWithoutRequest
 
   public override void Configure()
   {
-    Get("/{shortCode}");
+    Get("/{shortCode}", "/api/r/{shortCode}");
     AllowAnonymous();
     Options(x => x.WithOrder(int.MaxValue));
     Description(x => x.WithTags("Url Management"));

@@ -68,7 +68,7 @@ const GoogleLogin = ({ onError, onLoading, theme = "filled_blue" }: GoogleLoginP
       await googleLoginUser(response.credential);
 
       // Force full reload into dashboard so auth state & token headers sync
-      window.location.replace("/dashboard");
+      window.location.href = "/dashboard";
     } catch (error: any) {
       onLoading?.(false);
       console.error("Google login failed", error);

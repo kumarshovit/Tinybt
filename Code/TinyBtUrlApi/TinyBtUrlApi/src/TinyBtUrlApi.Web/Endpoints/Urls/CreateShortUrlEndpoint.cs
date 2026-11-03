@@ -23,7 +23,6 @@ public class CreateShortUrlEndpoint
   public override void Configure()
   {
     Post("/api/urls");
-    AllowAnonymous();
     Options(x => x.RequireRateLimiting(RateLimitConfigs.PublicUrlCreationPolicy));
     Description(x => x.WithTags("Url Management"));
   }
@@ -32,14 +31,15 @@ public class CreateShortUrlEndpoint
       CreateShortUrlCommand req,
       CancellationToken ct)
   {
-    int? userId = null;
-    if (HttpContext.User.Identity?.IsAuthenticated == true)
+    var claim = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (claim == null || !int.TryParse(claim, out var userId))
     {
-      var claim = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-      if (claim != null)
+      HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+      await HttpContext.Response.WriteAsJsonAsync(new
       {
-        userId = int.Parse(claim);
-      }
+        message = "Unauthorized. You must be logged in to shorten links."
+      }, ct);
+      return;
     }
 
     var ipAddress = HttpContext.GetClientIpAddress();

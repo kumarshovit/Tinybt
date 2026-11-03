@@ -16,22 +16,6 @@ const getAuthHeaders = () => {
   };
 };
 
-/* ============================= */
-/* 🔓 OPTIONAL AUTH HEADER       */
-/* ============================= */
-const getOptionalAuthHeaders = () => {
-  const token = localStorage.getItem("token");
-
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  return headers;
-};
 
 /* ============================= */
 /* 📌 GET ALL TAGS              */
@@ -88,9 +72,20 @@ export const createUrl = async (
   captchaToken?: string,
   password?: string
 ) => {
+  let headers: Record<string, string>;
+  try {
+    headers = getAuthHeaders();
+  } catch {
+    return {
+      success: false,
+      isUnauthorized: true,
+      message: "Please log in first to shorten links.",
+    };
+  }
+
   const res = await fetch(BASE_URL, {
     method: "POST",
-    headers: getOptionalAuthHeaders(),
+    headers,
     body: JSON.stringify({
       longUrl,
       customAlias,
@@ -100,9 +95,23 @@ export const createUrl = async (
     }),
   });
 
+  if (res.status === 401) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    return {
+      success: false,
+      isUnauthorized: true,
+      message: "Your login session has expired. Please log in again.",
+    };
+  }
+
   if (!res.ok) {
-    const err = await res.json();
-    return { success: false, message: err.message };
+    try {
+      const err = await res.json();
+      return { success: false, message: err.message };
+    } catch {
+      return { success: false, message: "Failed to create short link." };
+    }
   }
 
   const data = await res.json();
@@ -429,4 +438,4 @@ export const continueRedirect = async (
       message: "Network error. Please check your connection and try again.",
     };
   }
-};
+};

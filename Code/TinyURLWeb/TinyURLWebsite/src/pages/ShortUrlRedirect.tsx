@@ -1,8 +1,6 @@
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
-const API_ORIGIN = (import.meta.env.VITE_API_URL || "").replace(/\/+$/, "");
-
 export default function ShortUrlRedirect() {
   const { shortCode } = useParams<{ shortCode: string }>();
 
@@ -11,8 +9,7 @@ export default function ShortUrlRedirect() {
       return;
     }
 
-    const redirectOrigin = API_ORIGIN || window.location.origin;
-    window.location.replace(`${redirectOrigin}/${encodeURIComponent(shortCode)}`);
+    window.location.replace(`/api/r/${encodeURIComponent(shortCode)}`);
   }, [shortCode]);
 
   return (

@@ -23,7 +23,7 @@ public class QrRedirectEndpoint : EndpointWithoutRequest
 
     public override void Configure()
     {
-        Get("/q/{shortCode}");
+        Get("/q/{shortCode}", "/api/q/{shortCode}");
         AllowAnonymous();
         Options(x => x.WithOrder(int.MaxValue));
         Description(x => x.WithTags("Url Management"));

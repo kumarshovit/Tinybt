@@ -8,7 +8,7 @@ const apiClient = axios.create({
   baseURL: API,
 });
 
-// 🔹 Attach JWT automatically (EXCLUDE login/register/verify/google-login)
+// 🔹 Attach JWT automatically (EXCLUDE login/register/verify/google-login/microsoft-login)
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
 
@@ -16,7 +16,8 @@ apiClient.interceptors.request.use((config) => {
     config.url?.includes("/login") ||
     config.url?.includes("/register") ||
     config.url?.includes("/verify") ||
-    config.url?.includes("/google-login");
+    config.url?.includes("/google-login") ||
+    config.url?.includes("/microsoft-login");
 
   if (token && !isPublicEndpoint) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -35,7 +36,8 @@ apiClient.interceptors.response.use(
       originalRequest?.url?.includes("/login") ||
       originalRequest?.url?.includes("/register") ||
       originalRequest?.url?.includes("/verify") ||
-      originalRequest?.url?.includes("/google-login");
+      originalRequest?.url?.includes("/google-login") ||
+      originalRequest?.url?.includes("/microsoft-login");
 
     if (error.response?.status === 401 && !isPublicEndpoint) {
       localStorage.removeItem("token");
@@ -138,21 +140,26 @@ export const googleLoginUser = async (idToken: string) => {
 export const logoutUser = async () => {
   const refreshToken = localStorage.getItem("refreshToken");
 
-  if (!refreshToken) {
-    console.warn("No refresh token found");
-    localStorage.removeItem("token");
-    window.location.href = "/login";
-    return;
-  }
-
   try {
-    await apiClient.post("/logout", { refreshToken });
+    if (refreshToken) {
+      await apiClient.post("/logout", { refreshToken });
+    }
   } catch (error) {
     console.error("Logout API error:", error);
+  } finally {
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    // Also clean MSAL local cached accounts so Microsoft prompt stays crisp
+    try {
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith("msal.") || key.includes("login.microsoftonline.com")) {
+          localStorage.removeItem(key);
+        }
+      });
+    } catch {
+      // Ignore if localStorage unavailable
+    }
   }
-
-  localStorage.removeItem("token");
-  localStorage.removeItem("refreshToken");
-
 };
+
 export default apiClient;
