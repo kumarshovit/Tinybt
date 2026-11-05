@@ -8,6 +8,12 @@ const rootDir = path.resolve(__dirname, "..");
 const distDir = path.join(rootDir, "dist");
 const template = await readFile(path.join(distDir, "index.html"), "utf8");
 
+// Save clean SPA template as shell.html before prerendering overwrites index.html.
+// IIS uses /shell.html for SPA fallback routes (/dashboard, /preview/*, /:shortCode)
+// so dynamic routes never flash the prerendered landing page before React hydrates.
+await writeFile(path.join(distDir, "shell.html"), template);
+console.log("created SPA fallback shell -> shell.html");
+
 const routes = ["/", "/contact", "/terms", "/privacy-policy", "/login", "/register", "/forgot-password"];
 
 function stripClientSeo(html) {

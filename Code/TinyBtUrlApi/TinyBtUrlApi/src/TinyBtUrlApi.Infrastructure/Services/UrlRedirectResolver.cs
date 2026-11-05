@@ -88,21 +88,21 @@ public class UrlRedirectResolver : IUrlRedirectResolver
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
-                _logger.LogWarning("Redirect check timed out for hop URL: {Url}", currentUrl);
-                return UrlRedirectResolutionResult.CreateFailure(
-                    $"Redirect destination '{currentUrl}' could not be reached (connection timed out).", chain);
+                _logger.LogWarning("Redirect check timed out for hop URL: {Url}. Gracefully proceeding with current URL.", currentUrl);
+                // Graceful fallback: The destination or its WAF (e.g. Cloudflare) timed out or blocked crawler.
+                // Stop further redirect tracing and treat current URL as the terminal destination.
+                break;
             }
             catch (HttpRequestException ex)
             {
-                _logger.LogWarning(ex, "HTTP request failed during redirect resolution for URL: {Url}", currentUrl);
-                return UrlRedirectResolutionResult.CreateFailure(
-                    $"Redirect destination '{currentUrl}' could not be reached: {ex.Message}", chain);
+                _logger.LogWarning(ex, "HTTP request failed during redirect resolution for URL: {Url}. Gracefully proceeding with current URL.", currentUrl);
+                // Graceful fallback: Network/TLS/WAF connection error, proceed with current URL.
+                break;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error during redirect resolution for URL: {Url}", currentUrl);
-                return UrlRedirectResolutionResult.CreateFailure(
-                    $"Error resolving destination '{currentUrl}'.", chain);
+                _logger.LogError(ex, "Unexpected error during redirect resolution for URL: {Url}. Gracefully proceeding with current URL.", currentUrl);
+                break;
             }
 
             using (response)

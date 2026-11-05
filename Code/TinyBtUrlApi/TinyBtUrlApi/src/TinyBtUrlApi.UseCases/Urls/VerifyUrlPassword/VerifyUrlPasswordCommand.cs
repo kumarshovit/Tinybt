@@ -24,4 +24,5 @@ public record VerifyUrlPasswordCommand(
 
 public record VerifyUrlPasswordResult(
     bool Success,
-    string? Message);
+    string? Message,
+    string? DestinationUrl = null);

@@ -82,6 +82,6 @@ public class VerifyUrlPasswordHandler : IRequestHandler<VerifyUrlPasswordCommand
         await _repo.UpdateAsync(url);
         await _repo.LogClickAsync(clickLog, ct);
 
-        return new VerifyUrlPasswordResult(true, null);
+        return new VerifyUrlPasswordResult(true, null, url.LongUrl);
     }
 }

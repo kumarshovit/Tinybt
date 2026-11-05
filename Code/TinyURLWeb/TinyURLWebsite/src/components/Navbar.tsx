@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { logoutUser } from "../services/authService";
-import { getUserRole } from "../utils/auth";
+import { getUserRole, isTokenValid } from "../utils/auth";
 import { BarChart3, Menu, X } from "lucide-react";
 import { useState } from "react";
 import logo from "../assets/logo.png";
@@ -11,8 +11,9 @@ const Navbar = () => {
 
   const location = useLocation();
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  const role = typeof window !== "undefined" ? getUserRole() : null;
+  const authenticated = typeof window !== "undefined" ? isTokenValid() : false;
+  const token = authenticated ? localStorage.getItem("token") : null;
+  const role = authenticated ? getUserRole() : null;
 
   const [menuOpen, setMenuOpen] = useState(false);
 

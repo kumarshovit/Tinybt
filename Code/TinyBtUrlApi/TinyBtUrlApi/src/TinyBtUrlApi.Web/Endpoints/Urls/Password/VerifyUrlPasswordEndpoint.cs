@@ -15,13 +15,16 @@ public class VerifyUrlPasswordEndpoint : Endpoint<VerifyUrlPasswordRequest>
 {
     private readonly IMediator _mediator;
     private readonly IUrlAccessTokenService _tokenService;
+    private readonly IConfiguration _configuration;
 
     public VerifyUrlPasswordEndpoint(
         IMediator mediator,
-        IUrlAccessTokenService tokenService)
+        IUrlAccessTokenService tokenService,
+        IConfiguration configuration)
     {
         _mediator = mediator;
         _tokenService = tokenService;
+        _configuration = configuration;
     }
 
     public override void Configure()
@@ -87,6 +90,16 @@ public class VerifyUrlPasswordEndpoint : Endpoint<VerifyUrlPasswordRequest>
             return;
         }
 
+        // Return destination URL directly so browser navigates cleanly without IIS ARR 302 rewrite interference
+        if (!string.IsNullOrWhiteSpace(result.DestinationUrl))
+        {
+            await HttpContext.Response.WriteAsJsonAsync(new
+            {
+                redirectTo = result.DestinationUrl
+            }, ct);
+            return;
+        }
+
         // ── Issue the new access token ──────────────
         var newAccessToken = _tokenService.Protect(shortCode, payload.Source);
 
@@ -101,7 +114,22 @@ public class VerifyUrlPasswordEndpoint : Endpoint<VerifyUrlPasswordRequest>
 
         HttpContext.Response.Cookies.Append("url_access", newAccessToken, cookieOptions);
 
-        var apiBase = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+        var configuredApiDomain = _configuration["BaseUrl:ApiDomain"]?.TrimEnd('/');
+        var isLoopback = HttpContext.Request.Host.Host == "127.0.0.1" || HttpContext.Request.Host.Host == "::1";
+
+        string apiBase;
+        if (!string.IsNullOrWhiteSpace(configuredApiDomain) && (isLoopback || !HttpContext.Request.Host.Host.Contains("localhost")))
+        {
+            apiBase = configuredApiDomain;
+        }
+        else if (isLoopback)
+        {
+            apiBase = string.Empty;
+        }
+        else
+        {
+            apiBase = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}";
+        }
         var encodedToken = Uri.EscapeDataString(newAccessToken);
         await HttpContext.Response.WriteAsJsonAsync(new
         {

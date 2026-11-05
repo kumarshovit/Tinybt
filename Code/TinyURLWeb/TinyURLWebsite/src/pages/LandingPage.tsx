@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+import { isTokenValid } from "../utils/auth";
 import Navbar from "../components/Navbar";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
@@ -41,6 +43,11 @@ const jsonLd = {
 };
 
 export default function LandingPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    setIsAuthenticated(isTokenValid());
+  }, []);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -79,23 +86,37 @@ export default function LandingPage() {
               LinkBT is a complete platform to amplify your reach. Create branded, memorable aliases, monitor real-time traffic, manage link lifecycles, and use powerful tags—all from an intuitive, unified dashboard. Empower your marketing, secure your links, and grow with insights.
             </p>
 
-            <div className="flex gap-4">
-
-              <Link
-                to="/login"
-                className="bg-blue-600 font-semibold text-white px-8 py-3.5 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-600/30"
-              >
-                Sign Up
-              </Link>
-
-              <Link
-                to="/login"
-                className="bg-white font-semibold flex items-center justify-center text-gray-900 border border-gray-200 px-8 py-3.5 rounded-lg hover:bg-gray-50 transition shadow-lg shadow-black/5"
-              >
-                Login
-              </Link>
-
-            </div>
+            {isAuthenticated ? (
+              <div className="flex flex-wrap gap-4">
+                <Link
+                  to="/dashboard"
+                  className="bg-blue-600 font-semibold text-white px-8 py-3.5 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-600/30 flex items-center gap-2"
+                >
+                  Go to Dashboard →
+                </Link>
+                <Link
+                  to="/analytics"
+                  className="bg-white/10 backdrop-blur-md font-semibold flex items-center justify-center text-white border border-white/20 px-8 py-3.5 rounded-lg hover:bg-white/20 transition shadow-lg shadow-black/5"
+                >
+                  View Analytics
+                </Link>
+              </div>
+            ) : (
+              <div className="flex gap-4">
+                <Link
+                  to="/login"
+                  className="bg-blue-600 font-semibold text-white px-8 py-3.5 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-600/30"
+                >
+                  Sign Up
+                </Link>
+                <Link
+                  to="/login"
+                  className="bg-white font-semibold flex items-center justify-center text-gray-900 border border-gray-200 px-8 py-3.5 rounded-lg hover:bg-gray-50 transition shadow-lg shadow-black/5"
+                >
+                  Login
+                </Link>
+              </div>
+            )}
 
           </div>
 
@@ -144,23 +165,31 @@ export default function LandingPage() {
             business communications.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-4 mt-10">
-
-            <Link
-              to="/login"
-              className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition"
-            >
-              Get Started with Google
-            </Link>
-
-            <Link
-              to="/login"
-              className="border border-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition"
-            >
-              Sign In
-            </Link>
-
-          </div>
+          {isAuthenticated ? (
+            <div className="flex flex-wrap justify-center gap-4 mt-10">
+              <Link
+                to="/dashboard"
+                className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition shadow-lg"
+              >
+                Go to Your Dashboard →
+              </Link>
+            </div>
+          ) : (
+            <div className="flex flex-wrap justify-center gap-4 mt-10">
+              <Link
+                to="/login"
+                className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition shadow-lg"
+              >
+                Get Started
+              </Link>
+              <Link
+                to="/login"
+                className="border border-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition"
+              >
+                Sign In
+              </Link>
+            </div>
+          )}
 
           <div className="grid md:grid-cols-4 gap-6 mt-14 text-center">
 

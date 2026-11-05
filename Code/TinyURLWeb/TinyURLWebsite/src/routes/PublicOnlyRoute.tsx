@@ -1,14 +1,15 @@
 import { Navigate } from "react-router-dom";
 import type { ReactNode } from "react";
+import { isTokenValid } from "../utils/auth";
 
 interface PublicOnlyRouteProps {
   children: ReactNode;
 }
 
 const PublicOnlyRoute = ({ children }: PublicOnlyRouteProps) => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const authenticated = typeof window !== "undefined" && isTokenValid();
 
-  if (token) {
+  if (authenticated) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -16,4 +17,3 @@ const PublicOnlyRoute = ({ children }: PublicOnlyRouteProps) => {
 };
 
 export default PublicOnlyRoute;
-

@@ -46,7 +46,18 @@ const PasswordProtectedPage = () => {
                 return;
             }
 
-            window.location.replace(result.redirectTo!);
+            let redirectUrl = result.redirectTo!;
+            // Defensive check: strip any internal loopback host if returned behind reverse proxy
+            if (redirectUrl.includes("127.0.0.1") || redirectUrl.includes("localhost:9007")) {
+                const apiBase = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+                if (apiBase && !apiBase.includes("localhost") && !apiBase.includes("127.0.0.1")) {
+                    redirectUrl = redirectUrl.replace(/^https?:\/\/[^\/]+/, apiBase);
+                } else {
+                    redirectUrl = redirectUrl.replace(/^https?:\/\/[^\/]+/, "");
+                }
+            }
+
+            window.location.replace(redirectUrl);
         } catch {
             setError("Something went wrong. Please try again.");
             setLoading(false);

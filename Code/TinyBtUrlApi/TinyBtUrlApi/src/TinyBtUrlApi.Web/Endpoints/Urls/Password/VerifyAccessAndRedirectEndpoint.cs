@@ -113,8 +113,8 @@ public class VerifyAccessAndRedirectEndpoint : EndpointWithoutRequest
         }
 
         _logger.LogInformation("Access granted for {ShortCode}. Redirecting to long URL.", shortCode);
-        HttpContext.Response.StatusCode = StatusCodes.Status302Found;
-        HttpContext.Response.Headers.Location = url.LongUrl;
+        HttpContext.Response.Redirect(url.LongUrl, false, false);
+
         await HttpContext.Response.CompleteAsync();
     }
 }
