@@ -1,7 +1,7 @@
 import { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-// Eagerly loaded: pages visible before login + redirect handler
+// Eagerly loaded: core pages visible before login + redirect handler
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import ShortUrlRedirect from "./pages/ShortUrlRedirect";
@@ -18,6 +18,21 @@ import PricingPage from "./pages/PricingPage";
 import PasswordProtectedPage from "./pages/PasswordProtectedPage";
 import BlockedLinkPage from "./pages/BlockedLinkPage";
 import InterstitialPage from "./pages/InterstitialPage";
+
+// Marketing, SEO Hubs & Detail Pages
+import AboutPage from "./pages/marketing/AboutPage";
+import ReportAbusePage from "./pages/marketing/ReportAbusePage";
+import CategoryHubPage from "./pages/marketing/CategoryHubPage";
+import SeoDetailPage from "./pages/marketing/SeoDetailPage";
+import DocsPage from "./pages/marketing/DocsPage";
+import GlossaryTermPage from "./pages/marketing/GlossaryTermPage";
+
+// SEO Interactive Tools
+import ToolsHubPage from "./pages/tools/ToolsHubPage";
+import UtmBuilderPage from "./pages/tools/UtmBuilderPage";
+import WhatsAppLinkGeneratorPage from "./pages/tools/WhatsAppLinkGeneratorPage";
+import QrCodeGeneratorToolPage from "./pages/tools/QrCodeGeneratorToolPage";
+import BulkShortenerToolPage from "./pages/tools/BulkShortenerToolPage";
 
 // Lazily loaded: authenticated / heavy pages (recharts, react-select, etc.)
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -45,10 +60,10 @@ export default function App() {
 
           <Suspense fallback={<PageLoadingFallback />}>
             <Routes>
-              {/* Landing */}
+              {/* 1. Landing */}
               <Route path="/" element={<LandingPage />} />
 
-              {/* Auth Pages */}
+              {/* 2. Authentication & Account Access */}
               <Route
                 path="/login"
                 element={
@@ -57,26 +72,98 @@ export default function App() {
                   </PublicOnlyRoute>
                 }
               />
-
-              <Route
-                path="/register"
-                element={<Navigate to="/login" replace />}
-              />
-
+              <Route path="/register" element={<Navigate to="/login" replace />} />
               <Route path="/verify-email" element={<Navigate to="/login" replace />} />
               <Route path="/forgot-password" element={<Navigate to="/login" replace />} />
               <Route path="/reset-password" element={<Navigate to="/login" replace />} />
 
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/expired-link" element={<ExpiredLinkPage />} />
-              <Route path="/terms" element={<TermsPage />} />
-              <Route path="/faq" element={<FaqPage />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              {/* 3. Core Retained Marketing & Legal Pages */}
               <Route path="/features" element={<FeaturesPage />} />
+              <Route path="/features/" element={<FeaturesPage />} />
               <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/pricing/" element={<PricingPage />} />
               <Route path="/security" element={<SecurityPage />} />
+              <Route path="/security/" element={<SecurityPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/contact/" element={<ContactPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/terms/" element={<TermsPage />} />
+              <Route path="/faq" element={<FaqPage />} />
+              <Route path="/faq/" element={<FaqPage />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+              <Route path="/privacy-policy/" element={<PrivacyPolicyPage />} />
 
-              {/* Protected Routes */}
+              {/* 4. Company & Trust Pages */}
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/about/" element={<AboutPage />} />
+              <Route path="/report-abuse" element={<ReportAbusePage />} />
+              <Route path="/report-abuse/" element={<ReportAbusePage />} />
+
+              {/* 5. Feature Deep-Dives */}
+              <Route path="/custom-aliases" element={<SeoDetailPage forcedSlug="/custom-aliases/" />} />
+              <Route path="/custom-aliases/" element={<SeoDetailPage forcedSlug="/custom-aliases/" />} />
+              <Route path="/branded-links" element={<SeoDetailPage forcedSlug="/branded-links/" />} />
+              <Route path="/branded-links/" element={<SeoDetailPage forcedSlug="/branded-links/" />} />
+              <Route path="/link-expiration" element={<SeoDetailPage forcedSlug="/link-expiration/" />} />
+              <Route path="/link-expiration/" element={<SeoDetailPage forcedSlug="/link-expiration/" />} />
+              <Route path="/password-protected-links" element={<SeoDetailPage forcedSlug="/password-protected-links/" />} />
+              <Route path="/password-protected-links/" element={<SeoDetailPage forcedSlug="/password-protected-links/" />} />
+              <Route path="/link-analytics" element={<SeoDetailPage forcedSlug="/link-analytics/" />} />
+              <Route path="/link-analytics/" element={<SeoDetailPage forcedSlug="/link-analytics/" />} />
+              <Route path="/bulk-shortener" element={<SeoDetailPage forcedSlug="/bulk-shortener/" />} />
+              <Route path="/bulk-shortener/" element={<SeoDetailPage forcedSlug="/bulk-shortener/" />} />
+              <Route path="/qr-code-generator" element={<SeoDetailPage forcedSlug="/qr-code-generator/" />} />
+              <Route path="/qr-code-generator/" element={<SeoDetailPage forcedSlug="/qr-code-generator/" />} />
+
+              {/* 6. Free Tools Hub & Tool Pages */}
+              <Route path="/tools" element={<ToolsHubPage />} />
+              <Route path="/tools/" element={<ToolsHubPage />} />
+              <Route path="/tools/utm-builder" element={<UtmBuilderPage />} />
+              <Route path="/tools/utm-builder/" element={<UtmBuilderPage />} />
+              <Route path="/tools/whatsapp-link-generator" element={<WhatsAppLinkGeneratorPage />} />
+              <Route path="/tools/whatsapp-link-generator/" element={<WhatsAppLinkGeneratorPage />} />
+              <Route path="/tools/qr-code-generator" element={<QrCodeGeneratorToolPage />} />
+              <Route path="/tools/qr-code-generator/" element={<QrCodeGeneratorToolPage />} />
+              <Route path="/tools/bulk-url-shortener" element={<BulkShortenerToolPage />} />
+              <Route path="/tools/bulk-url-shortener/" element={<BulkShortenerToolPage />} />
+
+              {/* 7. Category Hubs & Detail Pages */}
+              <Route path="/use-cases" element={<CategoryHubPage category="use-cases" />} />
+              <Route path="/use-cases/" element={<CategoryHubPage category="use-cases" />} />
+              <Route path="/use-cases/:slug" element={<SeoDetailPage />} />
+              <Route path="/use-cases/:slug/" element={<SeoDetailPage />} />
+
+              <Route path="/for" element={<CategoryHubPage category="for" />} />
+              <Route path="/for/" element={<CategoryHubPage category="for" />} />
+              <Route path="/for/:slug" element={<SeoDetailPage />} />
+              <Route path="/for/:slug/" element={<SeoDetailPage />} />
+
+              <Route path="/guides" element={<CategoryHubPage category="guides" />} />
+              <Route path="/guides/" element={<CategoryHubPage category="guides" />} />
+              <Route path="/guides/:slug" element={<SeoDetailPage />} />
+              <Route path="/guides/:slug/" element={<SeoDetailPage />} />
+
+              <Route path="/compare" element={<CategoryHubPage category="compare" />} />
+              <Route path="/compare/" element={<CategoryHubPage category="compare" />} />
+              <Route path="/compare/:slug" element={<SeoDetailPage />} />
+              <Route path="/compare/:slug/" element={<SeoDetailPage />} />
+
+              <Route path="/countries" element={<CategoryHubPage category="countries" />} />
+              <Route path="/countries/" element={<CategoryHubPage category="countries" />} />
+              <Route path="/countries/:slug" element={<SeoDetailPage />} />
+              <Route path="/countries/:slug/" element={<SeoDetailPage />} />
+
+              <Route path="/docs" element={<CategoryHubPage category="docs" />} />
+              <Route path="/docs/" element={<CategoryHubPage category="docs" />} />
+              <Route path="/docs/:slug" element={<DocsPage />} />
+              <Route path="/docs/:slug/" element={<DocsPage />} />
+
+              <Route path="/glossary" element={<CategoryHubPage category="glossary" />} />
+              <Route path="/glossary/" element={<CategoryHubPage category="glossary" />} />
+              <Route path="/glossary/:slug" element={<GlossaryTermPage />} />
+              <Route path="/glossary/:slug/" element={<GlossaryTermPage />} />
+
+              {/* 8. Protected Authenticated App Routes */}
               <Route
                 path="/dashboard"
                 element={
@@ -85,7 +172,6 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route
                 path="/analytics"
                 element={
@@ -102,7 +188,6 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route
                 path="/profile"
                 element={
@@ -111,7 +196,6 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
-
               <Route
                 path="/tags/:id"
                 element={
@@ -121,7 +205,7 @@ export default function App() {
                 }
               />
 
-              {/* Admin */}
+              {/* 9. Admin */}
               <Route
                 path="/admin"
                 element={
@@ -131,18 +215,16 @@ export default function App() {
                 }
               />
 
-              {/* 🛡️ Blocked link warning */}
+              {/* 10. Platform Utility Routes */}
+              <Route path="/expired-link" element={<ExpiredLinkPage />} />
               <Route path="/blocked-link" element={<BlockedLinkPage />} />
-
-              {/* 🔍 Destination preview / Interstitial page */}
               <Route path="/preview/:shortCode" element={<InterstitialPage />} />
-
-              {/* 🔐 Password-protected short URL — must come before /:shortCode */}
               <Route path="/protected/:shortCode" element={<PasswordProtectedPage />} />
 
+              {/* 11. Short URL Redirect (Must be placed after all defined routes) */}
               <Route path="/:shortCode" element={<ShortUrlRedirect />} />
 
-              {/* Fallback */}
+              {/* 12. Fallback */}
               <Route path="/not-found" element={<NotFoundPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

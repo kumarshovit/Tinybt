@@ -3,7 +3,7 @@ import { createRoot, hydrateRoot } from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import App from "./App";
 import "./index.css";
-
+import { getPrerenderRoutes } from "./seo/routeRegistry";
 import { initializeAnalytics } from "./services/analytics";
 import { setupLoadingInterceptors } from "./utils/setupLoadingInterceptors";
 
@@ -38,19 +38,10 @@ if (isMsalPopup) {
     </React.StrictMode>
   );
 
-  const prerenderedRoutes = [
-    "/",
-    "/contact",
-    "/terms",
-    "/privacy-policy",
-    "/login",
-    "/register",
-    "/forgot-password",
-  ];
-
-  const isPrerenderedRoute =
-    typeof window !== "undefined" &&
-    prerenderedRoutes.includes(window.location.pathname);
+  const prerenderedPaths = new Set(getPrerenderRoutes());
+  const currentPath = typeof window !== "undefined" ? window.location.pathname : "/";
+  const normalizedCurrent = currentPath.endsWith("/") || currentPath === "/login" ? currentPath : `${currentPath}/`;
+  const isPrerenderedRoute = prerenderedPaths.has(currentPath) || prerenderedPaths.has(normalizedCurrent);
 
   if (root.hasChildNodes() && isPrerenderedRoute) {
     hydrateRoot(root, app);

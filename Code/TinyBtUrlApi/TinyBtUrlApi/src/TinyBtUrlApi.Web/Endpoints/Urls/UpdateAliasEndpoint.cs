@@ -1,4 +1,4 @@
-﻿using FastEndpoints;
+using FastEndpoints;
 using Mediator;
 using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
@@ -33,7 +33,30 @@ public class UpdateAliasEndpoint
     var userId = int.Parse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
     var isAdmin = HttpContext.User.IsInRole("Admin");
 
-    var command = new UpdateAliasCommand(id, req.NewAlias, userId, isAdmin);
+    if (string.IsNullOrWhiteSpace(req.NewAlias))
+    {
+      AddError("Alias is required.");
+      await Send.ErrorsAsync();
+      return;
+    }
+
+    var normalizedAlias = req.NewAlias.Trim().ToLowerInvariant();
+
+    if (TinyBtUrlApi.Core.Constants.ReservedAliases.IsReserved(normalizedAlias))
+    {
+      AddError("This alias is reserved and cannot be used.");
+      await Send.ErrorsAsync();
+      return;
+    }
+
+    if (!System.Text.RegularExpressions.Regex.IsMatch(normalizedAlias, "^[a-zA-Z0-9-]+$"))
+    {
+      AddError("Alias can contain only letters, numbers and hyphens.");
+      await Send.ErrorsAsync();
+      return;
+    }
+
+    var command = new UpdateAliasCommand(id, normalizedAlias, userId, isAdmin);
 
     var result = await _mediator.Send(command, ct);
 

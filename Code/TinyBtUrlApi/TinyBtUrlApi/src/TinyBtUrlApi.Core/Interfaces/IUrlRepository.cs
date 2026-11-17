@@ -11,6 +11,7 @@ public interface IUrlRepository
 {
   Task AddAsync(UrlMapping url);
   Task UpdateAsync(UrlMapping url);
+  void Detach(UrlMapping url);
 
   Task<List<UrlMapping>> GetAllAsync();
   Task<UrlMapping?> GetByIdAsync(int id);

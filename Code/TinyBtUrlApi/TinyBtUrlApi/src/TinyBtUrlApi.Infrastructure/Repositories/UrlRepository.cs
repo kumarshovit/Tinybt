@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml.Serialization;
@@ -26,6 +26,11 @@ public class UrlRepository : IUrlRepository
   {
     _context.UrlMappings.Add(url);
     await _context.SaveChangesAsync();
+  }
+
+  public void Detach(UrlMapping url)
+  {
+    _context.Entry(url).State = EntityState.Detached;
   }
 
   public async Task UpdateAsync(UrlMapping url)

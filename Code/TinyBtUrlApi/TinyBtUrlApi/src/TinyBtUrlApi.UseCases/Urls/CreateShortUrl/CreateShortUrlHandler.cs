@@ -1,5 +1,7 @@
 using Mediator;
+using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
+using TinyBtUrlApi.Core.Constants;
 using TinyBtUrlApi.Core.Entities;
 using TinyBtUrlApi.Core.Interfaces;
 using TinyBtUrlApi.Core.Models;
@@ -123,49 +125,44 @@ public class CreateShortUrlHandler
     }
 
     string shortCode;
+    bool isCustomAlias = !string.IsNullOrWhiteSpace(request.CustomAlias);
 
-    // 🔹 5. Custom Alias Logic
-
-    if (!string.IsNullOrWhiteSpace(request.CustomAlias))
+    // 🔹 2. Custom Alias Validation & Reserved Check
+    if (isCustomAlias)
     {
-      shortCode = request.CustomAlias.Trim().ToLower();
+      var alias = request.CustomAlias!.Trim().ToLowerInvariant();
 
-      if (!Regex.IsMatch(shortCode, "^[a-zA-Z0-9-]+$"))
+      if (ReservedAliases.IsReserved(alias))
+        return new CreateShortUrlResult
+        {
+          Success = false,
+          Message = "This alias is reserved and cannot be used."
+        };
+
+      if (!Regex.IsMatch(alias, "^[a-zA-Z0-9-]+$"))
         return new CreateShortUrlResult
         {
           Success = false,
           Message = "Alias can contain only letters, numbers and hyphens."
         };
 
-      var exists = await _repo.ShortCodeExists(shortCode);
+      var exists = await _repo.ShortCodeExists(alias);
       if (exists)
         return new CreateShortUrlResult
         {
           Success = false,
           Message = "Alias already exists."
         };
+
+      shortCode = alias;
     }
     else
     {
-      shortCode = _shortCodeService.GenerateShortCode();
+      shortCode = string.Empty;
     }
 
-    // 🔹 3.
-    // Create Entity
-
+    // 🔹 3. Create Entity Setup
     DateTime? expirationDate = request.ExpirationDate;
-
-    // If user did NOT provide expiration
-    if (!expirationDate.HasValue)
-    {
-      //var settings = await _settingsRepo.GetAsync();
-
-      //if (settings?.DefaultExpirationDays is int days && days > 0)
-      //{
-      //  expirationDate = DateTime.UtcNow.AddDays(days);
-      //}
-      expirationDate = null;
-    }
 
     var longUrlHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(normalizedUrl)));
     var isPasswordProtected = !string.IsNullOrWhiteSpace(request.Password);
@@ -191,50 +188,151 @@ public class CreateShortUrlHandler
       }
     }
 
-    var mapping = new UrlMapping
-    {
-      LongUrl = normalizedUrl,
-      LongUrlHash = longUrlHash,
-      ShortCode = shortCode,
-      CreatedAt = DateTime.UtcNow,
-      ClickCount = 0,
-      ExpirationDate = expirationDate,
-      IsDeleted = false,
-      UserId = request.UserId,
-      IpAddress = request.IpAddress,
-      CloudflareScanUuid = scanUuid,
-      ScreenshotPath = screenshotPath,
-      ScreenshotStatus = screenshotStatus,
-      ScreenshotFetchedAt = screenshotFetchedAt
-    };
+    // 🔹 4. Bounded Retry & Safe Unique-Constraint Handling
+    const int maxAttempts = 5;
+    UrlMapping? savedMapping = null;
 
-    // 🔐 Password Protection
-    if (isPasswordProtected)
+    for (int attempt = 1; attempt <= (isCustomAlias ? 1 : maxAttempts); attempt++)
     {
-      mapping.IsPasswordProtected = true;
-      mapping.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+      if (!isCustomAlias)
+      {
+        int innerAttempts = 0;
+        do
+        {
+          shortCode = _shortCodeService.GenerateShortCode();
+          innerAttempts++;
+        } while ((ReservedAliases.IsReserved(shortCode) || await _repo.ShortCodeExists(shortCode)) && innerAttempts < 10);
+      }
+
+      var mapping = new UrlMapping
+      {
+        LongUrl = normalizedUrl,
+        LongUrlHash = longUrlHash,
+        ShortCode = shortCode,
+        CreatedAt = DateTime.UtcNow,
+        ClickCount = 0,
+        ExpirationDate = expirationDate,
+        IsDeleted = false,
+        UserId = request.UserId,
+        IpAddress = request.IpAddress,
+        CloudflareScanUuid = scanUuid,
+        ScreenshotPath = screenshotPath,
+        ScreenshotStatus = screenshotStatus,
+        ScreenshotFetchedAt = screenshotFetchedAt
+      };
+
+      if (isPasswordProtected)
+      {
+        mapping.IsPasswordProtected = true;
+        mapping.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+      }
+
+      try
+      {
+        await _repo.AddAsync(mapping);
+        savedMapping = mapping;
+        break;
+      }
+      catch (DbUpdateException ex) when (IsShortCodeUniqueViolation(ex))
+      {
+        _repo.Detach(mapping);
+
+        if (isCustomAlias)
+        {
+          return new CreateShortUrlResult
+          {
+            Success = false,
+            Message = "Alias already exists."
+          };
+        }
+
+        if (attempt == maxAttempts)
+        {
+          return new CreateShortUrlResult
+          {
+            Success = false,
+            Message = "Failed to generate a unique short code after multiple attempts. Please try again."
+          };
+        }
+      }
     }
 
-    // 🔹 4. Save to DB
-    await _repo.AddAsync(mapping);
-
-    // Enqueue for screenshot download ONLY after SaveChanges (mapping.Id exists)
-    if (mapping.ScreenshotStatus == ScreenshotStatus.Pending)
+    if (savedMapping == null)
     {
-      await _screenshotQueue.EnqueueAsync(mapping.Id, ct);
+      return new CreateShortUrlResult
+      {
+        Success = false,
+        Message = "An error occurred while creating the short URL."
+      };
+    }
+
+    // Enqueue for screenshot download ONLY after SaveChanges (savedMapping.Id exists)
+    if (savedMapping.ScreenshotStatus == ScreenshotStatus.Pending)
+    {
+      await _screenshotQueue.EnqueueAsync(savedMapping.Id, ct);
     }
 
     // 🔹 5. Return Success Result
-
     return new CreateShortUrlResult
     {
       Success = true,
-      Id = mapping.Id,
-      ShortCode = mapping.ShortCode,
-      LongUrl = mapping.LongUrl,
-      ExpirationDate = mapping.ExpirationDate,
-      CreatedAt = mapping.CreatedAt,
-      IsPasswordProtected = mapping.IsPasswordProtected
+      Id = savedMapping.Id,
+      ShortCode = savedMapping.ShortCode,
+      LongUrl = savedMapping.LongUrl,
+      ExpirationDate = savedMapping.ExpirationDate,
+      CreatedAt = savedMapping.CreatedAt,
+      IsPasswordProtected = savedMapping.IsPasswordProtected
     };
+  }
+
+  public static bool IsShortCodeUniqueViolation(DbUpdateException ex)
+  {
+    for (Exception? current = ex.InnerException; current != null; current = current.InnerException)
+    {
+      var type = current.GetType();
+      // 1. Must originate from SQL Server SqlException
+      if (type.FullName == "Microsoft.Data.SqlClient.SqlException" ||
+          type.FullName == "System.Data.SqlClient.SqlException" ||
+          type.Name == "SqlException")
+      {
+        // 2. Must have Number property equal to 2601 or 2627
+        var numberProp = type.GetProperty("Number");
+        if (numberProp?.GetValue(current) is int errorNumber)
+        {
+          if (errorNumber != 2601 && errorNumber != 2627)
+          {
+            // Unrelated SQL Server error (e.g. FK 547, deadlock 1205, etc.)
+            return false;
+          }
+
+          // 3. Must be specifically associated with IX_UrlMappings_ShortCode
+          var errorsProp = type.GetProperty("Errors");
+          if (errorsProp?.GetValue(current) is System.Collections.IEnumerable errors)
+          {
+            foreach (var err in errors)
+            {
+              var errType = err.GetType();
+              var errNum = errType.GetProperty("Number")?.GetValue(err) as int?;
+              var errMsg = errType.GetProperty("Message")?.GetValue(err) as string ?? "";
+
+              if ((errNum == 2601 || errNum == 2627) &&
+                  errMsg.Contains("IX_UrlMappings_ShortCode", StringComparison.OrdinalIgnoreCase))
+              {
+                return true;
+              }
+            }
+          }
+
+          if (current.Message.Contains("IX_UrlMappings_ShortCode", StringComparison.OrdinalIgnoreCase))
+          {
+            return true;
+          }
+
+          return false;
+        }
+      }
+    }
+
+    return false;
   }
 }
