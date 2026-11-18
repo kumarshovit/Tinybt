@@ -49,6 +49,11 @@ export default function BulkShortenerToolPage() {
 
     if (rawLines.length === 0) return;
 
+    if (!isAuthenticated) {
+      alert("Please sign in to your LinkBT account to shorten link batches.");
+      return;
+    }
+
     if (rawLines.length > 5) {
       alert("Maximum batch size is 5 URLs. Please remove excess lines before proceeding.");
       return;
@@ -163,7 +168,7 @@ export default function BulkShortenerToolPage() {
             <div className="mb-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-xs flex items-start gap-2.5">
               <ShieldAlert className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
               <div>
-                <strong className="font-semibold text-white">Authentication Recommended:</strong> Bulk shortening requires an authenticated session to associate created links with your account. Please <Link to="/login" className="underline font-bold text-amber-300 hover:text-white">Sign In</Link> first.
+                <strong className="font-semibold text-white">Authentication Required:</strong> Bulk shortening requires an authenticated session to manage rate limits and link security. Please <Link to="/login" className="underline font-bold text-amber-300 hover:text-white">Sign In</Link> or <Link to="/register" className="underline font-bold text-amber-300 hover:text-white">Create an Account</Link> to process batches.
               </div>
             </div>
           )}
@@ -182,23 +187,33 @@ export default function BulkShortenerToolPage() {
               {inputText.split("\n").filter(l => l.trim().length > 0).length} / 5 URLs
             </span>
 
-            <button
-              onClick={handleProcess}
-              disabled={isProcessing || !inputText.trim()}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Processing Batch...</span>
-                </>
-              ) : (
-                <>
-                  <span>Shorten Batch</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
+            {isAuthenticated ? (
+              <button
+                onClick={handleProcess}
+                disabled={isProcessing || !inputText.trim()}
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all shadow-md active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Processing Batch...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Shorten Batch</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-all shadow-md active:scale-95"
+              >
+                <span>Sign In to Shorten Batch</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            )}
           </div>
         </div>
 

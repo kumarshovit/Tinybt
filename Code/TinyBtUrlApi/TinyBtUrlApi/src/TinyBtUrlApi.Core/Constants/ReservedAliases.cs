@@ -43,6 +43,7 @@ public static class ReservedAliases
         "expired-link",
         "preview",
         "protected",
+        "not-found",
 
         // Reverse proxy and service prefixes
         "api",

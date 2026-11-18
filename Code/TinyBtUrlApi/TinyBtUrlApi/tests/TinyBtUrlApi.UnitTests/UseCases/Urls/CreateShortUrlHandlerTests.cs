@@ -301,6 +301,7 @@ public class CreateShortUrlHandlerTests
     [InlineData("sitemap.xml")]
     [InlineData("Tools")]
     [InlineData("ABOUT")]
+    [InlineData("not-found")]
     public async Task Handle_ReservedCustomAlias_RejectsCreation(string reservedSlug)
     {
         // Arrange

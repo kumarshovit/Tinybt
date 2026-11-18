@@ -2,7 +2,7 @@ import { useLocation, Link } from "react-router-dom";
 import MarketingLayout from "../../components/marketing/MarketingLayout";
 import { ROUTE_REGISTRY, type RouteCategory, type RouteMeta } from "../../seo/routeRegistry";
 import { buildBreadcrumbSchema, buildFAQSchema } from "../../seo/schemaBuilders";
-import { ArrowRight, BookOpen, Layers, Users, Scale, Globe, FileText, ShieldCheck } from "lucide-react";
+import { ArrowRight, BookOpen, Layers, Users, Scale, Globe, FileText, ShieldCheck, Terminal } from "lucide-react";
 
 interface HubConfig {
   category: RouteCategory;
@@ -123,6 +123,31 @@ const HUB_CONFIGS: Record<string, HubConfig> = {
       {
         question: "What is the most important term for marketing tracking?",
         answer: "UTM Parameters are the standard for campaign attribution, while HTTP 301 redirects are essential for preserving SEO link equity."
+      }
+    ]
+  },
+
+  "/docs/": {
+    category: "docs",
+    badge: "Developer API & Docs",
+    title: "LinkBT Developer Documentation & API Reference",
+    subtitle: "Explore technical guides, REST endpoints, authentication protocols, rate limits, and error handling for integrating LinkBT.",
+    canonical: "/docs/",
+    icon: Terminal,
+    overviewHeading: "Programmatic URL Management for Engineering Teams",
+    overviewText: "The LinkBT REST API provides programmatic access to our core URL shortening engine, custom alias validation, dynamic QR generation, and link analytics telemetry. Built on clean REST conventions with predictable JSON payloads and sub-50ms redirect response times.",
+    faqs: [
+      {
+        question: "How do I authenticate API requests?",
+        answer: "Include your secret API key in the standard Authorization header as Authorization: Bearer <your_api_key> or pass it via the X-API-Key header."
+      },
+      {
+        question: "What are the default rate limits for the API?",
+        answer: "Standard developer tiers support 100 requests per minute and 30 link creation operations per minute with burst capability."
+      },
+      {
+        question: "Does LinkBT provide client libraries or code examples?",
+        answer: "You can interact with LinkBT using standard HTTP clients in JavaScript, Python, cURL, Go, and C#. Check our language-specific cURL and code snippets."
       }
     ]
   }

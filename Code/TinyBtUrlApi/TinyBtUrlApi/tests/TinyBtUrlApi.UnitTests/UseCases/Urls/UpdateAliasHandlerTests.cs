@@ -29,6 +29,7 @@ public class UpdateAliasHandlerTests
     [InlineData("robots.txt")]
     [InlineData("About")]
     [InlineData("TOOLS")]
+    [InlineData("not-found")]
     public async Task Handle_ReservedAlias_ReturnsNull(string reservedSlug)
     {
         var command = new UpdateAliasCommand(1, reservedSlug, 10, false);

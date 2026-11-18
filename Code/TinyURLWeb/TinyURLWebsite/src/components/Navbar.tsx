@@ -76,6 +76,20 @@ const Navbar = () => {
           {!token ? (
             <>
               <Link
+                to="/tools/"
+                className={navLinkClass("/tools/")}
+              >
+                Tools
+              </Link>
+
+              <Link
+                to="/docs/"
+                className={navLinkClass("/docs/")}
+              >
+                Docs
+              </Link>
+
+              <Link
                 to="/pricing"
                 className={navLinkClass("/pricing")}
               >
@@ -114,20 +128,19 @@ const Navbar = () => {
 
             /* ================= AFTER LOGIN ================= */
             <>
-
+              <Link
+                to="/dashboard"
+                className={navLinkClass("/dashboard")}
+              >
+                Dashboard
+              </Link>
+              
               <Link
                 to="/analytics"
                 className={`flex items-center gap-1 ${navLinkClass("/analytics")}`}
               >
                 <BarChart3 size={18} />
                 Analytics
-              </Link>
-
-              <Link
-                to="/dashboard"
-                className={navLinkClass("/dashboard")}
-              >
-                Dashboard
               </Link>
 
               {role === "Admin" && (
@@ -138,6 +151,20 @@ const Navbar = () => {
                   Admin Panel
                 </Link>
               )}
+
+              <Link
+                to="/tools/"
+                className={navLinkClass("/tools/")}
+              >
+                Tools
+              </Link>
+
+              <Link
+                to="/docs/"
+                className={navLinkClass("/docs/")}
+              >
+                Docs
+              </Link>
 
               <Link
                 to="/developer"
@@ -175,6 +202,20 @@ const Navbar = () => {
           {/* ================= BEFORE LOGIN ================= */}
           {!token ? (
             <>
+              <Link
+                to="/tools/"
+                className={navLinkClass("/tools/")}
+              >
+                Tools
+              </Link>
+
+              <Link
+                to="/docs/"
+                className={navLinkClass("/docs/")}
+              >
+                Docs
+              </Link>
+
               <Link
                 to="/pricing"
                 className={navLinkClass("/pricing")}
@@ -238,6 +279,20 @@ const Navbar = () => {
                   Admin Panel
                 </Link>
               )}
+
+              <Link
+                to="/tools/"
+                className={navLinkClass("/tools/")}
+              >
+                Tools
+              </Link>
+
+              <Link
+                to="/docs/"
+                className={navLinkClass("/docs/")}
+              >
+                Docs
+              </Link>
 
               <Link
                 to="/developer"

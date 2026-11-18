@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import SEO from "../components/SEO";
+import Footer from "../components/Footer";
 import { CheckCircle2, ChevronRight, Sparkles } from "lucide-react";
 
 export default function PricingPage() {
@@ -19,6 +21,11 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-[#020817] text-gray-100 flex flex-col font-sans selection:bg-blue-500/30">
+      <SEO
+        title="Pricing Plans – Simple, Transparent Link Management | LinkBT"
+        description="Compare LinkBT plans for individuals, teams, and enterprises. Free forever tier available with branded domains, QR codes, and analytics."
+        canonical="/pricing/"
+      />
       <Navbar />
 
       <main className="flex-grow pt-32 pb-24 px-6 md:px-12 relative overflow-hidden">
@@ -26,7 +33,7 @@ export default function PricingPage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none opacity-60"></div>
 
         <div className="max-w-7xl mx-auto relative z-10">
-          
+
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
               Find a plan that meets your needs
@@ -42,17 +49,15 @@ export default function PricingPage() {
             <div className="bg-[#0f172a]/80 p-1.5 rounded-full border border-white/10 flex items-center shadow-lg backdrop-blur-md">
               <button
                 onClick={() => setIsAnnual(false)}
-                className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
-                  !isAnnual ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" : "text-gray-400 hover:text-white"
-                }`}
+                className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${!isAnnual ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" : "text-gray-400 hover:text-white"
+                  }`}
               >
                 Monthly
               </button>
               <button
                 onClick={() => setIsAnnual(true)}
-                className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
-                  isAnnual ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" : "text-gray-400 hover:text-white"
-                }`}
+                className={`px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${isAnnual ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" : "text-gray-400 hover:text-white"
+                  }`}
               >
                 Annually
                 <span className="bg-emerald-500/20 text-emerald-400 text-[10px] uppercase px-2 py-0.5 rounded-full tracking-wider">Save 20%</span>
@@ -62,7 +67,7 @@ export default function PricingPage() {
 
           {/* Pricing Grid */}
           <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8 lg:gap-10">
-            
+
             {/* FREE PLAN */}
             <div className="bg-[#1e293b]/60 backdrop-blur-xl border border-white/10 rounded-3xl p-8 flex flex-col relative group hover:border-gray-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-gray-500/10">
               <div className="mb-6">
@@ -122,10 +127,10 @@ export default function PricingPage() {
                   <span>125</span>
                   <span>4K Links</span>
                 </div>
-                <input 
-                  type="range" 
-                  min="125" 
-                  max="4000" 
+                <input
+                  type="range"
+                  min="125"
+                  max="4000"
                   step="10"
                   value={proLinks}
                   onChange={(e) => setProLinks(Number(e.target.value))}
@@ -137,7 +142,7 @@ export default function PricingPage() {
                 <ul className="space-y-4 text-gray-300 text-sm font-medium">
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="w-5 h-5 text-blue-400 shrink-0" />
-                    <span><strong className="text-white">{proLinks} Links / mo</strong><br/><span className="text-gray-500 text-xs">+$1.50 per 10 additional links</span></span>
+                    <span><strong className="text-white">{proLinks} Links / mo</strong><br /><span className="text-gray-500 text-xs">+$1.50 per 10 additional links</span></span>
                   </li>
                   <li className="flex items-center gap-3">
                     <CheckCircle2 className="w-5 h-5 text-blue-400 shrink-0" />
@@ -177,10 +182,10 @@ export default function PricingPage() {
                   <span>50K</span>
                   <span>5M Links</span>
                 </div>
-                <input 
-                  type="range" 
-                  min="50000" 
-                  max="5000000" 
+                <input
+                  type="range"
+                  min="50000"
+                  max="5000000"
                   step="50000"
                   value={bulkLinks}
                   onChange={(e) => setBulkLinks(Number(e.target.value))}
@@ -192,11 +197,11 @@ export default function PricingPage() {
                 <ul className="space-y-4 text-gray-300 text-sm font-medium">
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="w-5 h-5 text-blue-400 shrink-0" />
-                    <span><strong className="text-white">{bulkLinks.toLocaleString()} Links / mo</strong><br/><span className="text-gray-500 text-xs">+$2.00 per 1000 additional links</span></span>
+                    <span><strong className="text-white">{bulkLinks.toLocaleString()} Links / mo</strong><br /><span className="text-gray-500 text-xs">+$2.00 per 1000 additional links</span></span>
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="w-5 h-5 text-blue-400 shrink-0" />
-                    <span><strong className="text-white">{bulkLinks.toLocaleString()} Tracked Clicks / mo</strong><br/><span className="text-gray-500 text-xs">+$0.60 per 1000 additional clicks</span></span>
+                    <span><strong className="text-white">{bulkLinks.toLocaleString()} Tracked Clicks / mo</strong><br /><span className="text-gray-500 text-xs">+$0.60 per 1000 additional clicks</span></span>
                   </li>
                   <li className="flex items-center gap-3">
                     <CheckCircle2 className="w-5 h-5 text-blue-400 shrink-0" />
@@ -256,12 +261,13 @@ export default function PricingPage() {
             </div>
 
           </div>
-          
+
           <div className="mt-12 text-center text-xs text-gray-500 font-medium">
             * Listed prices exclude any applicable taxes.
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

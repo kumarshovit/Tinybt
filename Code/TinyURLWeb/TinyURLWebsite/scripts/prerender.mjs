@@ -26,6 +26,7 @@ function stripClientSeo(html) {
     )
     .replace(/\s*<meta\s+property="og:[^"]+"[^>]*>\s*/gi, "")
     .replace(/\s*<link\s+rel="canonical"[^>]*>\s*/gi, "")
+    .replace(/\s*<link\s+rel="alternate"\s+hreflang="[^"]+"\s+href="[^"]*"\s*\/?>\s*/gi, "")
     .replace(
       /\s*<script\s+type="application\/ld\+json">[\s\S]*?<\/script>\s*/gi,
       ""

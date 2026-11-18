@@ -139,6 +139,111 @@ export default function LandingPage() {
       {/* HOW IT WORKS */}
       <HowItWorks />
 
+      {/* FREE TOOLS & SOLUTIONS SHOWCASE */}
+      <section className="py-20 bg-white border-t border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <span className="text-xs font-semibold tracking-wider text-blue-600 uppercase bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+              Free Utilities & Developer Resources
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mt-4 mb-4">
+              Explore Our Link Management Platform
+            </h2>
+            <p className="text-base sm:text-lg text-gray-600">
+              High-speed redirection, batch operations, dynamic QR codes, and developer REST APIs built for scale.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Tool 1 */}
+            <Link
+              to="/tools/bulk-url-shortener/"
+              className="p-6 rounded-2xl bg-gray-50 border border-gray-200/80 hover:border-blue-500 hover:shadow-lg transition-all group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center font-bold mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                ⚡
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                Bulk URL Shortener
+              </h3>
+              <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                Shorten multiple destination links in a single operation with automated rate-limit throttling.
+              </p>
+              <span className="text-xs font-semibold text-blue-600 inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                Open Tool →
+              </span>
+            </Link>
+
+            {/* Tool 2 */}
+            <Link
+              to="/tools/qr-code-generator/"
+              className="p-6 rounded-2xl bg-gray-50 border border-gray-200/80 hover:border-blue-500 hover:shadow-lg transition-all group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-emerald-600/10 text-emerald-600 flex items-center justify-center font-bold mb-4 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                📱
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-emerald-600 transition-colors">
+                Dynamic QR Generator
+              </h3>
+              <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                Create customizable, high-resolution QR codes for print media, product packaging, and events.
+              </p>
+              <span className="text-xs font-semibold text-emerald-600 inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                Generate QR →
+              </span>
+            </Link>
+
+            {/* Tool 3 */}
+            <Link
+              to="/tools/utm-builder/"
+              className="p-6 rounded-2xl bg-gray-50 border border-gray-200/80 hover:border-blue-500 hover:shadow-lg transition-all group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-purple-600/10 text-purple-600 flex items-center justify-center font-bold mb-4 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                🎯
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-purple-600 transition-colors">
+                UTM Campaign Builder
+              </h3>
+              <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                Generate standard Google Analytics tracking tags to measure conversions across marketing channels.
+              </p>
+              <span className="text-xs font-semibold text-purple-600 inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                Build UTM Link →
+              </span>
+            </Link>
+
+            {/* Tool 4 */}
+            <Link
+              to="/docs/"
+              className="p-6 rounded-2xl bg-gray-50 border border-gray-200/80 hover:border-blue-500 hover:shadow-lg transition-all group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-amber-600/10 text-amber-600 flex items-center justify-center font-bold mb-4 group-hover:bg-amber-600 group-hover:text-white transition-colors">
+                ⚙️
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-amber-600 transition-colors">
+                Developer REST API
+              </h3>
+              <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                Programmatically generate and manage links with our high-throughput developer endpoints and API keys.
+              </p>
+              <span className="text-xs font-semibold text-amber-600 inline-flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                Read API Docs →
+              </span>
+            </Link>
+          </div>
+
+          <div className="mt-10 flex flex-wrap justify-center items-center gap-6 text-sm text-gray-600">
+            <span className="text-gray-400">Popular hubs:</span>
+            <Link to="/use-cases/" className="hover:text-blue-600 font-medium">Industry Use Cases</Link>
+            <span className="text-gray-300">•</span>
+            <Link to="/guides/" className="hover:text-blue-600 font-medium">Guides & Tutorials</Link>
+            <span className="text-gray-300">•</span>
+            <Link to="/compare/" className="hover:text-blue-600 font-medium">Platform Comparisons</Link>
+            <span className="text-gray-300">•</span>
+            <Link to="/glossary/" className="hover:text-blue-600 font-medium">Link Glossary</Link>
+          </div>
+        </div>
+      </section>
 
       {/* FAQ */}
       <FAQPreview />

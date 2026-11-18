@@ -28,6 +28,18 @@ export default function LandingNavbar() {
         {/* Desktop Menu */}
         <div className="hidden md:flex gap-6 items-center">
 
+          <Link to="/tools/" className="hover:text-blue-600 font-medium">
+            Tools
+          </Link>
+
+          <Link to="/docs/" className="hover:text-blue-600 font-medium">
+            Docs
+          </Link>
+
+          <Link to="/pricing" className="hover:text-blue-600 font-medium">
+            Pricing
+          </Link>
+
           <a href="#features" className="hover:text-blue-600">
             Features
           </a>
@@ -68,6 +80,9 @@ export default function LandingNavbar() {
       {open && (
         <div className="md:hidden flex flex-col gap-4 px-6 pb-6">
 
+          <Link to="/tools/">Tools</Link>
+          <Link to="/docs/">Docs</Link>
+          <Link to="/pricing">Pricing</Link>
           <a href="#features">Features</a>
           <a href="#how">How it Works</a>
 

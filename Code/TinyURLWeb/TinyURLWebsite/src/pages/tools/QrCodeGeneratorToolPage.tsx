@@ -1,6 +1,6 @@
 import { useState, useId } from "react";
 import MarketingLayout from "../../components/marketing/MarketingLayout";
-import { QrCode, Download, Copy, Check, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { Download, Copy, Check, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 import { buildBreadcrumbSchema, buildFAQSchema, buildSoftwareApplicationSchema } from "../../seo/schemaBuilders";
 
 const FAQS = [

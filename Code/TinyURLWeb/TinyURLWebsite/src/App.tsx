@@ -49,12 +49,14 @@ import { LoadingProvider } from "./context/LoadingContext";
 import GlobalLoadingPanel from "./components/common/GlobalLoadingPanel";
 import PageLoadingFallback from "./components/common/PageLoadingFallback";
 import ErrorBoundary from "./components/common/ErrorBoundary";
+import ScrollToTop from "./components/ScrollToTop";
 
 export default function App() {
   return (
     <ErrorBoundary>
       <LoadingProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <AnalyticsTracker />
           <GlobalLoadingPanel />
 
